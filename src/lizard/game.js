@@ -81,6 +81,10 @@ export const Game = {
 
       moves: {
         playCard: function (G, ctx, cardIndex) {
+
+          const previousCardPlayed = G.plays[G.currentRound][G.currentTrick].slice(-1)[0]
+          console.log("previous card", previousCardPlayed);
+
           const card = G.hand[ctx.currentPlayer].splice(cardIndex, 1)[0];
           console.log(
             "Player",

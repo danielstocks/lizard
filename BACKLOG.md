@@ -1,6 +1,13 @@
 # Project Backlog
 
 
+## Task: Core Game
+
+- Implement trick winning condition
+- Calculate score after completed round
+- Calculate accumlated score of all rounds
+
+
 ## Task: Game Lobby
 
 Allow for a user to create a new "game".
@@ -11,6 +18,7 @@ Allow for a user to create a new "game".
 
 
 ## Task: Start Game
+
 - Allow host to "start game" if there at least 3 players in lobby.
 - Implement Naive MVP game:
 -- Deal 1 card to each user
