@@ -1,41 +1,10 @@
 import React from "react";
-import { suitSymbols } from "./deck";
+import { ScoreBoard } from "./components/scoreboard";
+import { Card } from "./components/card";
+import { getPlayableCards } from "./play";
 
-const Card = ({ value, suit, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      padding: "10px",
-      margin: "2px",
-      width: "50px",
-      textAlign: "center",
-      border: "1px solid #eee",
-      fontFamily: "serif",
-    }}
-  >
-    {suitSymbols[suit]}&nbsp;{value}
-  </div>
-);
-
-function getActual(player, round, currentRound, scoresheet) {
-  return "-";
-}
-
-function getScore(player, round, currentRound, scoresheet) {
-  return "-";
-}
-
-function getEstimate(player, round, currentRound, scoresheet) {
-  if (currentRound < round) {
-    return "-";
-  }
-  if (!scoresheet[round]) {
-    return "-";
-  }
-  if (!scoresheet[round][player]) {
-    return "-";
-  }
-  return scoresheet[round][player].estimate;
+function isCardPlayable(card, playableCards) {
+  return playableCards.indexOf(card) !== -1;
 }
 
 export const Board = ({ G, ctx, moves }) => {
@@ -44,7 +13,7 @@ export const Board = ({ G, ctx, moves }) => {
   const trumpCard = G.trumpCard;
 
   return (
-    <div style={{ maxWidth: "720px", fontFamily: "sans-serif" }}>
+    <div style={{ maxWidth: "620px", fontFamily: "sans-serif" }}>
       <h1>Lizard</h1>
 
       <main style={{ display: "flex" }}>
@@ -86,99 +55,69 @@ export const Board = ({ G, ctx, moves }) => {
           </div>
 
           <div style={{ display: "flex" }}>
-            {players.map((player) => (
-              <div style={{ marginRight: "10px" }} key={player}>
-                <h3>
-                  Player {player}
-                  {ctx.currentPlayer == player && "*"}
-                </h3>
-                {G.hand[player].map((card, i) => {
-                  return (
-                    <Card
-                      onClick={() => {
-                        if (
-                          ctx.phase === "play" &&
-                          ctx.currentPlayer == player
-                        ) {
-                          moves.playCard(i);
-                        }
+            {players.map((player) => {
+              let playableCards = [];
+
+              if (ctx.phase === "play" && ctx.currentPlayer == player) {
+                const cardsInPlay = G.plays[G.currentRound][G.currentTrick];
+                playableCards = getPlayableCards(cardsInPlay, G.hand[player]);
+              }
+
+              return (
+                <div style={{ marginRight: "10px" }} key={player}>
+                  <h3>
+                    Player {player}
+                    {ctx.currentPlayer == player && "*"}
+                  </h3>
+                  {G.hand[player].map((card, i) => {
+                    const cardIsPlayable =
+                      ctx.phase === "play" &&
+                      ctx.currentPlayer == player &&
+                      isCardPlayable(card, playableCards);
+                    return (
+                      <Card
+                        onClick={() => {
+                          if (cardIsPlayable) {
+                            moves.playCard(i);
+                          }
+                        }}
+                        disabled={!cardIsPlayable}
+                        value={card.value}
+                        suit={card.suit}
+                        key={card.value + card.suit}
+                      />
+                    );
+                  })}
+                  {ctx.phase == "estimate" && ctx.currentPlayer == player && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        moves.estimate(e.target.elements.estimate.value);
                       }}
-                      value={card.value}
-                      suit={card.suit}
-                      key={card.value + card.suit}
-                    />
-                  );
-                })}
-                {ctx.phase == "estimate" && ctx.currentPlayer == player && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      moves.estimate(e.target.elements.estimate.value);
-                    }}
-                  >
-                    <input
-                      name="estimate"
-                      defaultValue="0"
-                      size="2"
-                      min="0"
-                      max={G.currentRound + 1}
-                      type="number"
-                    />
-                    <button>ok</button>
-                  </form>
-                )}
-              </div>
-            ))}
+                    >
+                      <input
+                        name="estimate"
+                        defaultValue="0"
+                        size="2"
+                        min="0"
+                        max={G.currentRound + 1}
+                        type="number"
+                      />
+                      <button>ok</button>
+                    </form>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
         <section>
-          <h2>Scoresheet</h2>
-          <table
-            border="1"
-            cellSpacing="0"
-            cellPadding="4"
-            style={{ borderCollapse: "collapse", fontSize: "11px" }}
-          >
-            <thead>
-              <tr>
-                <th>Round</th>
-                {players.map((player) => (
-                  <th colSpan="2" key={"th" + player}>
-                    Player {player}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rounds.map((round) => (
-                <React.Fragment key={round}>
-                  <tr>
-                    <td rowSpan="2">{round}</td>
-
-                    {players.map((player) => (
-                      <React.Fragment key={round + player}>
-                        <td rowSpan="2">{getScore()}</td>
-                        <td>
-                          {getEstimate(
-                            player,
-                            round,
-                            G.currentRound,
-                            G.scoresheet
-                          )}
-                        </td>
-                      </React.Fragment>
-                    ))}
-                  </tr>
-
-                  <tr>
-                    {players.map((player) => (
-                      <td key={"actual" + round + player}>{getActual()}</td>
-                    ))}
-                  </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+          <ScoreBoard
+            rounds={rounds}
+            players={players}
+            scoresheet={G.scoresheet}
+            currentRound={G.currentRound}
+          />
         </section>
       </main>
     </div>

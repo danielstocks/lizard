@@ -10,6 +10,10 @@ export const suitSymbols = {
   snake: "🐍",
 };
 
+export function cardToString(card) {
+  return suitSymbols[card.suit] + card.value
+}
+
 /* 
 Use boardgame.io internal ctx.random.Shuffle once
 this bug is fixed: https://github.com/nicolodavis/boardgame.io/issues/588

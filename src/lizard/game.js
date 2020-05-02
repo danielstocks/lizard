@@ -1,5 +1,6 @@
-import { createDeck, addSpecialCards, suitSymbols, shuffle } from "./deck";
+import { createDeck, addSpecialCards, shuffle, cardToString } from "./deck";
 import { TurnOrder } from "boardgame.io/core";
+import { getWinningCard } from "./trick";
 
 export const Game = {
   name: "lizard",
@@ -34,6 +35,8 @@ export const Game = {
           });
         });
         G.trumpCard = G.deck.shift();
+        console.log("# Trump Suit", cardToString(G.trumpCard));
+
         G.deck = [];
 
         console.log("# Started Estimation Phase");
@@ -57,47 +60,59 @@ export const Game = {
     },
 
     play: {
-      next: "play",
-
       onBegin: (G, ctx) => {
-        if (G.currentTrick > G.currentRound) {
-          console.log("# All tricks played out, starting new round");
-          G.currentRound += 1;
-          ctx.events.setPhase("estimate");
-        } else {
-          console.log(
-            "# Phase Play - Trick",
-            G.currentTrick + 1,
-            "of",
-            G.currentRound + 1,
-            "tricks"
-          );
-        }
-      },
-
-      onEnd: (G) => {
-        G.currentTrick += 1;
+        console.log(
+          "# Phase Play - Trick",
+          G.currentTrick + 1,
+          "of",
+          G.currentRound + 1,
+          "tricks"
+        );
       },
 
       moves: {
         playCard: function (G, ctx, cardIndex) {
-
-          const previousCardPlayed = G.plays[G.currentRound][G.currentTrick].slice(-1)[0]
-          console.log("previous card", previousCardPlayed);
-
           const card = G.hand[ctx.currentPlayer].splice(cardIndex, 1)[0];
           console.log(
             "Player",
             ctx.currentPlayer,
             "played",
-            suitSymbols[card.suit],
-            card.value
+            cardToString(card)
           );
           G.plays[G.currentRound][G.currentTrick].push(card);
+
+          // Start next trick?
+          if (
+            G.plays[G.currentRound][G.currentTrick].length === ctx.numPlayers
+          ) {
+            // Who won previous trick?
+            const winningCard = getWinningCard(
+              G.plays[G.currentRound][G.currentTrick],
+              G.trumpCard.suit
+            );
+            console.log("Winner:", cardToString(winningCard));
+
+            // Start next trick
+            G.currentTrick += 1;
+
+            // Start next round?
+            if (G.currentTrick > G.currentRound) {
+              console.log("# All tricks played out, starting new round");
+              G.currentRound += 1;
+              ctx.events.setPhase("estimate");
+            } else {
+              console.log(
+                "# Phase Play - Trick",
+                G.currentTrick + 1,
+                "of",
+                G.currentRound + 1,
+                "tricks"
+              );
+            }
+          }
         },
       },
       turn: {
-        order: TurnOrder.ONCE,
         moveLimit: 1,
       },
     },

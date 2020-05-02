@@ -2,8 +2,6 @@
 
 
 ## Task: Core Game
-
-- Implement trick winning condition
 - Calculate score after completed round
 - Calculate accumlated score of all rounds
 
@@ -20,9 +18,5 @@ Allow for a user to create a new "game".
 ## Task: Start Game
 
 - Allow host to "start game" if there at least 3 players in lobby.
-- Implement Naive MVP game:
--- Deal 1 card to each user
--- Highest card wins
--- Repeat 5 times.
 - If a user leaves the game, the game is forfeit.
-- End game after 5 rounds, announce winner.
+- End game, announce winner.
