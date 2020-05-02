@@ -11,6 +11,7 @@ export const Game = {
       currentRound: 0,
       numberOfRounds: Math.floor(60 / ctx.numPlayers),
       scoresheet: [],
+      trumpCard: [],
       plays: [],
     };
   },
@@ -34,8 +35,8 @@ export const Game = {
             G.hand[player].push(G.deck.shift());
           });
         });
-        G.trumpCard = G.deck.shift();
-        console.log("# Trump Suit", cardToString(G.trumpCard));
+        G.trumpCard[G.currentRound] = G.deck.shift();
+        console.log("# Trump Suit", cardToString(G.trumpCard[G.currentRound]));
 
         G.deck = [];
 
@@ -70,6 +71,21 @@ export const Game = {
         );
       },
 
+      onEnd: (G, ctx) => {
+        const players = Array.from(Array(ctx.numPlayers).keys());
+        const winners = G.plays[G.currentRound].map((trick) => {
+          return trick.indexOf(getWinningCard(trick));
+        });
+
+        players.forEach((player) => {
+          let numTricksWon = winners.filter((x) => x === player).length;
+          console.log("Player", player, "wins", numTricksWon);
+          G.scoresheet[G.currentRound][player].actual = numTricksWon;
+        });
+
+        G.currentRound += 1;
+      },
+
       moves: {
         playCard: function (G, ctx, cardIndex) {
           const card = G.hand[ctx.currentPlayer].splice(cardIndex, 1)[0];
@@ -88,7 +104,7 @@ export const Game = {
             // Who won previous trick?
             const winningCard = getWinningCard(
               G.plays[G.currentRound][G.currentTrick],
-              G.trumpCard.suit
+              G.trumpCard[G.currentRound].suit
             );
             console.log("Winner:", cardToString(winningCard));
 
@@ -98,7 +114,6 @@ export const Game = {
             // Start next round?
             if (G.currentTrick > G.currentRound) {
               console.log("# All tricks played out, starting new round");
-              G.currentRound += 1;
               ctx.events.setPhase("estimate");
             } else {
               console.log(

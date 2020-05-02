@@ -10,7 +10,7 @@ function isCardPlayable(card, playableCards) {
 export const Board = ({ G, ctx, moves }) => {
   const players = Array.from(Array(ctx.numPlayers).keys());
   const rounds = Array.from(Array(G.numberOfRounds).keys());
-  const trumpCard = G.trumpCard;
+  const trumpCard = G.trumpCard[G.currentRound];
 
   return (
     <div style={{ maxWidth: "620px", fontFamily: "sans-serif" }}>
@@ -18,9 +18,6 @@ export const Board = ({ G, ctx, moves }) => {
 
       <main style={{ display: "flex" }}>
         <section style={{ flex: "1 1 0" }}>
-          <h2>Game</h2>
-          <p>Current round: {G.currentRound} </p>
-
           <div style={{ display: "flex" }}>
             <div style={{ marginRight: "10px" }}>
               <strong>Trump Card</strong>
@@ -113,6 +110,7 @@ export const Board = ({ G, ctx, moves }) => {
         </section>
         <section>
           <ScoreBoard
+            trumpCard={G.trumpCard}
             rounds={rounds}
             players={players}
             scoresheet={G.scoresheet}
