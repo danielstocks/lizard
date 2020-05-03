@@ -1,7 +1,7 @@
 import React from "react";
-import { ScoreBoard } from "./components/scoreboard";
-import { Card } from "./components/card";
-import { getPlayableCards } from "./play";
+import { ScoreBoard } from "./scoreboard";
+import { Card } from "./card";
+import { getPlayableCards } from "../play";
 
 function isCardPlayable(card, playableCards) {
   return playableCards.indexOf(card) !== -1;

@@ -1,2 +1,2 @@
 export { Game } from './game';
-export { Board } from './board';
+export { Board } from './components/board';

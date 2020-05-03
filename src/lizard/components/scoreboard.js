@@ -1,5 +1,6 @@
 import React from "react";
 import { suitSymbols } from "../deck";
+import { getPlayerAcummulatedScore } from "../game/score";
 
 function getActual(player, round, currentRound, scoresheet) {
   if (currentRound < round) {
@@ -15,10 +16,6 @@ function getActual(player, round, currentRound, scoresheet) {
     return "-";
   }
   return scoresheet[round][player].actual;
-}
-
-function getScore(player, round, currentRound, scoresheet) {
-  return "-";
 }
 
 function getEstimate(player, round, currentRound, scoresheet) {
@@ -40,74 +37,90 @@ export const ScoreBoard = ({
   trumpCard,
   currentRound,
   scoresheet,
-}) => (
-  <>
-    <h2>Scoresheet</h2>
-    <table
-      border="1"
-      cellSpacing="0"
-      cellPadding="4"
-      style={{ borderCollapse: "collapse", fontSize: "11px" }}
-    >
-      <thead>
-        <tr>
-          <th>Round</th>
-          {players.map((player) => (
-            <th colSpan="2" key={"th" + player}>
-              Player {player}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rounds.map((round) => (
-          <React.Fragment key={round}>
-            <tr
-              style={{
-                background: currentRound === round ? "beige" : "white",
-              }}
-            >
-              <td rowSpan="2">
-                {round}&nbsp;
-                {currentRound >= round && (
-                  <span
-                    style={{
-                      color:
-                        trumpCard[round].suit === "hearts" ||
-                        trumpCard[round].suit === "diamonds"
-                          ? "red"
-                          : "black",
-                    }}
-                  >
-                    {suitSymbols[trumpCard[round].suit]}
-                  </span>
-                )}
-              </td>
+}) => {
+  const playerScores =
+    currentRound > 0
+      ? players.map((player) => {
+          return getPlayerAcummulatedScore(
+            scoresheet.slice(0, currentRound),
+            player
+          );
+        })
+      : [];
 
-              {players.map((player) => (
-                <React.Fragment key={round + player}>
-                  <td rowSpan="2">{getScore()}</td>
-                  <td>
-                    {getEstimate(player, round, currentRound, scoresheet)}
-                  </td>
-                </React.Fragment>
-              ))}
-            </tr>
+  console.log(playerScores);
 
-            <tr
-              style={{
-                background: currentRound === round ? "beige" : "white",
-              }}
-            >
-              {players.map((player) => (
-                <td key={"actual" + round + player}>
-                  {getActual(player, round, currentRound, scoresheet)}
+  return (
+    <>
+      <h2>Scoresheet</h2>
+      <table
+        border="1"
+        cellSpacing="0"
+        cellPadding="4"
+        style={{ borderCollapse: "collapse", fontSize: "11px" }}
+      >
+        <thead>
+          <tr>
+            <th>Round</th>
+            {players.map((player) => (
+              <th colSpan="2" key={"th" + player}>
+                Player {player}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rounds.map((round) => (
+            <React.Fragment key={round}>
+              <tr
+                style={{
+                  background: currentRound === round ? "beige" : "white",
+                }}
+              >
+                <td rowSpan="2">
+                  {round}&nbsp;
+                  {currentRound >= round && (
+                    <span
+                      style={{
+                        color:
+                          trumpCard[round].suit === "hearts" ||
+                          trumpCard[round].suit === "diamonds"
+                            ? "red"
+                            : "black",
+                      }}
+                    >
+                      {suitSymbols[trumpCard[round].suit]}
+                    </span>
+                  )}
                 </td>
-              ))}
-            </tr>
-          </React.Fragment>
-        ))}
-      </tbody>
-    </table>
-  </>
-);
+
+                {players.map((player) => (
+                  <React.Fragment key={round + player}>
+                    <td rowSpan="2">
+                      {currentRound > 0 && playerScores[player][round]}
+                    </td>
+                    <td>
+                      {getEstimate(player, round, currentRound, scoresheet)}
+                    </td>
+                  </React.Fragment>
+                ))}
+              </tr>
+
+              <tr
+                style={{
+                  background: currentRound === round ? "beige" : "white",
+                }}
+              >
+                {players.map((player) => (
+                  <td key={"actual" + round + player}>
+                    {getActual(player, round, currentRound, scoresheet)}
+                  </td>
+                ))}
+              </tr>
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+};

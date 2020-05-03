@@ -2,8 +2,6 @@
 
 
 ## Task: Core Game
-- Calculate score after completed round
-- Calculate accumlated score of all rounds
 - Implement correct turn order (eg shift 1 pos to right efter each new round)
 - Implement Prison Rules
 
