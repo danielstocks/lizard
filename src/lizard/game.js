@@ -10,7 +10,7 @@ function log(message, G) {
 }
 
 function pluralize(string, i) {
-  if (i > 1 || i === 0) {
+  if (i > 1 || i === 0) {
     return string + "s";
   }
   return string;
@@ -42,17 +42,18 @@ export const Game = {
         const round = G.currentRound;
         const players = Array.from(Array(ctx.numPlayers).keys());
         const rounds = Array.from(Array(G.currentRound + 1).keys());
+        const deck = shuffle([...createDeck(), ...addSpecialCards()]);
+
         log(["# ---------------------"], G);
         log(["# Starting Round:", round], G);
         log(["# Creating & Shuffling and Dealing cards..."], G);
-        G.deck = shuffle([...createDeck(), ...addSpecialCards()]);
 
         rounds.forEach(() => {
           players.forEach((player) => {
-            G.hand[player].push(G.deck.shift());
+            G.hand[player].push(deck.shift());
           });
         });
-        G.trumpCard[G.currentRound] = G.deck.shift();
+        G.trumpCard[G.currentRound] = deck.shift();
 
         log(["# Trump suit is", G.trumpCard[G.currentRound].suit], G);
 

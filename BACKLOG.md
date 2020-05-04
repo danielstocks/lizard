@@ -6,8 +6,8 @@
 - Improved card design
   - Show numbers and suit in corners.
   - Hide snake and lizard value (doesn't affect game)
-- Improve estimation phase UI
 - Show player 0 (you) at bottom, rest at top.
+- Improve estimation phase UI
 - Center play Area.
 - Animate cards bein played (fly-in)
 

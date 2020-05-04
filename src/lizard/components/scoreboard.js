@@ -78,7 +78,7 @@ export const ScoreBoard = ({
               }}
             >
               <td rowSpan="2">
-                {round}&nbsp;
+                {round + 1}&nbsp;
                 {currentRound >= round && (
                   <span
                     style={{
