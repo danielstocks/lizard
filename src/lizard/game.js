@@ -2,6 +2,20 @@ import { createDeck, addSpecialCards, shuffle, cardToString } from "./deck";
 import { TurnOrder } from "boardgame.io/core";
 import { getWinningCard } from "./trick";
 
+function log(message, G) {
+  G.log.push({
+    message: message.join(" "),
+    date: new Date(),
+  });
+}
+
+function pluralize(string, i) {
+  if (i > 1 || i === 0) {
+    return string + "s";
+  }
+  return string;
+}
+
 export const Game = {
   name: "lizard",
 
@@ -13,6 +27,12 @@ export const Game = {
       scoresheet: [],
       trumpCard: [],
       plays: [],
+      log: [
+        {
+          message: "# Game started",
+          date: new Date(),
+        },
+      ],
     };
   },
 
@@ -20,35 +40,30 @@ export const Game = {
     estimate: {
       onBegin: (G, ctx) => {
         const round = G.currentRound;
-
-        console.log("# Starting Round:", round);
-
-        console.log("Current Dealer: Player", ctx.currentPlayer);
-        console.log("Creating & Shuffling Deck...");
-        G.deck = shuffle([...createDeck(), ...addSpecialCards()]);
-
-        console.log("Dealing Cards...");
         const players = Array.from(Array(ctx.numPlayers).keys());
         const rounds = Array.from(Array(G.currentRound + 1).keys());
+        log(["# ---------------------"], G);
+        log(["# Starting Round:", round], G);
+        log(["# Creating & Shuffling and Dealing cards..."], G);
+        G.deck = shuffle([...createDeck(), ...addSpecialCards()]);
+
         rounds.forEach(() => {
           players.forEach((player) => {
             G.hand[player].push(G.deck.shift());
           });
         });
         G.trumpCard[G.currentRound] = G.deck.shift();
-        console.log("# Trump Suit", cardToString(G.trumpCard[G.currentRound]));
 
-        G.deck = [];
+        log(["# Trump suit is", G.trumpCard[G.currentRound].suit], G);
 
-        console.log("# Started Estimation Phase");
-        console.log("Q: How many tricks will you win?");
+        log(["# Started Estimation Phase..."], G);
         G.scoresheet[G.currentRound] = [];
         G.currentTrick = 0;
         G.plays.push(Array(G.currentRound + 1).fill([]));
       },
       moves: {
         estimate: function (G, ctx, estimate) {
-          console.log("Player", ctx.currentPlayer, "guessed", estimate);
+          log(["# Player", ctx.currentPlayer, "guessed", estimate], G);
           G.scoresheet[G.currentRound][ctx.currentPlayer] = { estimate };
         },
       },
@@ -62,12 +77,15 @@ export const Game = {
 
     play: {
       onBegin: (G, ctx) => {
-        console.log(
-          "# Phase Play - Trick",
-          G.currentTrick + 1,
-          "of",
-          G.currentRound + 1,
-          "tricks"
+        log(
+          [
+            "# Phase Play - Trick",
+            G.currentTrick + 1,
+            "of",
+            G.currentRound + 1,
+            "tricks",
+          ],
+          G
         );
       },
 
@@ -79,7 +97,16 @@ export const Game = {
 
         players.forEach((player) => {
           let numTricksWon = winners.filter((x) => x === player).length;
-          console.log("Player", player, "wins", numTricksWon);
+          log(
+            [
+              "# Player",
+              player,
+              "wins",
+              numTricksWon,
+              pluralize("trick", numTricksWon),
+            ],
+            G
+          );
           G.scoresheet[G.currentRound][player].actual = numTricksWon;
         });
 
@@ -89,12 +116,7 @@ export const Game = {
       moves: {
         playCard: function (G, ctx, cardIndex) {
           const card = G.hand[ctx.currentPlayer].splice(cardIndex, 1)[0];
-          console.log(
-            "Player",
-            ctx.currentPlayer,
-            "played",
-            cardToString(card)
-          );
+          log(["# Player", ctx.currentPlayer, "played", cardToString(card)], G);
           G.plays[G.currentRound][G.currentTrick].push(card);
 
           // Start next trick?
@@ -106,22 +128,25 @@ export const Game = {
               G.plays[G.currentRound][G.currentTrick],
               G.trumpCard[G.currentRound].suit
             );
-            console.log("Winner:", cardToString(winningCard));
+            log(["# Winning Card:", cardToString(winningCard)], G);
 
             // Start next trick
             G.currentTrick += 1;
 
             // Start next round?
             if (G.currentTrick > G.currentRound) {
-              console.log("# All tricks played out, starting new round");
+              log(["# All tricks played out, starting new round"], G);
               ctx.events.setPhase("estimate");
             } else {
-              console.log(
-                "# Phase Play - Trick",
-                G.currentTrick + 1,
-                "of",
-                G.currentRound + 1,
-                "tricks"
+              log(
+                [
+                  "# Phase Play - Trick",
+                  G.currentTrick + 1,
+                  "of",
+                  G.currentRound + 1,
+                  "tricks",
+                ],
+                G
               );
             }
           }
