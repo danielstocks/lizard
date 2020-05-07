@@ -36,3 +36,9 @@ Allow for a user to create a new "game".
 - Allow host to "start game" if there at least 3 players in lobby.
 - If a user leaves the game, the game is forfeit.
 - End game, announce winner.
+
+
+## Task: Refactoring
+
+- TypeScript
+- Update boardgame and replace custom shuffle method
