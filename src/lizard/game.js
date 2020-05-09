@@ -19,6 +19,9 @@ function pluralize(string, i) {
 export const Game = {
   name: "lizard",
 
+  minPlayers: 3,
+  maxPlayers: 6,
+
   setup: (ctx) => {
     return {
       hand: Array(ctx.numPlayers).fill([]),

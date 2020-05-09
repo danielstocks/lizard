@@ -32,12 +32,13 @@ function getEstimate(player, round, currentRound, scoresheet) {
 }
 
 export const ScoreBoard = ({
-  players,
+  numPlayers,
   rounds,
   trumpCard,
   currentRound,
   scoresheet,
 }) => {
+  const players = Array.from(Array(numPlayers).keys());
   const playerScores =
     currentRound > 0
       ? players.map((player) => {
