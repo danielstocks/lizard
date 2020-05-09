@@ -48,7 +48,7 @@ export const Game = {
         const deck = shuffle([...createDeck(), ...addSpecialCards()]);
 
         log(["# ---------------------"], G);
-        log(["# Starting Round:", round], G);
+        log(["# Starting Round:", round + 1], G);
         log(["# Creating & Shuffling and Dealing cards..."], G);
 
         rounds.forEach(() => {

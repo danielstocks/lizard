@@ -10,13 +10,32 @@ export const Board = ({ G, ctx, moves, playerID }) => {
 
   return (
     <div>
-      <section style={{ position: "absolute", left: 10, top: 10 }}>
+         <section
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          top: "50%",
+        }}
+      >
         <PlayArea
           trumpCard={trumpCard}
           plays={G.plays}
           currentRound={G.currentRound}
+          currentTrick={G.currentTrick}
           phase={ctx.phase}
+          numPlayers={ctx.numPlayers}
         />
+      </section>
+
+      <section
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translate(-50%, 0)",
+          bottom: "0px",
+        }}
+      >
         <Player
           phase={ctx.phase}
           playCard={moves.playCard}
@@ -32,7 +51,15 @@ export const Board = ({ G, ctx, moves, playerID }) => {
         />
       </section>
 
-      <section style={{ position: "absolute", top: "10px", right: "10px" }}>
+      <section
+        style={{
+          position: "fixed",
+          overflowY: "scroll",
+          top: "10px",
+          right: "10px",
+          bottom: "0px",
+        }}
+      >
         <ScoreBoard
           trumpCard={G.trumpCard}
           rounds={rounds}

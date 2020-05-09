@@ -17,14 +17,14 @@ export const Player = ({
   currentTrick,
   hand,
   player,
-  numPlayers
+  numPlayers,
 }) => {
   /* Prison Rules */
-  const tricksTobeWon = currentRound + 1;
+  const tricksToBeWon = currentRound + 1;
   const remainingTricksToBeWon =
-    scoresheet[currentRound].reduce((accumlatedEstimate, player) => {
+    Math.abs(scoresheet[currentRound].reduce((accumlatedEstimate, player) => {
       return accumlatedEstimate + player.estimate;
-    }, 0) - tricksTobeWon;
+    }, 0) - tricksToBeWon);
   const lastPlayerToEstimate =
     scoresheet[currentRound].length == numPlayers - 1;
 
@@ -34,48 +34,45 @@ export const Player = ({
     playableCards = getPlayableCards(cardsInPlay, hand[player]);
   }
 
+  console.log(tricksToBeWon, remainingTricksToBeWon)
+
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        marginTop: "20px",
+        boxShadow: "1px 1px 12px #555",
+        padding: "20px",
+        background: "peachpuff",
       }}
     >
-      <div
-        style={{
-          marginBottom: "10px",
-          padding: "20px",
-          background: "peachpuff",
-        }}
-        key={player}
-      >
-        <h4 style={{ margin: 0, padding: 0 }}>
-          Player {player}
-          {currentPlayer == player && "*"}
-        </h4>
-        <div style={{ display: "flex", marginBottom: "10px" }}>
-          {hand[player].map((card, i) => {
-            const cardIsPlayable =
-              phase === "play" &&
-              currentPlayer == player &&
-              isCardPlayable(card, playableCards);
-            return (
-              <div style={{ marginRight: "10px" }} key={card.value + card.suit}>
-                <Card
-                  onClick={() => {
-                    if (cardIsPlayable) {
-                      playCard(i);
-                    }
-                  }}
-                  disabled={!cardIsPlayable}
-                  value={card.value}
-                  suit={card.suit}
-                />
-              </div>
-            );
-          })}
-        </div>
+      <h4 style={{ margin: 0, padding: "0 0 10px", textAlign: "center" }}>
+        Player {player}
+        {currentPlayer == player && "*"}
+      </h4>
+      <div style={{ display: "flex", marginBottom: "10px" }}>
+        {hand[player].map((card, i) => {
+          const cardIsPlayable =
+            phase === "play" &&
+            currentPlayer == player &&
+            isCardPlayable(card, playableCards);
+          return (
+            <div style={{ marginRight: "10px" }} key={card.value + card.suit}>
+              <Card
+                onClick={() => {
+                  if (cardIsPlayable) {
+                    playCard(i);
+                  }
+                }}
+                disabled={!cardIsPlayable}
+                value={card.value}
+                suit={card.suit}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ textAlign: "center" }}>
         {phase == "estimate" &&
           currentPlayer == player &&
           Array.from(Array(currentRound + 2).keys()).map((round) => (
@@ -84,7 +81,7 @@ export const Player = ({
               disabled={
                 lastPlayerToEstimate && remainingTricksToBeWon === round
               }
-              onClick={(e) => {
+              onClick={() => {
                 estimate(round);
               }}
             >

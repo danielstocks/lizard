@@ -1,32 +1,63 @@
 import React from "react";
 import { Card } from "./card";
 
-export const PlayArea = ({ trumpCard, plays, currentRound, phase }) => (
-  <div style={{ display: "flex" }}>
-    <div style={{ marginRight: "10px" }}>
-    <div style={{ fontSize: "10px" }}>trump</div>
-      {trumpCard && <Card value={trumpCard.value} suit={trumpCard.suit} />}
-    </div>
-    <div>
-      <div style={{ display: "flex" }}>
-        {phase === "play" &&
-          plays[currentRound].map((tricks, i) => {
-            return (
-              <div key={i} style={{ marginRight: "5px" }}>
-                <div style={{ fontSize: "10px" }}>trick {i}</div>
-                {tricks.map((card) => {
-                  return (
-                    <Card
-                      value={card.value}
-                      suit={card.suit}
-                      key={card.value + card.suit}
-                    />
-                  );
-                })}
-              </div>
-            );
-          })}
+export const PlayArea = ({
+  trumpCard,
+  plays,
+  currentRound,
+  currentTrick,
+  phase,
+  numPlayers
+}) => {
+  const trick = plays[currentRound][currentTrick];
+  return (
+    <div
+      style={{
+        display: "flex",
+        padding: "20px 40px",
+        background: "darkseagreen",
+      }}
+    >
+      <div style={{ marginRight: "40px" }}>
+        <div
+          style={{
+            fontSize: "10px",
+            fontWeight: "bold",
+            marginBottom: "10px",
+            textAlign: "center",
+          }}
+        >
+          trump
+        </div>
+        {trumpCard && <Card value={trumpCard.value} suit={trumpCard.suit} />}
+      </div>
+      <div>
+        {phase === "play" && (
+          <div style={{ width: 90 * numPlayers + "px"}}>
+            <div
+              style={{
+                fontSize: "10px",
+                fontWeight: "bold",
+                marginBottom: "10px",
+                textAlign: "center",
+              }}
+            >
+              trick {currentTrick}
+            </div>
+            <div style={{ display: "flex" }}>
+              {trick.map((card) => {
+                return (
+                  <Card
+                    value={card.value}
+                    suit={card.suit}
+                    key={card.value + card.suit}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
