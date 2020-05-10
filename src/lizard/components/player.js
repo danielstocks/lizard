@@ -21,12 +21,13 @@ export const Player = ({
 }) => {
   /* Prison Rules */
   const tricksToBeWon = currentRound + 1;
-  const remainingTricksToBeWon =
-    Math.abs(scoresheet[currentRound].reduce((accumlatedEstimate, player) => {
+  const tricksTaken =
+    scoresheet[currentRound].reduce((accumlatedEstimate, player) => {
       return accumlatedEstimate + player.estimate;
-    }, 0) - tricksToBeWon);
+    }, 0);
   const lastPlayerToEstimate =
     scoresheet[currentRound].length == numPlayers - 1;
+  const remainingTricksToBeWon = tricksToBeWon - tricksTaken
 
   let playableCards = [];
   if (phase === "play" && currentPlayer == player) {
@@ -34,15 +35,13 @@ export const Player = ({
     playableCards = getPlayableCards(cardsInPlay, hand[player]);
   }
 
-  console.log(tricksToBeWon, remainingTricksToBeWon)
-
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         boxShadow: "1px 1px 12px #555",
-        padding: "20px",
+        padding: "20px 40px",
         background: "peachpuff",
       }}
     >
@@ -57,7 +56,7 @@ export const Player = ({
             currentPlayer == player &&
             isCardPlayable(card, playableCards);
           return (
-            <div style={{ marginRight: "10px" }} key={card.value + card.suit}>
+            <div key={card.value + card.suit}>
               <Card
                 onClick={() => {
                   if (cardIsPlayable) {

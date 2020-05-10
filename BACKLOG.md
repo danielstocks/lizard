@@ -2,7 +2,7 @@
 
 
 ## Task: Game UX/UI
-- Render opponents around the table.
+- Render opponents around the table (& highlight current turn)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 
@@ -12,6 +12,7 @@
 - Implement correct turn order (eg shift 1 pos to right efter each new round)
   - In estimation phase
   - In play phase
+- Write tests: prison rules.
 - Implement "Secret State" - player hands.
 - Deal with lizard as trump card
 - Deal with snake as trump card

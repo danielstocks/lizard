@@ -83,7 +83,7 @@ export const Game = {
       onBegin: (G, ctx) => {
         log(
           [
-            "# Phase Play - Trick",
+            "# Begin Play - Trick",
             G.currentTrick + 1,
             "of",
             G.currentRound + 1,
@@ -144,7 +144,7 @@ export const Game = {
             } else {
               log(
                 [
-                  "# Phase Play - Trick",
+                  "# Trick",
                   G.currentTrick + 1,
                   "of",
                   G.currentRound + 1,

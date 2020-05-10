@@ -18,7 +18,7 @@ export const PlayArea = ({
         background: "darkseagreen",
       }}
     >
-      <div style={{ marginRight: "40px" }}>
+      <div>
         <div
           style={{
             fontSize: "10px",
@@ -33,7 +33,7 @@ export const PlayArea = ({
       </div>
       <div>
         {phase === "play" && (
-          <div style={{ width: 90 * numPlayers + "px"}}>
+          <div style={{ width: 90 * numPlayers + "px", marginLeft: "40px"}}>
             <div
               style={{
                 fontSize: "10px",
