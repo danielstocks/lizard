@@ -34,6 +34,7 @@ Allow for a user to create a new "game".
 
 
 ## Task: Refactoring
+- Refactor components/player, move game logic to core.
 - Refactor game.js - extract pure functions to core.
 - Update boardgame and replace home-grown shuffle
 - Consider TypeScript

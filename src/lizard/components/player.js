@@ -27,9 +27,6 @@ export const Player = ({
       return accumlatedEstimate + player.estimate;
     }, 0);
 
-  console.log(tricksToBeWon, tricksTaken);
-  console.log("prison rules", scoresheet[currentRound]);
-
   const lastPlayerToEstimate =
     scoresheet[currentRound].filter((item) => item !== null).length ==
     numPlayers - 1;
