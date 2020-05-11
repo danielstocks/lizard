@@ -13,8 +13,8 @@
     "jest": "^25.4.0"
   },
   "scripts": {
-    "start-client": "parcel src/index.html",
-    "start-server": "node -r esm src/server.js",
+    "client": "parcel src/index.html",
+    "server": "node -r esm src/server.js",
     "test": "jest"
   }
 }

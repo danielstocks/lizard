@@ -1,5 +1,5 @@
 import React from "react";
-import { suitSymbols } from "../deck";
+import { suitSymbols } from "../core/deck";
 
 function displayValue(suit, value) {
   if (suit === "lizard") {

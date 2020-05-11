@@ -1,4 +1,4 @@
-import { getPlayableCards } from "../play";
+import { getPlayableCards } from "../core/play";
 import { Card } from "./card";
 import React from "react";
 
@@ -21,17 +21,27 @@ export const Player = ({
 }) => {
   /* Prison Rules */
   const tricksToBeWon = currentRound + 1;
-  const tricksTaken =
-    scoresheet[currentRound].reduce((accumlatedEstimate, player) => {
+  const tricksTaken = scoresheet[currentRound]
+    .filter((item) => item !== null)
+    .reduce((accumlatedEstimate, player) => {
       return accumlatedEstimate + player.estimate;
     }, 0);
+
+  console.log(tricksToBeWon, tricksTaken);
+  console.log("prison rules", scoresheet[currentRound]);
+
   const lastPlayerToEstimate =
-    scoresheet[currentRound].length == numPlayers - 1;
-  const remainingTricksToBeWon = tricksToBeWon - tricksTaken
+    scoresheet[currentRound].filter((item) => item !== null).length ==
+    numPlayers - 1;
+
+  const remainingTricksToBeWon = tricksToBeWon - tricksTaken;
 
   let playableCards = [];
+
   if (phase === "play" && currentPlayer == player) {
-    const cardsInPlay = plays[currentRound][currentTrick];
+    const cardsInPlay = plays[currentRound][currentTrick].map(
+      (play) => play.card
+    );
     playableCards = getPlayableCards(cardsInPlay, hand[player]);
   }
 
@@ -71,7 +81,7 @@ export const Player = ({
           );
         })}
       </div>
-      <div style={{ textAlign: "center" }}>
+      <div style={{ textAlign: "center" }}>
         {phase == "estimate" &&
           currentPlayer == player &&
           Array.from(Array(currentRound + 2).keys()).map((round) => (

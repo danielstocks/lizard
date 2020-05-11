@@ -1,6 +1,10 @@
-import { createDeck, addSpecialCards, shuffle, cardToString } from "./deck";
-import { TurnOrder } from "boardgame.io/core";
-import { getWinningCard } from "./trick";
+import {
+  createDeck,
+  addSpecialCards,
+  shuffle,
+  cardToString,
+} from "./core/deck";
+import { getWinningPlay } from "./core/trick";
 
 function log(message, G) {
   G.log.push({
@@ -65,6 +69,23 @@ export const Game = {
         G.currentTrick = 0;
         G.plays.push(Array(G.currentRound + 1).fill([]));
       },
+      endIf: (G, ctx) => {
+        // For some reason onBegin is called before endIf, so check if
+        // current round has been initialized yet.
+        if (!G.scoresheet[G.currentRound]) {
+          return false;
+        }
+
+        // If everyone has made their estimate we can move to next phase
+        if (
+          G.scoresheet[G.currentRound].filter((item) => item !== null)
+            .length === ctx.numPlayers
+        ) {
+          return true;
+        }
+        // Else keep estimating
+        return false;
+      },
       moves: {
         estimate: function (G, ctx, estimate) {
           log(["# Player", ctx.currentPlayer, "guessed", estimate], G);
@@ -72,7 +93,14 @@ export const Game = {
         },
       },
       turn: {
-        order: TurnOrder.ONCE,
+        order: {
+          first: (G, ctx) => {
+            return G.currentRound % ctx.numPlayers;
+          },
+          next: (G, ctx) => {
+            return (ctx.playOrderPos + 1) % ctx.playOrder.length;
+          },
+        },
         moveLimit: 1,
       },
       start: true,
@@ -93,10 +121,21 @@ export const Game = {
         );
       },
 
+      turn: {
+        order: {
+          first: (G, ctx) => {
+            return G.currentRound % ctx.numPlayers;
+          },
+          next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.playOrder.length,
+        },
+      },
+
       onEnd: (G, ctx) => {
         const players = Array.from(Array(ctx.numPlayers).keys());
         const winners = G.plays[G.currentRound].map((trick) => {
-          return trick.indexOf(getWinningCard(trick));
+          return trick.indexOf(
+            getWinningPlay(trick, G.trumpCard[G.currentRound].suit)
+          );
         });
 
         players.forEach((player) => {
@@ -121,18 +160,29 @@ export const Game = {
         playCard: function (G, ctx, cardIndex) {
           const card = G.hand[ctx.currentPlayer].splice(cardIndex, 1)[0];
           log(["# Player", ctx.currentPlayer, "played", cardToString(card)], G);
-          G.plays[G.currentRound][G.currentTrick].push(card);
+          G.plays[G.currentRound][G.currentTrick].push({
+            card,
+            player: ctx.currentPlayer,
+          });
 
           // Start next trick?
           if (
             G.plays[G.currentRound][G.currentTrick].length === ctx.numPlayers
           ) {
             // Who won previous trick?
-            const winningCard = getWinningCard(
+            const winningPlay = getWinningPlay(
               G.plays[G.currentRound][G.currentTrick],
               G.trumpCard[G.currentRound].suit
             );
-            log(["# Winning Card:", cardToString(winningCard)], G);
+            log(
+              [
+                "# Winning Card:",
+                cardToString(winningPlay.card),
+                "played by player",
+                winningPlay.player,
+              ],
+              G
+            );
 
             // Start next trick
             G.currentTrick += 1;
@@ -152,12 +202,13 @@ export const Game = {
                 ],
                 G
               );
+
+              ctx.events.endTurn({ next: winningPlay.player });
             }
+          } else {
+            ctx.events.endTurn();
           }
         },
-      },
-      turn: {
-        moveLimit: 1,
       },
     },
   },

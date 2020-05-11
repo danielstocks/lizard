@@ -1,17 +1,22 @@
 # Project Backlog
 
 
+## Known Bugs
+No regressions or bugs currently identified.
+
+
 ## Task: Game UX/UI
+- Elevate playable card on hover
+- After trick completed:
+  - Elevate and zoom winning card
+  - Dim losing cards
+  - Pause for 3 seconds before starting next trick.
 - Render opponents around the table (& highlight current turn)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 
 
 ## Task: Core Game
-- Winner of previous trick, starts next trick.
-- Implement correct turn order (eg shift 1 pos to right efter each new round)
-  - In estimation phase
-  - In play phase
 - Write tests: prison rules.
 - Implement "Secret State" - player hands.
 - Deal with lizard as trump card
@@ -29,5 +34,6 @@ Allow for a user to create a new "game".
 
 
 ## Task: Refactoring
-- TypeScript
-- Update boardgame and replace custom shuffle method
+- Refactor game.js - extract pure functions to core.
+- Update boardgame and replace home-grown shuffle
+- Consider TypeScript

@@ -1,6 +1,6 @@
 import React from "react";
-import { suitSymbols } from "../deck";
-import { getPlayerAcummulatedScore } from "../score";
+import { suitSymbols } from "../core/deck";
+import { getPlayerAcummulatedScore } from "../core/score";
 
 function getActual(player, round, currentRound, scoresheet) {
   if (currentRound < round) {
@@ -36,6 +36,7 @@ export const ScoreBoard = ({
   rounds,
   trumpCard,
   currentRound,
+  currentPlayer,
   scoresheet,
 }) => {
   const players = Array.from(Array(numPlayers).keys());
@@ -64,7 +65,13 @@ export const ScoreBoard = ({
         <tr style={{ background: "white" }}>
           <th>Round</th>
           {players.map((player) => (
-            <th colSpan="2" key={"th" + player}>
+            <th
+              style={{
+                background: currentPlayer == player ? "yellow" : "white",
+              }}
+              colSpan="2"
+              key={"th" + player}
+            >
               Player {player}
             </th>
           ))}

@@ -63,6 +63,7 @@ export const Board = ({ G, ctx, moves, playerID }) => {
         <ScoreBoard
           trumpCard={G.trumpCard}
           rounds={rounds}
+          currentPlayer={ctx.currentPlayer}
           numPlayers={ctx.numPlayers}
           scoresheet={G.scoresheet}
           currentRound={G.currentRound}

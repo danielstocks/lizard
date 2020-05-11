@@ -8,14 +8,14 @@ This project is WIP and this README will be updated once the game is in a fully 
 
 ## Development
 
-### Run client
+### Start client
 
-`npm run start-client`
+`npm run client`
 
 
-### Run server
+### Start server
 
-`npm run start-server`
+`npm run server`
 
 
 ### Run Tests
