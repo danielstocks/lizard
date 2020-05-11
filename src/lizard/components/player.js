@@ -63,13 +63,19 @@ export const Player = ({
             currentPlayer == player &&
             isCardPlayable(card, playableCards);
           return (
-            <div key={card.value + card.suit}>
+            <div
+              key={card.value + card.suit}
+              style={{
+                marginRight: i + 1 !== hand[player].length ? "8px" : "0px",
+              }}
+            >
               <Card
                 onClick={() => {
                   if (cardIsPlayable) {
                     playCard(i);
                   }
                 }}
+                playable={cardIsPlayable}
                 disabled={!cardIsPlayable}
                 value={card.value}
                 suit={card.suit}

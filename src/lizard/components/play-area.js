@@ -45,13 +45,20 @@ export const PlayArea = ({
               trick {currentTrick}
             </div>
             <div style={{ display: "flex" }}>
-              {trick.map(({ card }) => {
+              {trick.map(({ card }, i ) => {
                 return (
+                  <div
+                  key={card.value + card.suit}
+                  style={{
+                    marginRight: i + 1 !== trick.length ? "8px" : "0px",
+                  }}
+                >
                   <Card
                     value={card.value}
                     suit={card.suit}
                     key={card.value + card.suit}
                   />
+                  </div>
                 );
               })}
             </div>

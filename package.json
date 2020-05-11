@@ -4,7 +4,8 @@
     "boardgame.io": "^0.39.7",
     "esm": "^3.2.25",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "react-fela": "^11.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

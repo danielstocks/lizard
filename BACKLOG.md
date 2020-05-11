@@ -6,9 +6,8 @@ No regressions or bugs currently identified.
 
 
 ## Task: Game UX/UI
-- Elevate playable card on hover
 - After trick completed:
-  - Elevate and zoom winning card
+  - Elevate spin 360, and zoom winning card
   - Dim losing cards
   - Pause for 3 seconds before starting next trick.
 - Render opponents around the table (& highlight current turn)
