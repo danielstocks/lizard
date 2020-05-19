@@ -3,8 +3,8 @@ import { Client } from "boardgame.io/react";
 import { SocketIO } from "boardgame.io/multiplayer";
 import { Game, Board } from "./lizard";
 import { RendererProvider } from "react-fela";
-import { createRenderer } from 'fela'
-const renderer = createRenderer()
+import { createRenderer } from "fela";
+const renderer = createRenderer();
 
 const Lizard = Client({
   game: Game,
@@ -29,10 +29,12 @@ const App = () => {
   }
   return (
     <RendererProvider renderer={renderer}>
-      <p>Play as</p>
-      <button onClick={() => setPlayerID("0")}>Player 0</button>
-      <button onClick={() => setPlayerID("1")}>Player 1</button>
-      <button onClick={() => setPlayerID("2")}>Player 2</button>
+      <div>
+        <p>Play as</p>
+        <button onClick={() => setPlayerID("0")}>Player 0</button>
+        <button onClick={() => setPlayerID("1")}>Player 1</button>
+        <button onClick={() => setPlayerID("2")}>Player 2</button>
+      </div>
     </RendererProvider>
   );
 };

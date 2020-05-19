@@ -5,25 +5,21 @@
 No regressions or bugs currently identified.
 
 
-## Task: Game UX/UI
-- After trick completed:
-  - Elevate spin 360, and zoom winning card
-  - Dim losing cards
-  - Pause for 3 seconds before starting next trick.
+## Epic: Game UX/UI
 - Render opponents around the table (& highlight current turn)
+- Animate cards being dealt (fly-out)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 
 
-## Task: Core Game
-- Write tests: prison rules.
+## Epic: Core Game
 - Implement "Secret State" - player hands.
 - Deal with lizard as trump card
 - Deal with snake as trump card
 - Q: if lizard is played first, does the second card dictate forced suit?
 
 
-## Task: Game Lobby
+## Epic: Game Lobby
 Allow for a user to create a new "game".
 - Creates a shareable (public) URL to allow players to connect.
 - Up to 6 players can connect, if game is full show message: "lobby is full".
@@ -32,7 +28,7 @@ Allow for a user to create a new "game".
 - Allow host to "start game" if there at least 3 players in lobby.
 
 
-## Task: Refactoring
+## Epic: Refactoring
 - Refactor components/player, move game logic to core.
 - Refactor game.js - extract pure functions to core.
 - Update boardgame and replace home-grown shuffle
