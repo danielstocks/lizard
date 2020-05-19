@@ -1,12 +1,12 @@
 # Project Backlog
 
+Ongoing tasks highlighted *in bold*
 
 ## Known Bugs
 No regressions or bugs currently identified.
 
-
 ## Epic: Game UX/UI
-- Render opponents around the table (& highlight current turn)
+- *Render opponents around the table (& highlight current turn)*
 - Animate cards being dealt (fly-out)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
