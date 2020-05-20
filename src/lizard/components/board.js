@@ -4,23 +4,26 @@ import { Console } from "./console";
 import { PlayArea } from "./play-area";
 import { Player } from "./player";
 
+
 export const Board = ({ G, ctx, moves, playerID }) => {
   const rounds = Array.from(Array(G.numberOfRounds).keys());
   const trumpCard = G.trumpCard[G.currentRound];
 
   return (
     <div>
-         <section
+      <section
         style={{
           position: "absolute",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          top: "50%",
+          top: "50%"
         }}
       >
         <PlayArea
+          playerID={playerID}
           trumpCard={trumpCard}
           plays={G.plays}
+          currentPlayer={ctx.currentPlayer}
           currentRound={G.currentRound}
           currentTrick={G.currentTrick}
           phase={ctx.phase}

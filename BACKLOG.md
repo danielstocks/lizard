@@ -6,8 +6,8 @@ Ongoing tasks highlighted *in bold*
 No regressions or bugs currently identified.
 
 ## Epic: Game UX/UI
-- *Render opponents around the table (& highlight current turn)*
 - Animate cards being dealt (fly-out)
+- Animate trump card being turned (flip-3d)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 

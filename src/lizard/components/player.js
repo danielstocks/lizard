@@ -42,6 +42,8 @@ export const Player = ({
     playableCards = getPlayableCards(cardsInPlay, hand[player]);
   }
 
+  const isPlayerTurn = currentPlayer == player;
+
   return (
     <div
       style={{
@@ -49,12 +51,12 @@ export const Player = ({
         flexDirection: "column",
         boxShadow: "1px 1px 12px #555",
         padding: "20px 40px",
-        background: "peachpuff",
+        background: isPlayerTurn ? "peachpuff" : "white",
       }}
     >
       <h4 style={{ margin: 0, padding: "0 0 10px", textAlign: "center" }}>
         Player {player}
-        {currentPlayer == player && "*"}
+
       </h4>
       <div style={{ display: "flex", marginBottom: "10px" }}>
         {hand[player].map((card, i) => {
