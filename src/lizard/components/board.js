@@ -1,56 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ScoreBoard } from "./scoreboard";
 import { Console } from "./console";
 import { PlayArea } from "./play-area";
-import { Player } from "./player";
-
 
 export const Board = ({ G, ctx, moves, playerID }) => {
   const rounds = Array.from(Array(G.numberOfRounds).keys());
   const trumpCard = G.trumpCard[G.currentRound];
 
+  
+  useEffect(() => {
+    document.title = `Lizard - Player ${playerID}`;
+  });
+
   return (
     <div>
-      <section
-        style={{
-          position: "absolute",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          top: "50%"
-        }}
-      >
+      <section>
         <PlayArea
           playerID={playerID}
           trumpCard={trumpCard}
-          plays={G.plays}
           currentPlayer={ctx.currentPlayer}
           currentRound={G.currentRound}
           currentTrick={G.currentTrick}
           phase={ctx.phase}
           numPlayers={ctx.numPlayers}
-        />
-      </section>
-
-      <section
-        style={{
-          position: "absolute",
-          left: "50%",
-          transform: "translate(-50%, 0)",
-          bottom: "0px",
-        }}
-      >
-        <Player
-          phase={ctx.phase}
           playCard={moves.playCard}
           estimate={moves.estimate}
-          currentPlayer={ctx.currentPlayer}
-          currentRound={G.currentRound}
-          currentTrick={G.currentTrick}
-          scoresheet={G.scoresheet}
-          plays={G.plays}
-          player={playerID}
           hand={G.hand}
-          numPlayers={ctx.numPlayers}
+          plays={G.plays}
+          scoresheet={G.scoresheet}
         />
       </section>
 

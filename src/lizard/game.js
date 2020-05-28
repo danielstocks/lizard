@@ -108,7 +108,7 @@ export const Game = {
     },
 
     play: {
-      onBegin: (G, ctx) => {
+      onBegin: (G) => {
         log(
           [
             "# Begin Play - Trick",

@@ -5,17 +5,21 @@ Ongoing tasks highlighted *in bold*
 ## Known Bugs
 No regressions or bugs currently identified.
 
+
 ## Epic: Game UX/UI
-- Animate cards being dealt (fly-out)
+- *Animate cards being dealt (fly-out)*
+    - Animate to appropriate location for currentPlayer.
+- Animate cards in place for player
 - Animate trump card being turned (flip-3d)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
+- Add sound effects (shuffle, deal, play card)
 
 
 ## Epic: Core Game
 - Implement "Secret State" - player hands.
-- Deal with lizard as trump card
-- Deal with snake as trump card
+- Deal with lizard as trump card  => Player decides trump
+- Deal with snake as trump card => No trum card
 - Q: if lizard is played first, does the second card dictate forced suit?
 
 

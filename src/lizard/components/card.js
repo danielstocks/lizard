@@ -1,8 +1,9 @@
 import React from "react";
-import { createComponentWithProxy } from 'react-fela'
+import { createComponentWithProxy } from "react-fela";
+import { Transition } from "react-transition-group";
 import { suitSymbols } from "../core/deck";
 
-const Div = createComponentWithProxy({}, 'div')
+const Div = createComponentWithProxy({}, "div");
 
 const transition = "200ms cubic-bezier(0.23, 1, 0.32, 1) 0s";
 
@@ -29,43 +30,121 @@ function getSuitColor(suit) {
   return "black";
 }
 
-export const Card = ({ value, disabled, playable = false, suit, onClick }) => {
+export const Card = ({
+  faceDown,
+  value,
+  disabled,
+  playable = false,
+  suit,
+  onClick,
+}) => {
   return (
-    <Div
-      onClick={onClick}
-      extend={{
-        color: getSuitColor(suit),
-        padding: "12px",
-        margin: "2px",
-        background: "#fff",
-        height: "90px",
-        borderRadius: "3px",
-        display: "flex",
-        textAlign: "center",
-        alignItems: "center",
-        flexDirection: "column",
-        justifyContent: "center",
-        lineHeight: "40px",
-        boxShadow: "1px 1px 12px #555",
-        width: "60px",
-        fontSize: "40px",
-        border: "1px solid #eee",
-        fontFamily: "serif",
+    <Transition in={faceDown} timeout={1000}>
+      {(state) => {
+        let rotation = (function () {
+          if (state == "entering") {
+            return "180deg";
+          }
+          if (state == "entered") {
+            return "180deg";
+          }
+          if (state == "exiting") {
+            return "0deg";
+          }
+          if (state == "exited") {
+            return "0deg";
+          }
+        })();
 
-        ...(disabled && { opacity: 0.5 }),
-        ...(!disabled &&
-          playable && {
-            transition: `transform ${transition}, box-shadow ${transition}`,
-            ":hover": {
-              cursor: "pointer",
-              transform: "translateY(-8px) scale(1.02)",
-              boxShadow: "1px 1px 16px #555",
-            },
-          }),
+        return (
+          <Div
+            onClick={onClick}
+            extend={{
+              transition: "1s",
+              transformStyle: "preserve-3d",
+              fontFamily: "serif",
+              transform: `rotateY(${rotation})`,
+              ...(disabled && { opacity: 0.8 }),
+            }}
+          >
+            <Div
+              extend={{
+                height: "150px",
+                width: "105px",
+                position: "relative",
+              }}
+            >
+              <Div
+                extend={{
+                  border: "1px solid #aaa",
+                  borderRadius: "6px",
+                  height: "150px",
+                  width: "105px",
+                  lineHeight: "40px",
+                  boxShadow: "0px 0px 1px rgba(100,100,100,0.3)",
+                  zIndex: "2",
+                  padding: "12px",
+                  boxSizing: "border-box",
+                  transition: "1s",
+                  transformStyle: "preserve-3d",
+                  transform: `rotateY(${rotation})`,
+                  backfaceVisibility: "hidden",
+                  fontSize: "40px",
+                  position: "absolute",
+                  color: getSuitColor(suit),
+                  background: "#fff",
+                  justifyContent: "center",
+                  display: "flex",
+                  textAlign: "center",
+                  alignItems: "center",
+                  flexDirection: "column",
+                  top: "0",
+                  left: "0",
+
+                  ...(!disabled &&
+                    playable && {
+                      transition: `transform ${transition}, box-shadow ${transition}`,
+                      ":hover": {
+                        cursor: "pointer",
+                        transform: "translateY(-4px) scale(1.02)",
+                        boxShadow: "1px 1px 8px rgba(100,100,100,0.5)",
+                      },
+                    }),
+                }}
+              >
+                <div style={{ fontSize: "40px" }}>
+                  {displayValue(suit, value)}
+                </div>
+                <div>{suitSymbols[suit]}</div>
+              </Div>
+              <Div
+                extend={{
+                  border: "2px solid #fff",
+                  boxShadow: "0px 0px 1px rgba(100,100,100,0.1)",
+                  boxSizing: "border-box",
+                  borderRadius: "6px",
+                  backfaceVisibility: "hidden",
+                  position: "absolute",
+                  transition: "1s",
+                  transformStyle: "preserve-3d",
+                  transform: `rotateY(${
+                    rotation === "0deg" ? "180deg" : "0deg"
+                  })`,
+                  top: "0",
+                  left: "0",
+                  height: "150px",
+                  width: "105px",
+                  background: `linear-gradient(115deg, transparent 75%, rgba(255,255,255,.8) 75%) 0 0, 
+              linear-gradient(245deg, transparent 75%, rgba(255,255,255,.8) 75%) 0 0,
+              linear-gradient(115deg, transparent 75%, rgba(255,255,255,.8) 75%) 7px -15px,
+              linear-gradient(245deg, transparent 75%, rgba(255,255,255,.8) 75%) 7px -15px, #36c`,
+                  backgroundSize: "15px 30px",
+                }}
+              ></Div>
+            </Div>
+          </Div>
+        );
       }}
-    >
-      <div style={{ fontSize: "40px" }}>{displayValue(suit, value)}</div>
-      <div>{suitSymbols[suit]}</div>
-    </Div>
+    </Transition>
   );
 };

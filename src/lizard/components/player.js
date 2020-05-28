@@ -51,14 +51,14 @@ export const Player = ({
         flexDirection: "column",
         boxShadow: "1px 1px 12px #555",
         padding: "20px 40px",
-        background: isPlayerTurn ? "peachpuff" : "white",
+        background: isPlayerTurn ? "peachpuff" : "darkseagreen",
       }}
     >
       <h4 style={{ margin: 0, padding: "0 0 10px", textAlign: "center" }}>
         Player {player}
-
       </h4>
-      <div style={{ display: "flex", marginBottom: "10px" }}>
+
+      <div style={{ display: "flex", marginBottom: "10px", height: "150px" }}>
         {hand[player].map((card, i) => {
           const cardIsPlayable =
             phase === "play" &&
@@ -86,6 +86,7 @@ export const Player = ({
           );
         })}
       </div>
+
       <div style={{ textAlign: "center" }}>
         {phase == "estimate" &&
           currentPlayer == player &&
