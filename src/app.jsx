@@ -11,7 +11,7 @@ const Lizard = Client({
   board: Board,
   multiplayer: SocketIO({ server: "localhost:8000" }),
   debug: false,
-  numPlayers: 5,
+  numPlayers: 3,
 });
 
 const urlParams = new URLSearchParams(window.location.search);

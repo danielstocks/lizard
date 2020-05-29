@@ -16,9 +16,9 @@ export const Board = ({ G, ctx, moves, playerID }) => {
     <div>
       <section>
         <PlayArea
-          playerID={playerID}
+          player={parseInt(playerID)}
           trumpCard={trumpCard}
-          currentPlayer={ctx.currentPlayer}
+          currentPlayer={parseInt(ctx.currentPlayer)}
           currentRound={G.currentRound}
           currentTrick={G.currentTrick}
           phase={ctx.phase}

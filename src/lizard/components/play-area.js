@@ -6,7 +6,7 @@ export const PlayArea = ({
   trumpCard,
   plays,
   currentRound,
-  playerID,
+  player,
   currentPlayer,
   currentTrick,
   phase,
@@ -27,7 +27,7 @@ export const PlayArea = ({
         scoresheet={scoresheet}
         estimate={estimate}
         plays={plays}
-        playerID={playerID}
+        player={player}
         phase={phase}
         hand={hand}
         playCard={playCard}
@@ -53,7 +53,7 @@ export const PlayArea = ({
           >
             <div style={{ position: "absolute", left: 0, top: 0 }}>
               {trumpCard && (
-                <Card faceDown value={trumpCard.value}  suit={trumpCard.suit} />
+                <Card faceDown value={trumpCard.value} suit={trumpCard.suit} />
               )}
             </div>
           </div>

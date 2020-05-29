@@ -60,8 +60,8 @@ function isCardPlayable(card, playableCards) {
 
 export const Opponents = ({
   currentPlayer,
+  player,
   plays,
-  playerID,
   numPlayers,
   hand,
   estimate,
@@ -76,16 +76,14 @@ export const Opponents = ({
   // Remove PlayerID from list of opponents
   // and render opponents in "correct" order
   const players = Array.from(Array(numPlayers).keys());
-  const index = players.indexOf(parseInt(playerID));
+  const index = players.indexOf(player);
   const end = players.slice(index).slice(1);
   const begin = players.slice(0, index);
   const opponents = end.concat(begin);
 
-  // TODO: need to rename this
-  // currentPlayer = player whos turn it is
-  // player = player who is playing the game.
-  const currentPlayerID = parseInt(playerID);
-  const currentPlayerHand = hand[currentPlayerID];
+  // Shortcuts
+  const isPlayerTurn = currentPlayer == player;
+  const playerHand = hand[player];
 
   // estimation & prison rules
   const tricksToBeWon = currentRound + 1;
@@ -101,27 +99,27 @@ export const Opponents = ({
 
   // play phase
   let playableCards = [];
-  const isPlayerTurn = currentPlayer == playerID;
+
   if (phase === "play" && isPlayerTurn) {
     const cardsInPlay = plays[currentRound][currentTrick].map(
       (play) => play.card
     );
-    playableCards = getPlayableCards(cardsInPlay, hand[playerID]);
+    playableCards = getPlayableCards(cardsInPlay, playerHand);
   }
 
   return (
     <Container size={SIZE}>
-      {currentPlayerHand.map((card, i) => {
+      {playerHand.map((card, i) => {
         const delay =
           DELAY * numPlayers * (i + 1) +
-          DELAY * (currentPlayerID + 1) -
+          DELAY * (player + 1) -
           (DELAY * numPlayers + DELAY);
 
         const animationDelay = delay + "ms";
 
-        // center cards 
-        const adjust = (CARD_WIDTH / 4) * currentPlayerHand.length - CARD_WIDTH / 4;
-        const x = CARD_WIDTH / 2 * (i + 1) - CARD_WIDTH / 2 - adjust;
+        // center cards
+        const adjust = (CARD_WIDTH / 4) * playerHand.length - CARD_WIDTH / 4;
+        const x = (CARD_WIDTH / 2) * (i + 1) - CARD_WIDTH / 2 - adjust;
 
         const cardIsPlayable =
           phase === "play" &&
@@ -135,7 +133,7 @@ export const Opponents = ({
               position: "absolute",
               top: "50%",
               left: "50%",
-              transform: "translate(-50%, -50%)"
+              transform: "translate(-50%, -50%)",
             }}
           >
             {phase == "estimate" && (
@@ -181,7 +179,7 @@ export const Opponents = ({
         );
       })}
 
-      {phase == "estimate" && currentPlayer == currentPlayerID && (
+      {phase == "estimate" && isPlayerTurn && (
         <Div
           extend={{
             width: "100%",
@@ -208,27 +206,27 @@ export const Opponents = ({
         </Div>
       )}
 
-      {opponents.map((player, i) => {
-        const active = currentPlayer == player;
-        const spread = 180 / 3;
+      {opponents.map((opponent, i) => {
+        const active = currentPlayer == opponent;
+        const spread = 180 / (numPlayers - 2);
         const degrees = 180 + i * spread;
         const angle = (degrees * Math.PI) / 180;
         let x = Math.cos(angle) * (SIZE / 2);
         let y = Math.sin(angle) * (SIZE / 2);
 
         return (
-          <React.Fragment key={"player" + player}>
-            {hand[player].map((card, n) => {
+          <React.Fragment key={"opponent" + opponent}>
+            {hand[opponent].map((card, n) => {
               const delay =
                 DELAY * numPlayers * (n + 1) +
-                DELAY * (player + 1) -
+                DELAY * (opponent + 1) -
                 (DELAY * numPlayers + DELAY);
 
               const animationDelay = delay + "ms";
 
               return (
                 <Div
-                  key={"card" + player + n}
+                  key={"card" + opponent + n}
                   extend={{
                     position: "absolute",
                     top: "50%",
@@ -285,7 +283,7 @@ export const Opponents = ({
                   fontSize: "12px",
                 }}
               >
-                Player {player}
+                Player {opponent}
               </Div>
             </Opponent>
           </React.Fragment>
