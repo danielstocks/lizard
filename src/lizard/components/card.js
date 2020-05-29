@@ -51,10 +51,10 @@ export const Card = ({
             return "180deg";
           }
           if (state == "exiting") {
-            return "0deg";
+            return "360deg";
           }
           if (state == "exited") {
-            return "0deg";
+            return "360deg";
           }
         })();
 
@@ -62,10 +62,7 @@ export const Card = ({
           <Div
             onClick={onClick}
             extend={{
-              transition: "1s",
-              transformStyle: "preserve-3d",
               fontFamily: "serif",
-              transform: `rotateY(${rotation})`,
             }}
           >
             <Div
@@ -73,6 +70,7 @@ export const Card = ({
                 height: "150px",
                 width: "105px",
                 position: "relative",
+                perspective: "30rem",
               }}
             >
               <Div
@@ -85,8 +83,7 @@ export const Card = ({
                   boxShadow: "0px 0px 1px rgba(100,100,100,0.3)",
                   zIndex: "2",
                   boxSizing: "border-box",
-                  transition: "1s",
-                  transformStyle: "preserve-3d",
+                  transition: "transform 1s",
                   transform: `rotateY(${rotation})`,
                   backfaceVisibility: "hidden",
                   fontSize: "28px",
@@ -122,7 +119,6 @@ export const Card = ({
                   <div>{displayValue(suit, value)}</div>
                   <div>{suitSymbols[suit]}</div>
                 </Div>
-
               </Div>
               <Div
                 extend={{
@@ -132,10 +128,9 @@ export const Card = ({
                   borderRadius: "6px",
                   backfaceVisibility: "hidden",
                   position: "absolute",
-                  transition: "1s",
-                  transformStyle: "preserve-3d",
+                  transition: "transform 1s",
                   transform: `rotateY(${
-                    rotation === "0deg" ? "180deg" : "0deg"
+                    rotation === "360deg" ? "180deg" : "360deg"
                   })`,
                   top: "0",
                   left: "0",

@@ -7,7 +7,6 @@ N/A
 
 
 ## Epic: Game UX/UI
-- *Animate trump card being turned (flip-3d)*
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 - Add sound effects (shuffle, deal, play card)

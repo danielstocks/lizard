@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "./card";
 import { Opponents } from "./opponents";
 
@@ -16,6 +16,15 @@ export const PlayArea = ({
   scoresheet,
   hand,
 }) => {
+  const [trumpCardFlipped, flipTrumpCard] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      flipTrumpCard(true);
+    }, 100 * currentRound * numPlayers + 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const trick = plays[currentRound][currentTrick];
   return (
     <div>
@@ -53,7 +62,11 @@ export const PlayArea = ({
           >
             <div style={{ position: "absolute", left: 0, top: 0 }}>
               {trumpCard && (
-                <Card faceDown value={trumpCard.value} suit={trumpCard.suit} />
+                <Card
+                  faceDown={!trumpCardFlipped}
+                  value={trumpCard.value}
+                  suit={trumpCard.suit}
+                />
               )}
             </div>
           </div>
