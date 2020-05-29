@@ -1,7 +1,8 @@
 import { useFela, createComponent } from "react-fela";
 import React from "react";
 import { Card, CARD_WIDTH } from "./card";
-import { getPlayableCards } from "../core/play";
+import { getPlayableCards, isCardPlayable } from "../core/play";
+import { getRemainingTricksToBeWon } from "../core/estimate";
 
 const translateKeyframe = ({ x, y }) => ({
   "0%": { transform: `translate(0px, 0px)` },
@@ -52,11 +53,17 @@ const opponent = ({ size, pos, players, active }) => {
   };
 };
 
-const Opponent = createComponent(opponent, "div");
-
-function isCardPlayable(card, playableCards) {
-  return playableCards.indexOf(card) !== -1;
+// Remove player from list of opponents
+// and render opponents in "correct" order
+function getOpponents(numPlayers, player) {
+  const players = Array.from(Array(numPlayers).keys());
+  const index = players.indexOf(player);
+  const end = players.slice(index).slice(1);
+  const begin = players.slice(0, index);
+  return end.concat(begin);
 }
+
+const Opponent = createComponent(opponent, "div");
 
 export const Opponents = ({
   currentPlayer,
@@ -71,31 +78,11 @@ export const Opponents = ({
   phase,
   currentTrick,
 }) => {
+
   const { renderer } = useFela();
-
-  // Remove PlayerID from list of opponents
-  // and render opponents in "correct" order
-  const players = Array.from(Array(numPlayers).keys());
-  const index = players.indexOf(player);
-  const end = players.slice(index).slice(1);
-  const begin = players.slice(0, index);
-  const opponents = end.concat(begin);
-
-  // Shortcuts
+  const opponents = getOpponents(numPlayers, player);
   const isPlayerTurn = currentPlayer == player;
   const playerHand = hand[player];
-
-  // estimation & prison rules
-  const tricksToBeWon = currentRound + 1;
-  const tricksTaken = scoresheet[currentRound]
-    .filter((item) => item !== null)
-    .reduce((accumlatedEstimate, player) => {
-      return accumlatedEstimate + player.estimate;
-    }, 0);
-  const lastPlayerToEstimate =
-    scoresheet[currentRound].filter((item) => item !== null).length ==
-    numPlayers - 1;
-  const remainingTricksToBeWon = tricksToBeWon - tricksTaken;
 
   // play phase
   let playableCards = [];
@@ -194,7 +181,12 @@ export const Opponents = ({
             <button
               key={"estimate" + round}
               disabled={
-                lastPlayerToEstimate && remainingTricksToBeWon === round
+                getRemainingTricksToBeWon(
+                  currentRound,
+                  scoresheet,
+                  player,
+                  numPlayers
+                ) === round
               }
               onClick={() => {
                 estimate(round);

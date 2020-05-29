@@ -7,7 +7,7 @@ N/A
 
 
 ## Epic: Game UX/UI
-- Animate trump card being turned (flip-3d)
+- *Animate trump card being turned (flip-3d)*
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 - Add sound effects (shuffle, deal, play card)
@@ -31,7 +31,5 @@ Allow for a user to create a new "game".
 
 
 ## Epic: Refactoring
-- *Refactor players.js component - move game logic to core.*
-- Refactor game.js - extract pure functions to core.
 - Update boardgame and replace home-grown shuffle
 - Consider TypeScript

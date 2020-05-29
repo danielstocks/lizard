@@ -7,6 +7,10 @@ function getCurrentSuit(cardsInPlay) {
   }
 }
 
+export function isCardPlayable(card, playableCards) {
+  return playableCards.indexOf(card) !== -1;
+}
+
 export function getPlayableCards(cardsInPlay, cardsOnHand) {
   
   // If no card has been played any card is playable
