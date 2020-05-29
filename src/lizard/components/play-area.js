@@ -76,10 +76,10 @@ export const PlayArea = ({
                       key={card.value + card.suit}
                       style={{
                         position: "absolute",
-                        left: 0,
-                        top: 0,
+                        left: i * 25 + "px",
+                        top: i * 25 + "px",
                         zIndex: 500,
-                        transform: `rotate(${i * 8}deg)`,
+                        transform: `rotate(${i * 16}deg)`,
                       }}
                     >
                       <Card
