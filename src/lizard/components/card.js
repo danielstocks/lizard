@@ -30,6 +30,8 @@ function getSuitColor(suit) {
   return "black";
 }
 
+export const CARD_WIDTH = 105;
+
 export const Card = ({
   faceDown,
   value,
@@ -64,7 +66,6 @@ export const Card = ({
               transformStyle: "preserve-3d",
               fontFamily: "serif",
               transform: `rotateY(${rotation})`,
-              ...(disabled && { opacity: 0.8 }),
             }}
           >
             <Div
@@ -79,25 +80,23 @@ export const Card = ({
                   border: "1px solid #aaa",
                   borderRadius: "6px",
                   height: "150px",
-                  width: "105px",
-                  lineHeight: "40px",
+                  width: CARD_WIDTH + "px",
+                  lineHeight: "32px",
                   boxShadow: "0px 0px 1px rgba(100,100,100,0.3)",
                   zIndex: "2",
-                  padding: "12px",
                   boxSizing: "border-box",
                   transition: "1s",
                   transformStyle: "preserve-3d",
                   transform: `rotateY(${rotation})`,
                   backfaceVisibility: "hidden",
-                  fontSize: "40px",
+                  fontSize: "28px",
                   position: "absolute",
                   color: getSuitColor(suit),
                   background: "#fff",
-                  justifyContent: "center",
-                  display: "flex",
-                  textAlign: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
+                  ...(disabled && {
+                    background: "#eee",
+                    filter: "saturate(75%)",
+                  }),
                   top: "0",
                   left: "0",
 
@@ -112,10 +111,18 @@ export const Card = ({
                     }),
                 }}
               >
-                <div style={{ fontSize: "40px" }}>
-                  {displayValue(suit, value)}
-                </div>
-                <div>{suitSymbols[suit]}</div>
+                <Div
+                  extend={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "12px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div>{displayValue(suit, value)}</div>
+                  <div>{suitSymbols[suit]}</div>
+                </Div>
+
               </Div>
               <Div
                 extend={{

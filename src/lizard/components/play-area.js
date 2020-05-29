@@ -1,7 +1,6 @@
 import React from "react";
 import { Card } from "./card";
 import { Opponents } from "./opponents";
-import { Player } from "./player";
 
 export const PlayArea = ({
   trumpCard,
@@ -23,35 +22,16 @@ export const PlayArea = ({
       <Opponents
         numPlayers={numPlayers}
         currentPlayer={currentPlayer}
+        currentRound={currentRound}
+        currentTrick={currentTrick}
+        scoresheet={scoresheet}
+        estimate={estimate}
+        plays={plays}
         playerID={playerID}
         phase={phase}
         hand={hand}
-        // TODO IF PHASE DEAL ANIMATE DEAL CARDS ELSE DON'T!!!!
+        playCard={playCard}
       />
-
-      <section
-        style={{
-          position: "fixed",
-          left: "50%",
-          transform: "translate(-50%, 0)",
-          bottom: "0px",
-          zIndex: 2,
-        }}
-      >
-        <Player
-          phase={phase}
-          playCard={playCard}
-          estimate={estimate}
-          currentPlayer={currentPlayer}
-          currentRound={currentRound}
-          currentTrick={currentTrick}
-          scoresheet={scoresheet}
-          plays={plays}
-          player={playerID}
-          hand={hand}
-          numPlayers={numPlayers}
-        />
-      </section>
 
       <div
         style={{
@@ -61,6 +41,7 @@ export const PlayArea = ({
           top: "50%",
           zIndex: 0,
           display: "flex",
+          alignItems: "center",
           padding: "20px 40px",
           background: "darkseagreen",
           borderRadius: "10px",
@@ -68,7 +49,7 @@ export const PlayArea = ({
       >
         <div>
           <div
-            style={{ position: "relative", height: "150px", width: "110px" }}
+            style={{ position: "relative", height: "150px", width: "105px" }}
           >
             <div style={{ position: "absolute", left: 0, top: 0 }}>
               {trumpCard && (

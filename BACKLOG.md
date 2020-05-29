@@ -7,9 +7,6 @@ No regressions or bugs currently identified.
 
 
 ## Epic: Game UX/UI
-- *Animate cards being dealt (fly-out)*
-    - Animate to appropriate location for currentPlayer.
-- Animate cards in place for player
 - Animate trump card being turned (flip-3d)
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
@@ -18,7 +15,7 @@ No regressions or bugs currently identified.
 
 ## Epic: Core Game
 - Implement "Secret State" - player hands.
-- Deal with lizard as trump card  => Player decides trump
+- Deal with lizard as trump card => Draw another card.
 - Deal with snake as trump card => No trum card
 - Q: if lizard is played first, does the second card dictate forced suit?
 
@@ -33,7 +30,7 @@ Allow for a user to create a new "game".
 
 
 ## Epic: Refactoring
-- Refactor components/player, move game logic to core.
+- Refactor players.js component - move game logic to core.
 - Refactor game.js - extract pure functions to core.
 - Update boardgame and replace home-grown shuffle
 - Consider TypeScript

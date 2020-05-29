@@ -1,6 +1,7 @@
-import React from "react";
-import { Card } from "./card";
 import { useFela, createComponent } from "react-fela";
+import React from "react";
+import { Card, CARD_WIDTH } from "./card";
+import { getPlayableCards } from "../core/play";
 
 const translateKeyframe = ({ x, y }) => ({
   "0%": { transform: `translate(0px, 0px)` },
@@ -8,7 +9,8 @@ const translateKeyframe = ({ x, y }) => ({
 });
 
 const SIZE = 640;
-const DELAY = 200;
+const DELAY = 100;
+const DURATION = "0.3s";
 
 const Div = createComponent({}, "div");
 
@@ -28,8 +30,7 @@ const container = ({ size }) => ({
 });
 const Container = createComponent(container, "div");
 
-const player = ({ size, pos, players, active }) => {
-
+const opponent = ({ size, pos, players, active }) => {
   const spread = 180 / (players - 1);
   const rotate = 180 + pos * spread + "deg";
   const halfSize = size / 2 + "px";
@@ -51,15 +52,27 @@ const player = ({ size, pos, players, active }) => {
   };
 };
 
-const Player = createComponent(player, "div");
+const Opponent = createComponent(opponent, "div");
+
+function isCardPlayable(card, playableCards) {
+  return playableCards.indexOf(card) !== -1;
+}
 
 export const Opponents = ({
   currentPlayer,
+  plays,
   playerID,
-  numPlayers = 3,
+  numPlayers,
   hand,
+  estimate,
+  playCard,
+  scoresheet,
+  currentRound,
   phase,
+  currentTrick,
 }) => {
+  const { renderer } = useFela();
+
   // Remove PlayerID from list of opponents
   // and render opponents in "correct" order
   const players = Array.from(Array(numPlayers).keys());
@@ -68,123 +81,214 @@ export const Opponents = ({
   const begin = players.slice(0, index);
   const opponents = end.concat(begin);
 
+  // TODO: need to rename this
+  // currentPlayer = player whos turn it is
+  // player = player who is playing the game.
   const currentPlayerID = parseInt(playerID);
+  const currentPlayerHand = hand[currentPlayerID];
 
-  const { renderer } = useFela();
+  // estimation & prison rules
+  const tricksToBeWon = currentRound + 1;
+  const tricksTaken = scoresheet[currentRound]
+    .filter((item) => item !== null)
+    .reduce((accumlatedEstimate, player) => {
+      return accumlatedEstimate + player.estimate;
+    }, 0);
+  const lastPlayerToEstimate =
+    scoresheet[currentRound].filter((item) => item !== null).length ==
+    numPlayers - 1;
+  const remainingTricksToBeWon = tricksToBeWon - tricksTaken;
+
+  // play phase
+  let playableCards = [];
+  const isPlayerTurn = currentPlayer == playerID;
+  if (phase === "play" && isPlayerTurn) {
+    const cardsInPlay = plays[currentRound][currentTrick].map(
+      (play) => play.card
+    );
+    playableCards = getPlayableCards(cardsInPlay, hand[playerID]);
+  }
 
   return (
-    <>
-      {hand[playerID].map((card, i) => {
+    <Container size={SIZE}>
+      {currentPlayerHand.map((card, i) => {
+        const delay =
+          DELAY * numPlayers * (i + 1) +
+          DELAY * (currentPlayerID + 1) -
+          (DELAY * numPlayers + DELAY);
 
-          const delay =
-            DELAY * numPlayers * (i + 1) +
-            DELAY * (currentPlayerID + 1) -
-            (DELAY * numPlayers + DELAY);
+        const animationDelay = delay + "ms";
 
-          const animationDelay = delay + "ms";
+        // center cards 
+        const adjust = (CARD_WIDTH / 4) * currentPlayerHand.length - CARD_WIDTH / 4;
+        const x = CARD_WIDTH / 2 * (i + 1) - CARD_WIDTH / 2 - adjust;
 
-          return (
-            <Div
-              key={card.value + card.suit}
-              extend={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                zIndex: 100 - playerID,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
+        const cardIsPlayable =
+          phase === "play" &&
+          isPlayerTurn &&
+          isCardPlayable(card, playableCards);
+
+        return (
+          <Div
+            key={card.value + card.suit}
+            extend={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)"
+            }}
+          >
+            {phase == "estimate" && (
               <Div
                 extend={{
                   animationName: renderer.renderKeyframe(translateKeyframe, {
-                    x: 0 + i * 80,
-                    y: 564,
+                    x,
+                    y: SIZE / 2,
                   }),
-                  animationDuration: "0.5s",
+                  animationDuration: DURATION,
                   animationFillMode: "forwards",
                   animationDelay,
                 }}
               >
                 <Card value={card.value} suit={card.suit} />
               </Div>
-            </Div>
-          );
-        })}
+            )}
+            {phase == "play" && (
+              <Div
+                extend={{
+                  animationName: renderer.renderKeyframe(translateKeyframe, {
+                    x,
+                    y: SIZE / 2,
+                  }),
+                  animationDuration: "0",
+                  animationFillMode: "forwards",
+                }}
+              >
+                <Card
+                  onClick={() => {
+                    if (cardIsPlayable) {
+                      playCard(i);
+                    }
+                  }}
+                  playable={cardIsPlayable}
+                  disabled={!cardIsPlayable}
+                  value={card.value}
+                  suit={card.suit}
+                />
+              </Div>
+            )}
+          </Div>
+        );
+      })}
 
-      <Container size={SIZE} extend={{ zIndex: 100 }}>
-        {opponents.map((player, i) => {
-          const active = currentPlayer == player;
-          const spread = 180 / 3;
-          const degrees = 180 + i * spread;
-          const angle = (degrees * Math.PI) / 180;
-          let x = Math.cos(angle) * ( SIZE / 2)
-          let y = Math.sin(angle) * ( SIZE / 2);
+      {phase == "estimate" && currentPlayer == currentPlayerID && (
+        <Div
+          extend={{
+            position: "absolute",
+            bottom: SIZE / 6 + "px",
+            left: "50%",
+            transform: "translate(-50%, 0)",
+          }}
+        >
+          {Array.from(Array(currentRound + 2).keys()).map((round) => (
+            <button
+              key={"estimate" + round}
+              disabled={
+                lastPlayerToEstimate && remainingTricksToBeWon === round
+              }
+              onClick={() => {
+                estimate(round);
+              }}
+            >
+              {round}
+            </button>
+          ))}
+        </Div>
+      )}
 
-          return (
-            <React.Fragment key={"player" + player}>
-              {hand[player].map((card, n) => {
-                const delay =
-                  DELAY * numPlayers * (n + 1) +
-                  DELAY * (player + 1) -
-                  (DELAY * numPlayers + DELAY);
+      {opponents.map((player, i) => {
+        const active = currentPlayer == player;
+        const spread = 180 / 3;
+        const degrees = 180 + i * spread;
+        const angle = (degrees * Math.PI) / 180;
+        let x = Math.cos(angle) * (SIZE / 2);
+        let y = Math.sin(angle) * (SIZE / 2);
 
-                const animationDelay = delay + "ms";
+        return (
+          <React.Fragment key={"player" + player}>
+            {hand[player].map((card, n) => {
+              const delay =
+                DELAY * numPlayers * (n + 1) +
+                DELAY * (player + 1) -
+                (DELAY * numPlayers + DELAY);
 
-                return (
-                  <Div
-                    key={"card" + player + n}
-                    extend={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      zIndex: 100 - i,
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  >
+              const animationDelay = delay + "ms";
+
+              return (
+                <Div
+                  key={"card" + player + n}
+                  extend={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    zIndex: 100,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
+                  {phase === "estimate" && (
                     <Div
                       extend={{
                         animationName: renderer.renderKeyframe(
                           translateKeyframe,
                           {
-                            x: x + n * 3,
-                            y: y + n * 3,
+                            x: x + n * 2,
+                            y: y + n * 2,
                           }
                         ),
-                        animationDuration: "0.5s",
+                        animationDuration: DURATION,
                         animationFillMode: "forwards",
                         animationDelay,
                       }}
                     >
                       <Card faceDown />
                     </Div>
-                  </Div>
-                );
-              })}
-
-              <Player
-                active={active}
-                size={SIZE}
-                players={opponents.length}
-                pos={i}
-              >
-                <Div
-                  extend={{
-                    position: "absolute",
-                    top: "-75px",
-                    background: active ? "peachpuff" : "white",
-                    padding: "6px",
-                    borderRadius: "3px",
-                    fontWeight: "bold",
-                    fontSize: "12px",
-                  }}
-                >
-                  Player {player}
+                  )}
+                  {phase === "play" && (
+                    <Div
+                      extend={{
+                        transform: `translate(${x}px, ${y}px)`,
+                      }}
+                    >
+                      <Card faceDown />
+                    </Div>
+                  )}
                 </Div>
-              </Player>
-            </React.Fragment>
-          );
-        })}
-      </Container>
-    </>
+              );
+            })}
+
+            <Opponent
+              active={active}
+              size={SIZE}
+              players={opponents.length}
+              pos={i}
+            >
+              <Div
+                extend={{
+                  position: "absolute",
+                  top: "-75px",
+                  background: active ? "peachpuff" : "white",
+                  padding: "6px",
+                  borderRadius: "3px",
+                  fontWeight: "bold",
+                  fontSize: "12px",
+                }}
+              >
+                Player {player}
+              </Div>
+            </Opponent>
+          </React.Fragment>
+        );
+      })}
+    </Container>
   );
 };
