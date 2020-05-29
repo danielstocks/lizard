@@ -53,18 +53,17 @@ export const PlayArea = ({
           >
             <div style={{ position: "absolute", left: 0, top: 0 }}>
               {trumpCard && (
-                <Card value={trumpCard.value} suit={trumpCard.suit} />
+                <Card faceDown value={trumpCard.value}  suit={trumpCard.suit} />
               )}
             </div>
           </div>
         </div>
-        <div>
-          {phase === "play" && (
+        {phase === "play" && (
+          <div style={{ marginLeft: "60px" }}>
             <div
               style={{
-                marginLeft: "40px",
                 width: "105px",
-                border: "4px solid green",
+                border: "2px dashed green",
                 height: "150px",
                 borderRadius: "8px",
               }}
@@ -76,10 +75,10 @@ export const PlayArea = ({
                       key={card.value + card.suit}
                       style={{
                         position: "absolute",
-                        left: i * 25 + "px",
-                        top: i * 25 + "px",
+                        left: 0 + i * 20 + "px",
+                        top: 0 + i * 20 + "px",
                         zIndex: 500,
-                        transform: `rotate(${i * 16}deg)`,
+                        transform: `rotate(${2 + i * 10}deg)`,
                       }}
                     >
                       <Card
@@ -92,8 +91,8 @@ export const PlayArea = ({
                 })}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

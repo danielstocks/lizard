@@ -184,6 +184,8 @@ export const Opponents = ({
       {phase == "estimate" && currentPlayer == currentPlayerID && (
         <Div
           extend={{
+            width: "100%",
+            textAlign: "center",
             position: "absolute",
             bottom: SIZE / 6 + "px",
             left: "50%",

@@ -3,7 +3,7 @@
 Ongoing tasks highlighted *in bold*
 
 ## Known Bugs
-No regressions or bugs currently identified.
+N/A
 
 
 ## Epic: Game UX/UI
@@ -11,6 +11,7 @@ No regressions or bugs currently identified.
 - Animate cards being played (fly-in)
 - Animate trick won (fly out cards to winner)
 - Add sound effects (shuffle, deal, play card)
+- Assign a color to each player: eg pink, yellow, red, green
 
 
 ## Epic: Core Game
@@ -22,15 +23,15 @@ No regressions or bugs currently identified.
 
 ## Epic: Game Lobby
 Allow for a user to create a new "game".
-- Creates a shareable (public) URL to allow players to connect.
+- Creates a shareable (public) URL to allow players to connect to lobby.
 - Up to 6 players can connect, if game is full show message: "lobby is full".
 - Create a chat/game log: Show events when players enter/exit room.
-- Allow users to type messages to each other.
+- Allow users to type messages to each other, use player color to highlight messages.
 - Allow host to "start game" if there at least 3 players in lobby.
 
 
 ## Epic: Refactoring
-- Refactor players.js component - move game logic to core.
+- *Refactor players.js component - move game logic to core.*
 - Refactor game.js - extract pure functions to core.
 - Update boardgame and replace home-grown shuffle
 - Consider TypeScript
