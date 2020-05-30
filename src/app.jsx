@@ -4,6 +4,8 @@ import { SocketIO } from "boardgame.io/multiplayer";
 import { Game, Board } from "./lizard";
 import { RendererProvider } from "react-fela";
 import { createRenderer } from "fela";
+import { Div } from "./lizard/components/layout";
+import { NAMES } from "./lizard/core/player";
 const renderer = createRenderer();
 
 const Lizard = Client({
@@ -19,6 +21,7 @@ const urlPlayerID = urlParams.get("player");
 
 const App = () => {
   const [playerID, setPlayerID] = useState(urlPlayerID);
+  const [playerName, setPlayerName] = useState("");
 
   if (playerID) {
     return (
@@ -29,13 +32,39 @@ const App = () => {
   }
   return (
     <RendererProvider renderer={renderer}>
-      <div>
-        <p>Play as</p>
+      <Div extend={{ padding: "20px" }}>
+        <Div extend={{ color: "#fff" }} as="h1">
+          Lizard Lobby
+        </Div>
+
+        <Div as="label" extend={{ color: "#fff" }}>
+          Your Alias:
+          <input
+            type="text"
+            name="playerName"
+            value={playerName}
+            onChange={(e) => {
+              setPlayerName(e.target.value);
+            }}
+          />
+        </Div>
+        <button onClick={() => {
+
+
+        
+        setPlayerName(NAMES[Math.floor(Math.random() * NAMES.length)]);
+
+
+        }}>suggest</button>
+ 
+        <Div extend={{ color: "#fff" }} as="h2">
+          Play as:
+        </Div>
         <button onClick={() => setPlayerID("0")}>Player 0</button>
         <button onClick={() => setPlayerID("1")}>Player 1</button>
         <button onClick={() => setPlayerID("2")}>Player 2</button>
         <button onClick={() => setPlayerID("3")}>Player 3</button>
-      </div>
+      </Div>
     </RendererProvider>
   );
 };

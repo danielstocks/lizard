@@ -1,8 +1,9 @@
-import { useFela, createComponent } from "react-fela";
+import { useFela } from "react-fela";
 import React from "react";
 import { Card, CARD_WIDTH } from "./card";
 import { getPlayableCards, isCardPlayable } from "../core/play";
 import { getRemainingTricksToBeWon } from "../core/estimate";
+import { Div, Container, Opponent, AbsoluteCenter } from "./layout";
 
 const translateKeyframe = ({ x, y }) => ({
   "0%": { transform: `translate(0px, 0px)` },
@@ -12,46 +13,6 @@ const translateKeyframe = ({ x, y }) => ({
 const SIZE = 640;
 const DELAY = 100;
 const DURATION = "0.3s";
-
-const Div = createComponent({}, "div");
-
-const container = ({ size }) => ({
-  position: "absolute",
-  width: size + "px",
-  height: size + "px",
-  padding: "0",
-  borderRadius: "50%",
-  listStyle: "none",
-  boxSizing: "content-box",
-  zIndex: 1,
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  border: "solid 5px green",
-});
-const Container = createComponent(container, "div");
-
-const opponent = ({ size, pos, players, active }) => {
-  const spread = 180 / (players - 1);
-  const rotate = 180 + pos * spread + "deg";
-  const halfSize = size / 2 + "px";
-
-  return {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: active ? "peachpuff" : "white",
-    fontWeight: active ? "bold" : "normal",
-    borderRadius: "50%",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    width: size / 6 + "px",
-    height: size / 6 + "px",
-    margin: "-" + size / 6 / 2 + "px",
-    transform: `rotate(${rotate}) translate(${halfSize}) rotate(-${rotate})`,
-  };
-};
 
 // Remove player from list of opponents
 // and render opponents in "correct" order
@@ -71,8 +32,6 @@ function getAnimationDelay(cardIndex, numPlayers, player) {
     "ms"
   );
 }
-
-const Opponent = createComponent(opponent, "div");
 
 export const Opponents = ({
   currentPlayer,
@@ -115,15 +74,7 @@ export const Opponents = ({
           isCardPlayable(card, playableCards);
 
         return (
-          <Div
-            key={card.value + card.suit}
-            extend={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
+          <AbsoluteCenter key={card.value + card.suit}>
             {phase == "estimate" && (
               <Div
                 extend={{
@@ -163,7 +114,7 @@ export const Opponents = ({
                 />
               </Div>
             )}
-          </Div>
+          </AbsoluteCenter>
         );
       })}
 
@@ -211,14 +162,10 @@ export const Opponents = ({
           <React.Fragment key={"opponent" + opponent}>
             {hand[opponent].map((card, n) => {
               return (
-                <Div
+                <AbsoluteCenter
                   key={"card" + opponent + n}
                   extend={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
                     zIndex: 100,
-                    transform: "translate(-50%, -50%)",
                   }}
                 >
                   {phase === "estimate" && (
@@ -252,7 +199,7 @@ export const Opponents = ({
                       <Card faceDown />
                     </Div>
                   )}
-                </Div>
+                </AbsoluteCenter>
               );
             })}
 
