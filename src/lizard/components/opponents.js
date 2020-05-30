@@ -63,6 +63,15 @@ function getOpponents(numPlayers, player) {
   return end.concat(begin);
 }
 
+function getAnimationDelay(cardIndex, numPlayers, player) {
+  return (
+    DELAY * numPlayers * (cardIndex + 1) +
+    DELAY * (player + 1) -
+    (DELAY * numPlayers + DELAY) +
+    "ms"
+  );
+}
+
 const Opponent = createComponent(opponent, "div");
 
 export const Opponents = ({
@@ -78,7 +87,6 @@ export const Opponents = ({
   phase,
   currentTrick,
 }) => {
-
   const { renderer } = useFela();
   const opponents = getOpponents(numPlayers, player);
   const isPlayerTurn = currentPlayer == player;
@@ -97,13 +105,6 @@ export const Opponents = ({
   return (
     <Container size={SIZE}>
       {playerHand.map((card, i) => {
-        const delay =
-          DELAY * numPlayers * (i + 1) +
-          DELAY * (player + 1) -
-          (DELAY * numPlayers + DELAY);
-
-        const animationDelay = delay + "ms";
-
         // center cards
         const adjust = (CARD_WIDTH / 4) * playerHand.length - CARD_WIDTH / 4;
         const x = (CARD_WIDTH / 2) * (i + 1) - CARD_WIDTH / 2 - adjust;
@@ -132,7 +133,7 @@ export const Opponents = ({
                   }),
                   animationDuration: DURATION,
                   animationFillMode: "forwards",
-                  animationDelay,
+                  animationDelay: getAnimationDelay(i, numPlayers, player),
                 }}
               >
                 <Card value={card.value} suit={card.suit} />
@@ -209,13 +210,6 @@ export const Opponents = ({
         return (
           <React.Fragment key={"opponent" + opponent}>
             {hand[opponent].map((card, n) => {
-              const delay =
-                DELAY * numPlayers * (n + 1) +
-                DELAY * (opponent + 1) -
-                (DELAY * numPlayers + DELAY);
-
-              const animationDelay = delay + "ms";
-
               return (
                 <Div
                   key={"card" + opponent + n}
@@ -239,7 +233,11 @@ export const Opponents = ({
                         ),
                         animationDuration: DURATION,
                         animationFillMode: "forwards",
-                        animationDelay,
+                        animationDelay: getAnimationDelay(
+                          n,
+                          numPlayers,
+                          opponent
+                        ),
                       }}
                     >
                       <Card faceDown />
