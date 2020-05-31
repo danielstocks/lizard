@@ -1,10 +1,11 @@
 import { getPlayableCards } from "./play";
 import { createDeck, addSpecialCards } from "./deck";
 
-const cards = {};
-const deck = [...createDeck(), ...addSpecialCards()].map((card) => {
-  cards[card.value + "-" + card.suit] = card;
-});
+const cards = [...createDeck(), ...addSpecialCards()].reduce((acc, card) => {
+  acc[card.value + "-" + card.suit] = card;
+  return acc;
+}, {});
+
 
 test("Any card can be played if no card has been played yet", () => {
   expect(

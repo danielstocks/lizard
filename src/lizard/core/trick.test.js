@@ -1,10 +1,10 @@
 import { getWinningPlay } from "./trick";
 import { createDeck, addSpecialCards } from "./deck";
 
-const cards = {};
-const deck = [...createDeck(), ...addSpecialCards()].map((card) => {
-  cards[card.value + "-" + card.suit] = card;
-});
+const cards = [...createDeck(), ...addSpecialCards()].reduce((acc, card) => {
+  acc[card.value + "-" + card.suit] = card;
+  return acc;
+}, {});
 
 test("First lizard in play always wins", () => {
   expect(
