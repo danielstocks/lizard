@@ -245,29 +245,32 @@ export const PlayArea = ({
         extend={{
           zIndex: 0,
           display: "flex",
+          flexDirection: " row",
           alignItems: "center",
-          padding: "20px 40px",
+          padding: "20px",
           background: "darkseagreen",
           borderRadius: "10px",
         }}
       >
-        <div>
-          <div
-            style={{ position: "relative", height: "150px", width: "105px" }}
-          >
-            <div style={{ position: "absolute", left: 0, top: 0 }}>
-              {trumpCard && (
-                <Card
-                  faceDown={!trumpCardFlipped}
-                  value={trumpCard.value}
-                  suit={trumpCard.suit}
-                />
-              )}
+        {phase === "estimate" && (
+          <div>
+            <div
+              style={{ position: "relative", height: "150px", width: "105px" }}
+            >
+              <div style={{ position: "absolute", left: 0, top: 0 }}>
+                {trumpCard && (
+                  <Card
+                    faceDown={!trumpCardFlipped}
+                    value={trumpCard.value}
+                    suit={trumpCard.suit}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
         {phase === "play" && (
-          <div style={{ marginLeft: "60px" }}>
+          <div>
             <div
               style={{
                 width: "105px",
@@ -276,6 +279,35 @@ export const PlayArea = ({
                 borderRadius: "8px",
               }}
             >
+              <Div
+                extend={{
+                  position: "absolute",
+                  top: "-140px",
+                  textAlign: "center",
+                }}
+              >
+                <Div
+                  extend={{
+                    paddingBottom: "6px",
+                    fontWeight: "bold",
+                    fontSize: "12px",
+                  }}
+                >
+                  Trump:
+                </Div>
+                <Div
+                  extend={{
+                    transform: "scale(0.5)",
+                    transformOrigin: "top center",
+                  }}
+                >
+                  <Card
+                    faceDown={!trumpCardFlipped}
+                    value={trumpCard.value}
+                    suit={trumpCard.suit}
+                  />
+                </Div>
+              </Div>
               <div style={{ position: "relative", zIndex: 500 }}>
                 {trick.map(({ card }, i) => {
                   return (
