@@ -5,7 +5,8 @@
     "esm": "^3.2.25",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-fela": "^11.3.0"
+    "react-fela": "^11.3.0",
+    "react-transition-group": "^4.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

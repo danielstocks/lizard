@@ -4,6 +4,7 @@ import { Card, CARD_WIDTH } from "./card";
 import { getPlayableCards, isCardPlayable } from "../core/play";
 import { getRemainingTricksToBeWon } from "../core/estimate";
 import { Div, Container, Opponent, AbsoluteCenter } from "./layout";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 const translateKeyframe = ({ x, y }) => ({
   "0%": { transform: `translate(0px, 0px)` },
@@ -33,6 +34,15 @@ function getAnimationDelay(cardIndex, numPlayers, player) {
   );
 }
 
+function getCardPosition(numPlayers, i) {
+  const spread = 180 / (numPlayers - 2);
+  const degrees = 180 + i * spread;
+  const angle = (degrees * Math.PI) / 180;
+  let x = Math.cos(angle) * (SIZE / 2);
+  let y = Math.sin(angle) * (SIZE / 2);
+  return [x, y];
+}
+
 export const PlayArea = ({
   trumpCard,
   plays,
@@ -56,9 +66,8 @@ export const PlayArea = ({
     return () => clearTimeout(timer);
   }, []);
 
-  const trick = plays[currentRound][currentTrick];
-
   const { renderer } = useFela();
+  const trick = plays[currentRound][currentTrick];
   const opponents = getOpponents(numPlayers, player);
   const isPlayerTurn = currentPlayer == player;
   const playerHand = hand[player];
@@ -76,10 +85,68 @@ export const PlayArea = ({
   return (
     <div>
       <Container size={SIZE}>
+        <TransitionGroup>
+          {trick.map((play, i) => {
+            const card = play.card;
+            const trickPlayer = play.player;
+
+            console.log(card, trickPlayer);
+            return (
+              <CSSTransition key={card.value + card.suit} timeout={0}>
+                {(state) => {
+                  let [x, y] = (function () {
+                    if (state == "entered") {
+                      return [0, 0];
+                    }
+                    if (state == "entering") {
+
+
+                      const cardPos = 1;
+
+                      if (player == trickPlayer) {
+                        const adjust =
+                          (CARD_WIDTH / 4) * playerHand.length - CARD_WIDTH / 4;
+                        return [
+                          (CARD_WIDTH / 2) * cardPos - CARD_WIDTH / 2 - adjust,
+                          SIZE / 2,
+                        ];
+                      } else {
+                        return getCardPosition(numPlayers, trickPlayer);
+                      }
+                    }
+                    return [0, 0];
+                  })();
+
+                  return (
+                    <AbsoluteCenter
+                      key={"trick" + player + i}
+                      extend={{ zIndex: 101 }}
+                    >
+                      <Div
+                        extend={{
+                          transform: `translate(${x}px, ${y}px)`,
+                          transition: "0.3s ease-out",
+                        }}
+                      >
+                        <Card
+                          value={card.value}
+                          suit={card.suit}
+                          key={card.value + card.suit}
+                        />
+                      </Div>
+                    </AbsoluteCenter>
+                  );
+                }}
+              </CSSTransition>
+            );
+          })}
+        </TransitionGroup>
+
         {playerHand.map((card, i) => {
           // center cards
           const adjust = (CARD_WIDTH / 4) * playerHand.length - CARD_WIDTH / 4;
           const x = (CARD_WIDTH / 2) * (i + 1) - CARD_WIDTH / 2 - adjust;
+          const y = SIZE / 2;
 
           const cardIsPlayable =
             phase === "play" &&
@@ -93,7 +160,7 @@ export const PlayArea = ({
                   extend={{
                     animationName: renderer.renderKeyframe(translateKeyframe, {
                       x,
-                      y: SIZE / 2,
+                      y,
                     }),
                     animationDuration: DURATION,
                     animationFillMode: "forwards",
@@ -106,12 +173,7 @@ export const PlayArea = ({
               {phase == "play" && (
                 <Div
                   extend={{
-                    animationName: renderer.renderKeyframe(translateKeyframe, {
-                      x,
-                      y: SIZE / 2,
-                    }),
-                    animationDuration: "0",
-                    animationFillMode: "forwards",
+                    transform: `translate(${x}px, ${y}px)`,
                   }}
                 >
                   <Card
@@ -130,7 +192,6 @@ export const PlayArea = ({
             </AbsoluteCenter>
           );
         })}
-
         {phase == "estimate" && isPlayerTurn && (
           <Div
             extend={{
@@ -162,14 +223,9 @@ export const PlayArea = ({
             ))}
           </Div>
         )}
-
         {opponents.map((opponent, i) => {
           const active = currentPlayer == opponent;
-          const spread = 180 / (numPlayers - 2);
-          const degrees = 180 + i * spread;
-          const angle = (degrees * Math.PI) / 180;
-          let x = Math.cos(angle) * (SIZE / 2);
-          let y = Math.sin(angle) * (SIZE / 2);
+          const [x, y] = getCardPosition(numPlayers, i);
 
           return (
             <React.Fragment key={"opponent" + opponent}>
@@ -308,28 +364,6 @@ export const PlayArea = ({
                   />
                 </Div>
               </Div>
-              <div style={{ position: "relative", zIndex: 500 }}>
-                {trick.map(({ card }, i) => {
-                  return (
-                    <div
-                      key={card.value + card.suit}
-                      style={{
-                        position: "absolute",
-                        left: 0 + i * 20 + "px",
-                        top: 0 + i * 20 + "px",
-                        zIndex: 500,
-                        transform: `rotate(${2 + i * 10}deg)`,
-                      }}
-                    >
-                      <Card
-                        value={card.value}
-                        suit={card.suit}
-                        key={card.value + card.suit}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           </div>
         )}
