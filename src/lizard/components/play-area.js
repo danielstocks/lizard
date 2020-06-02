@@ -11,7 +11,7 @@ const translateKeyframe = ({ x, y }) => ({
   "100%": { transform: `translate(${x}px, ${y}px)` },
 });
 
-const SIZE = 640;
+const SIZE = 520;
 const DELAY = 100;
 const DURATION = "0.3s";
 
@@ -125,7 +125,7 @@ export const PlayArea = ({
                         const pos = opponents.indexOf(
                           parseInt(trickPlayer, 10)
                         );
-                        return getCardPosition(numPlayers, pos);
+                        return getCardPosition(numPlayers, pos).concat(0)
                       }
                     }
                     return [20 * i, 20 * i, 10 * i];
@@ -352,7 +352,8 @@ export const PlayArea = ({
               <Div
                 extend={{
                   position: "absolute",
-                  top: "-140px",
+                  top: "-70px",
+                  left: "-70px",
                   textAlign: "center",
                 }}
               >
