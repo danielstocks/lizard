@@ -7,7 +7,6 @@ export const Board = ({ G, ctx, moves, playerID }) => {
   const rounds = Array.from(Array(G.numberOfRounds).keys());
   const trumpCard = G.trumpCard[G.currentRound];
 
-  
   useEffect(() => {
     document.title = `Lizard - Player ${playerID}`;
   });
@@ -33,6 +32,7 @@ export const Board = ({ G, ctx, moves, playerID }) => {
 
       <section
         style={{
+          display: "none",
           position: "fixed",
           overflowY: "scroll",
           top: "10px",
@@ -51,6 +51,7 @@ export const Board = ({ G, ctx, moves, playerID }) => {
       </section>
       <section
         style={{
+          display: "none",
           position: "absolute",
           bottom: "10px",
           left: "10px",

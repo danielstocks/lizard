@@ -62,7 +62,7 @@ export const PlayArea = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       flipTrumpCard(true);
-    }, 100 * currentRound * numPlayers + 100);
+    }, 100 * currentRound * numPlayers + 300);
     return () => clearTimeout(timer);
   }, []);
 
@@ -99,10 +99,12 @@ export const PlayArea = ({
             return (
               <CSSTransition key={card.value + card.suit} timeout={0}>
                 {(state) => {
+
                   let [x, y, rotation] = (function () {
                     if (state == "entered") {
                       return [20 * i, 20 * i, 10 * i];
                     }
+
                     if (state == "entering") {
                       if (player == trickPlayer) {
                         const cardPos = prevPlayerHand.findIndex(
@@ -125,9 +127,10 @@ export const PlayArea = ({
                         const pos = opponents.indexOf(
                           parseInt(trickPlayer, 10)
                         );
-                        return getCardPosition(numPlayers, pos).concat(0)
+                        return getCardPosition(numPlayers, pos).concat(0);
                       }
                     }
+
                     return [20 * i, 20 * i, 10 * i];
                   })();
 

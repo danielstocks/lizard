@@ -13,7 +13,7 @@ const Lizard = Client({
   board: Board,
   multiplayer: SocketIO({ server: "localhost:8000" }),
   debug: false,
-  numPlayers: 4,
+  numPlayers: 3,
 });
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -48,15 +48,14 @@ const App = () => {
             }}
           />
         </Div>
-        <button onClick={() => {
+        <button
+          onClick={() => {
+            setPlayerName(NAMES[Math.floor(Math.random() * NAMES.length)]);
+          }}
+        >
+          suggest
+        </button>
 
-
-        
-        setPlayerName(NAMES[Math.floor(Math.random() * NAMES.length)]);
-
-
-        }}>suggest</button>
- 
         <Div extend={{ color: "#fff" }} as="h2">
           Play as:
         </Div>

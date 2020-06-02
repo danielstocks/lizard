@@ -10,6 +10,7 @@ Ongoing tasks highlighted *in bold*
 ## Epic: Game UX/UI
 - *Animate trick won (fly out cards to winner)*
 - Add sound effects (shuffle, deal, play card)
+- Make UI smaller to fit 1024*768 screens.
 
 
 ## Epic: Core Game
@@ -24,6 +25,7 @@ Ongoing tasks highlighted *in bold*
 - Up to 6 players can connect, if game is full show message: "lobby is full".
 - Allow players to pick a name/alias + color
 - Allow host to "start game" if there at least 3 players in lobby.
+- Randomize player order when starting game
 
 
 ## Epic: Refactoring
