@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFela } from "react-fela";
 import { Card, CARD_WIDTH } from "./card";
 import { getPlayableCards, isCardPlayable } from "../core/play";
@@ -82,6 +82,12 @@ export const PlayArea = ({
     playableCards = getPlayableCards(cardsInPlay, playerHand);
   }
 
+  const prevPlayerHandRef = useRef();
+  useEffect(() => {
+    prevPlayerHandRef.current = playerHand;
+  });
+  const prevPlayerHand = prevPlayerHandRef.current;
+
   return (
     <div>
       <Container size={SIZE}>
@@ -90,31 +96,39 @@ export const PlayArea = ({
             const card = play.card;
             const trickPlayer = play.player;
 
-            console.log(card, trickPlayer);
             return (
               <CSSTransition key={card.value + card.suit} timeout={0}>
                 {(state) => {
-                  let [x, y] = (function () {
+                  let [x, y, rotation] = (function () {
                     if (state == "entered") {
-                      return [0, 0];
+                      return [20 * i, 20 * i, 10 * i];
                     }
                     if (state == "entering") {
-
-
-                      const cardPos = 1;
-
                       if (player == trickPlayer) {
+                        const cardPos = prevPlayerHand.findIndex(
+                          (prevCard) =>
+                            prevCard.suit == card.suit &&
+                            prevCard.value == card.value
+                        );
+
                         const adjust =
-                          (CARD_WIDTH / 4) * playerHand.length - CARD_WIDTH / 4;
+                          (CARD_WIDTH / 4) * prevPlayerHand.length -
+                          CARD_WIDTH / 4;
                         return [
-                          (CARD_WIDTH / 2) * cardPos - CARD_WIDTH / 2 - adjust,
+                          (CARD_WIDTH / 2) * (cardPos + 1) -
+                            CARD_WIDTH / 2 -
+                            adjust,
                           SIZE / 2,
+                          0,
                         ];
                       } else {
-                        return getCardPosition(numPlayers, trickPlayer);
+                        const pos = opponents.indexOf(
+                          parseInt(trickPlayer, 10)
+                        );
+                        return getCardPosition(numPlayers, pos);
                       }
                     }
-                    return [0, 0];
+                    return [20 * i, 20 * i, 10 * i];
                   })();
 
                   return (
@@ -124,7 +138,7 @@ export const PlayArea = ({
                     >
                       <Div
                         extend={{
-                          transform: `translate(${x}px, ${y}px)`,
+                          transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
                           transition: "0.3s ease-out",
                         }}
                       >

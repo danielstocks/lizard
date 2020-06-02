@@ -8,8 +8,7 @@ Ongoing tasks highlighted *in bold*
 
 
 ## Epic: Game UX/UI
-- *Animate cards being played (fly-in)*
-- Animate trick won (fly out cards to winner)
+- *Animate trick won (fly out cards to winner)*
 - Add sound effects (shuffle, deal, play card)
 
 
@@ -21,8 +20,7 @@ Ongoing tasks highlighted *in bold*
 
 
 ## Epic: Game Lobby
-Allow for a user to create a new "game".
-- Creates a shareable (public) URL to allow players to connect to lobby.
+- Allow user to create a shareable URL to allow other players to connect to a game lobby.
 - Up to 6 players can connect, if game is full show message: "lobby is full".
 - Allow players to pick a name/alias + color
 - Allow host to "start game" if there at least 3 players in lobby.
