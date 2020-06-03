@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@babel/runtime": "^7.9.2",
-    "boardgame.io": "^0.39.7",
+    "boardgame.io": "0.39.11",
     "esm": "^3.2.25",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
