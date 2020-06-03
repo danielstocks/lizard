@@ -4,7 +4,11 @@ import { Card, CARD_WIDTH } from "./card";
 import { getPlayableCards, isCardPlayable } from "../core/play";
 import { getRemainingTricksToBeWon } from "../core/estimate";
 import { Div, Container, Opponent, AbsoluteCenter } from "./layout";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+import {
+  CSSTransition,
+  TransitionGroup,
+  SwitchTransition,
+} from "react-transition-group";
 
 const translateKeyframe = ({ x, y }) => ({
   "0%": { transform: `translate(0px, 0px)` },
@@ -90,74 +94,140 @@ export const PlayArea = ({
 
   return (
     <div>
-      <Container size={SIZE}>
-        <TransitionGroup>
-          {trick.map((play, i) => {
-            const card = play.card;
-            const trickPlayer = play.player;
+      <SwitchTransition>
+        <CSSTransition key={currentRound + currentTrick} timeout={300}>
+          {(state) => {
+            let opacity = (function () {
+              if (state == "entering") {
+                return 0;
+              }
+              if (state == "entered") {
+                return 1;
+              }
+              if (state == "exiting") {
+                return 0;
+              }
+              if (state == "exited") {
+                return 1;
+              }
+            })();
 
             return (
-              <CSSTransition key={card.value + card.suit} timeout={0}>
-                {(state) => {
-
-                  let [x, y, rotation] = (function () {
-                    if (state == "entered") {
-                      return [20 * i, 20 * i, 10 * i];
-                    }
-
-                    if (state == "entering") {
-                      if (player == trickPlayer) {
-                        const cardPos = prevPlayerHand.findIndex(
-                          (prevCard) =>
-                            prevCard.suit == card.suit &&
-                            prevCard.value == card.value
-                        );
-
-                        const adjust =
-                          (CARD_WIDTH / 4) * prevPlayerHand.length -
-                          CARD_WIDTH / 4;
-                        return [
-                          (CARD_WIDTH / 2) * (cardPos + 1) -
-                            CARD_WIDTH / 2 -
-                            adjust,
-                          SIZE / 2,
-                          0,
-                        ];
-                      } else {
-                        const pos = opponents.indexOf(
-                          parseInt(trickPlayer, 10)
-                        );
-                        return getCardPosition(numPlayers, pos).concat(0);
-                      }
-                    }
-
-                    return [20 * i, 20 * i, 10 * i];
-                  })();
-
-                  return (
-                    <AbsoluteCenter
-                      key={"trick" + player + i}
-                      extend={{ zIndex: 101 }}
-                    >
-                      <Div
-                        extend={{
-                          transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
-                          transition: "0.3s ease-out",
-                        }}
-                      >
-                        <Card
-                          value={card.value}
-                          suit={card.suit}
-                          key={card.value + card.suit}
-                        />
-                      </Div>
-                    </AbsoluteCenter>
-                  );
+              <Div
+                extend={{
+                  padding: "10px",
+                  opacity: opacity,
+                  transition: "0.3s ease-out",
                 }}
-              </CSSTransition>
+              >
+                Round {currentRound}, Trick {currentTrick}
+              </Div>
             );
-          })}
-        </TransitionGroup>
+          }}
+        </CSSTransition>
+      </SwitchTransition>
+
+      <Container size={SIZE}>
+        <SwitchTransition>
+          <CSSTransition key={currentRound + currentTrick} timeout={1000}>
+            {(state) => {
+              let opacity = (function () {
+                if (state == "entering") {
+                  return 0;
+                }
+                if (state == "entered") {
+                  return 1;
+                }
+                if (state == "exiting") {
+                  return 0;
+                }
+                if (state == "exited") {
+                  return 1;
+                }
+              })();
+
+              return (
+                <Div
+                  extend={{
+                    padding: "10px",
+                    opacity: opacity,
+                    transition: "1s ease-out",
+                  }}
+                >
+                  <TransitionGroup>
+                    {trick.map((play, i) => {
+                      const card = play.card;
+                      const trickPlayer = play.player;
+
+                      return (
+                        <CSSTransition key={card.value + card.suit} timeout={0}>
+                          {(state) => {
+                            let [x, y, rotation] = (function () {
+                              if (state == "entered") {
+                                return [20 * i, 20 * i, 10 * i];
+                              }
+
+                              if (state == "entering") {
+                                if (player == trickPlayer) {
+                                  const cardPos = prevPlayerHand.findIndex(
+                                    (prevCard) =>
+                                      prevCard.suit == card.suit &&
+                                      prevCard.value == card.value
+                                  );
+
+                                  const adjust =
+                                    (CARD_WIDTH / 4) * prevPlayerHand.length -
+                                    CARD_WIDTH / 4;
+                                  return [
+                                    (CARD_WIDTH / 2) * (cardPos + 1) -
+                                      CARD_WIDTH / 2 -
+                                      adjust,
+                                    SIZE / 2,
+                                    0,
+                                  ];
+                                } else {
+                                  const pos = opponents.indexOf(
+                                    parseInt(trickPlayer, 10)
+                                  );
+                                  return getCardPosition(
+                                    numPlayers,
+                                    pos
+                                  ).concat(0);
+                                }
+                              }
+
+                              return [20 * i, 20 * i, 10 * i];
+                            })();
+
+                            return (
+                              <AbsoluteCenter
+                                key={"trick" + player + i}
+                                extend={{ zIndex: 101 }}
+                              >
+                                <Div
+                                  extend={{
+                                    transform: `translate(${x}px, ${y}px) rotate(${rotation}deg)`,
+                                    transition: "0.3s ease-out",
+                                  }}
+                                >
+                                  <Card
+                                    value={card.value}
+                                    suit={card.suit}
+                                    key={card.value + card.suit}
+                                  />
+                                </Div>
+                              </AbsoluteCenter>
+                            );
+                          }}
+                        </CSSTransition>
+                      );
+                    })}
+                  </TransitionGroup>
+                </Div>
+              );
+            }}
+          </CSSTransition>
+        </SwitchTransition>
 
         {playerHand.map((card, i) => {
           // center cards
