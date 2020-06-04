@@ -11,8 +11,8 @@ import {
 } from "react-transition-group";
 
 const translateKeyframe = ({ x, y }) => ({
-  "0%": { transform: `translate(0px, 0px)` },
-  "100%": { transform: `translate(${x}px, ${y}px)` },
+  "0%": { transform: `translate(0px, 0px)`, opacity: 0 },
+  "100%": { transform: `translate(${x}px, ${y}px)`, opacity: 1 },
 });
 
 const SIZE = 520;
@@ -29,8 +29,11 @@ function getOpponents(numPlayers, player) {
   return end.concat(begin);
 }
 
+/* Timeout the deal animation to allow previous trick to animate out */
+const DEAL_TIMEOUT = 2000;
 function getAnimationDelay(cardIndex, numPlayers, player) {
   return (
+    DEAL_TIMEOUT +
     DELAY * numPlayers * (cardIndex + 1) +
     DELAY * (player + 1) -
     (DELAY * numPlayers + DELAY) +
@@ -61,14 +64,23 @@ export const PlayArea = ({
   scoresheet,
   hand,
 }) => {
+
+  // Trump card should always be flipped if we're in a "play" state
   const [trumpCardFlipped, flipTrumpCard] = useState(phase === "play");
 
+  console.log(trumpCardFlipped, phase);
+
+  // TOOD: This is broken, trump card is already flipped
+  // when entering new round.
+  /// https://reactjs.org/docs/hooks-faq.html#how-do-i-implement-getderivedstatefromprops
   useEffect(() => {
     const timer = setTimeout(() => {
-      flipTrumpCard(true);
-    }, 100 * currentRound * numPlayers + 300);
+      if (phase === "estimate") {
+        flipTrumpCard(true);
+      }
+    }, DEAL_TIMEOUT + 100 * currentRound * numPlayers + 300);
     return () => clearTimeout(timer);
-  }, []);
+  });
 
   const { renderer } = useFela();
   const trick = plays[currentRound][currentTrick];
@@ -94,46 +106,13 @@ export const PlayArea = ({
 
   return (
     <div>
-      <SwitchTransition>
-        <CSSTransition key={currentRound + currentTrick} timeout={300}>
-          {(state) => {
-            let opacity = (function () {
-              if (state == "entering") {
-                return 0;
-              }
-              if (state == "entered") {
-                return 1;
-              }
-              if (state == "exiting") {
-                return 0;
-              }
-              if (state == "exited") {
-                return 1;
-              }
-            })();
-
-            return (
-              <Div
-                extend={{
-                  padding: "10px",
-                  opacity: opacity,
-                  transition: "0.3s ease-out",
-                }}
-              >
-                Round {currentRound}, Trick {currentTrick}
-              </Div>
-            );
-          }}
-        </CSSTransition>
-      </SwitchTransition>
-
       <Container size={SIZE}>
         <SwitchTransition>
-          <CSSTransition key={currentRound + currentTrick} timeout={1000}>
+          <CSSTransition key={currentRound + currentTrick} timeout={2000}>
             {(state) => {
               let opacity = (function () {
                 if (state == "entering") {
-                  return 0;
+                  return 1;
                 }
                 if (state == "entered") {
                   return 1;
@@ -142,7 +121,7 @@ export const PlayArea = ({
                   return 0;
                 }
                 if (state == "exited") {
-                  return 1;
+                  return 0;
                 }
               })();
 
@@ -151,7 +130,7 @@ export const PlayArea = ({
                   extend={{
                     padding: "10px",
                     opacity: opacity,
-                    transition: "1s ease-out",
+                    transition: "1s ease-out 1s",
                   }}
                 >
                   <TransitionGroup>
@@ -249,6 +228,7 @@ export const PlayArea = ({
                       x,
                       y,
                     }),
+                    opacity: 0,
                     animationDuration: DURATION,
                     animationFillMode: "forwards",
                     animationDelay: getAnimationDelay(i, numPlayers, player),
@@ -279,6 +259,7 @@ export const PlayArea = ({
             </AbsoluteCenter>
           );
         })}
+
         {phase == "estimate" && isPlayerTurn && (
           <Div
             extend={{
@@ -310,6 +291,7 @@ export const PlayArea = ({
             ))}
           </Div>
         )}
+
         {opponents.map((opponent, i) => {
           const active = currentPlayer == opponent;
           const [x, y] = getCardPosition(numPlayers, i);
@@ -334,6 +316,7 @@ export const PlayArea = ({
                               y: y + n * 2,
                             }
                           ),
+                          opacity: 0,
                           animationDuration: DURATION,
                           animationFillMode: "forwards",
                           animationDelay: getAnimationDelay(
@@ -397,10 +380,16 @@ export const PlayArea = ({
       >
         {phase === "estimate" && (
           <div>
-            <div
-              style={{ position: "relative", height: "150px", width: "105px" }}
+            <Div
+              extend={{ position: "relative", height: "150px", width: "105px" }}
             >
-              <div style={{ position: "absolute", left: 0, top: 0 }}>
+              <Div
+                extend={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                }}
+              >
                 {trumpCard && (
                   <Card
                     faceDown={!trumpCardFlipped}
@@ -408,8 +397,8 @@ export const PlayArea = ({
                     suit={trumpCard.suit}
                   />
                 )}
-              </div>
-            </div>
+              </Div>
+            </Div>
           </div>
         )}
         {phase === "play" && (

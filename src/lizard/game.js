@@ -128,7 +128,33 @@ export const Game = {
           },
           next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.playOrder.length,
         },
+        moveLimit: 1,
+        onEnd: (G, ctx) => {
+          // For some reason onEnd is called after next phase
+          // is triggered via endIf, so we need an escape hatch here.
+          if (!G.plays[G.currentRound][G.currentTrick]) return;
+
+          // Start next trick?
+          if (
+            G.plays[G.currentRound][G.currentTrick].length === ctx.numPlayers
+          ) {
+            // Who won previous Trick?
+            const winningPlay = getWinningPlay(
+              G.plays[G.currentRound][G.currentTrick],
+              G.trumpCard[G.currentRound].suit
+            );
+
+            // Start next trick
+            G.currentTrick += 1;
+            ctx.events.endTurn({ next: winningPlay.player });
+          }
+        },
       },
+
+      endIf: (G) => {
+        return G.currentTrick > G.currentRound;
+      },
+      next: "estimate",
 
       onEnd: (G, ctx) => {
         const players = Array.from(Array(ctx.numPlayers).keys());
@@ -164,50 +190,6 @@ export const Game = {
             card,
             player: ctx.currentPlayer,
           });
-
-          // Start next trick?
-          if (
-            G.plays[G.currentRound][G.currentTrick].length === ctx.numPlayers
-          ) {
-            // Who won previous trick?
-            const winningPlay = getWinningPlay(
-              G.plays[G.currentRound][G.currentTrick],
-              G.trumpCard[G.currentRound].suit
-            );
-            log(
-              [
-                "# Winning Card:",
-                cardToString(winningPlay.card),
-                "played by player",
-                winningPlay.player,
-              ],
-              G
-            );
-
-            // Start next trick
-            G.currentTrick += 1;
-
-            // Start next round?
-            if (G.currentTrick > G.currentRound) {
-              log(["# All tricks played out, starting new round"], G);
-              ctx.events.setPhase("estimate");
-            } else {
-              log(
-                [
-                  "# Trick",
-                  G.currentTrick + 1,
-                  "of",
-                  G.currentRound + 1,
-                  "tricks",
-                ],
-                G
-              );
-
-              ctx.events.endTurn({ next: winningPlay.player });
-            }
-          } else {
-            ctx.events.endTurn();
-          }
         },
       },
     },
