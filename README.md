@@ -1,6 +1,6 @@
-# Lizard
+# Lizard Card Game
 
-![lizard](https://github.com/danielstocks/lizard/assets/52788/032a72f3-92ea-444d-b628-c9cf99d73e3a)
+<img src=https://github.com/danielstocks/lizard/assets/52788/032a72f3-92ea-444d-b628-c9cf99d73e3a width=300>
 
 This is WIP online multiplayer card game, built with the [boardgame.io](https://boardgame.io) framework.
 
