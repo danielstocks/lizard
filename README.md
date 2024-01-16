@@ -1,8 +1,8 @@
 # Lizard Card Game
 
-<img src=https://github.com/danielstocks/lizard/assets/52788/032a72f3-92ea-444d-b628-c9cf99d73e3a width=300>
+<img src="https://github.com/danielstocks/lizard/assets/52788/39a139a0-e22a-40ab-8f38-134fa03cc50c" width=300 />
 
-This is WIP online multiplayer card game, built with the [boardgame.io](https://boardgame.io) framework.
+Lizard is a WIP online multiplayer card game, built with the [boardgame.io](https://boardgame.io) framework.
 
 Chek RULES.md for more information how the game is played.
 
