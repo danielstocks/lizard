@@ -15,7 +15,15 @@ describe("create cards", () => {
   });
 });
 
-let mockPlayers = [{ name: "daniel" }, { name: "sara" }, { name: "ruth" }];
+let estimate = function () {
+  return 1;
+};
+
+let mockPlayers = [
+  { name: "daniel", estimate },
+  { name: "sara", estimate },
+  { name: "ruth", estimate },
+];
 
 describe("play round", () => {
   test("number of hands", () => {
@@ -98,11 +106,7 @@ let roundState;
 
 describe("play round", () => {
   before(() => {
-    roundState = playRound(3, [
-      { name: "Daniel" },
-      { name: "Bot 1" },
-      { name: "Bot 2" },
-    ]);
+    roundState = playRound(3, mockPlayers);
   });
 
   describe("first trick", () => {

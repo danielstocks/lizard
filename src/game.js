@@ -27,8 +27,6 @@ TODO: Start a new game:
 }
 
 ---
-3. ask/await for playerEstimate - prison rules
-4. all players estimated? begin play
 5. ask/await for playCard
 6. continue until all cards have been played (check for empty hands)
 ---
@@ -38,14 +36,15 @@ export function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
   log(`Starting round ${roundCount} --`);
 
-  let playerEstimates = [];
   log(`- Estimation Phase`);
-  for (let player of players) {
-    log(`-- ${player.name} thinks they can win ? tricks`);
-    playerEstimates.push("?");
-  }
-
-  //console.log(playerEstimates);
+  // TODO: Prison rules?
+  round.playerEstimates = players.map((player, i) => {
+    let estimate = player.estimate();
+    log(
+      `-- ${player.name} thinks they can win ${estimate} trick${estimate !== 1 ? "s" : ""}`,
+    );
+    return player.estimate(round.moves[0].hands[i]);
+  });
 
   log(`- Play Phase`);
 
