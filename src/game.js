@@ -25,6 +25,7 @@ export function createNewRound(round, players) {
   return {
     hands,
     tricks: [[]],
+    trump: dealCardFromDeck(deck)[0],
   };
 }
 
@@ -88,7 +89,6 @@ export function dealCardFromDeck(deck) {
  * @returns {number} winner Index pointing to winning card in trick
  */
 export function getTrickWinner(trick, suit) {
-  // TODO: i'm doing something stupid here trick[0][] and suit is the same thing?
   let commandingSuit = suit === "L" ? trick[0][0] : suit;
   let winningCard = trick.reduce((prev, current) => {
     if (!prev) {
@@ -200,7 +200,7 @@ export function playCard(card, currentState) {
     // the current trick
     let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
       if (trick[0] && trick[0][0] && trick.length == hands.length) {
-        return getTrickWinner(trick, trick[0][0]) + prevTrickWinner;
+        return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
       } else {
         return prevTrickWinner;
       }
@@ -229,6 +229,7 @@ export function playCard(card, currentState) {
   );
 
   return {
+    ...currentState,
     hands,
     tricks,
   };

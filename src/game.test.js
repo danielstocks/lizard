@@ -1,5 +1,3 @@
-// TODO: Implement Trump Card Game Logic
-
 import { describe, test, before } from "node:test";
 import assert from "node:assert";
 import {
@@ -25,6 +23,11 @@ describe("new round", () => {
   test("number of dealt cards per hand", () => {
     const newRound = createNewRound(3, 5);
     assert.strictEqual(newRound.hands[0].length, 3);
+  });
+
+  test("trump card", () => {
+    const newRound = createNewRound(3, 5);
+    assert.strictEqual(newRound.trump, "C4");
   });
 });
 
@@ -83,18 +86,20 @@ let roundState;
 describe("play round", () => {
   before(() => {
     roundState = createNewRound(3, 3);
+    console.log(roundState);
   });
 
   describe("first trick", () => {
     test("first play", () => {
       roundState = playCard("H2", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState, {
         hands: [
           ["H5", "H8"],
           ["H3", "H6", "H9"],
           ["H4", "H7", "H10"],
         ],
         tricks: [["H2"]],
+        trump: "H11",
       });
     });
 
@@ -107,6 +112,7 @@ describe("play round", () => {
           ["H4", "H7", "H10"],
         ],
         tricks: [["H2", "H9"]],
+        trump: "H11",
       });
     });
 
@@ -119,6 +125,7 @@ describe("play round", () => {
           ["H4", "H10"],
         ],
         tricks: [["H2", "H9", "H7"]],
+        trump: "H11",
       });
     });
   });
@@ -129,6 +136,7 @@ describe("play round", () => {
       assert.deepEqual(roundState, {
         hands: [["H5", "H8"], ["H3"], ["H4", "H10"]],
         tricks: [["H2", "H9", "H7"], ["H6"]],
+        trump: "H11",
       });
     });
 
@@ -140,6 +148,7 @@ describe("play round", () => {
           ["H2", "H9", "H7"],
           ["H6", "H10"],
         ],
+        trump: "H11",
       });
     });
 
@@ -151,6 +160,7 @@ describe("play round", () => {
           ["H2", "H9", "H7"],
           ["H6", "H10", "H5"],
         ],
+        trump: "H11",
       });
     });
   });
@@ -161,6 +171,7 @@ describe("play round", () => {
       assert.deepEqual(roundState, {
         hands: [["H8"], ["H3"], []],
         tricks: [["H2", "H9", "H7"], ["H6", "H10", "H5"], ["H4"]],
+        trump: "H11",
       });
     });
 
@@ -173,6 +184,7 @@ describe("play round", () => {
           ["H6", "H10", "H5"],
           ["H4", "H8"],
         ],
+        trump: "H11",
       });
     });
 
@@ -185,6 +197,7 @@ describe("play round", () => {
           ["H6", "H10", "H5"],
           ["H4", "H8", "H3"],
         ],
+        trump: "H11",
       });
     });
   });
