@@ -88,6 +88,7 @@ export function dealCardFromDeck(deck) {
  * @returns {number} winner Index pointing to winning card in trick
  */
 export function getTrickWinner(trick, suit) {
+  // TODO: i'm doing something stupid here trick[0][] and suit is the same thing?
   let commandingSuit = suit === "L" ? trick[0][0] : suit;
   let winningCard = trick.reduce((prev, current) => {
     if (!prev) {
@@ -135,6 +136,21 @@ export function getTrickWinner(trick, suit) {
  * @returns {bool} valid
  */
 export function isValidPlay(card, hand, trick) {
+  // First of all check player has card on hand
+  if (!hand.includes(card)) {
+    return false;
+  }
+
+  // Player can always play lizard
+  if (card === "L") {
+    return true;
+  }
+
+  // Player can always play snake
+  if (card === "S") {
+    return true;
+  }
+
   // First card in trick dictates the suit that other
   // players must follow
   const commandingSuit = trick[0] ? trick[0][0] : null;
@@ -148,9 +164,6 @@ export function isValidPlay(card, hand, trick) {
       return false;
     }
   }
-
-  // Check if player has suit on hand
-  // if card is not of that suit it's an invalid
   return true;
 }
 
@@ -160,7 +173,7 @@ export function isValidPlay(card, hand, trick) {
  * The function will figure out what player and what trick is in play
  * based on the card input & current state, and return a new state
  *
- * Will return an { error: "message" } if an invalid play is made, altough
+ * Will return an { error: "invalid play" } if an invalid play is made, altough
  * this should be made impossible via the game UI, but in case of a UI bug
  * or malicious user.
  *
@@ -173,34 +186,39 @@ export function playCard(card, currentState) {
   let hands = currentState.hands.slice(0);
   let currentTrick = tricks[tricks.length - 1];
 
-  // TODO: call isValidMove()
-
   // Time for new trick?
   if (hands.length === currentTrick.length) {
     tricks.push([]);
     currentTrick = tricks[tricks.length - 1];
   }
 
+  // Figure out whos turn it is
   let currentPlayerIndex;
 
-  // First trick, first card, default to first player
-  if (tricks.length === 1 && currentTrick.length === 0) {
-    currentPlayerIndex = 0;
+  if (tricks.length > 1) {
+    // We need to look at all previous tricks to get the winner of
+    // the current trick
+    let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
+      if (trick[0] && trick[0][0] && trick.length == hands.length) {
+        return getTrickWinner(trick, trick[0][0]) + prevTrickWinner;
+      } else {
+        return prevTrickWinner;
+      }
+    }, 0);
+
+    currentPlayerIndex = (prevTrickWinner + currentTrick.length) % hands.length;
+  } else {
+    currentPlayerIndex = currentTrick.length;
   }
 
-  // First card, second trick or later? We need to figure out who starts
-  // by looking at who won last trick
-  else if (tricks.length > 1 && currentTrick.length === 0) {
-    let prevTrick = tricks[tricks.length - 2];
-    currentPlayerIndex = getTrickWinner(prevTrick, prevTrick[0][0]);
-  }
-
-  // Not first card, find next player in line
-  else if (currentTrick.length > 0) {
-    currentPlayerIndex = 1;
-    // find the hand with most cards on hand
-    let nextHand = hands.reduce((a, b) => (b.length > a.length ? b : a), []);
-    currentPlayerIndex = hands.indexOf(nextHand);
+  // is play valid?
+  if (!isValidPlay(card, hands[currentPlayerIndex], currentTrick)) {
+    return {
+      error: "invalid play",
+      currentPlayerIndex: currentPlayerIndex,
+      hand: hands[currentPlayerIndex],
+      card,
+    };
   }
 
   // Finally make the play!
