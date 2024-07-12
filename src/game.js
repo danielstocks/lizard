@@ -103,8 +103,7 @@ export function getTrickWinner(trick, suit) {
       return current;
     }
 
-    // Snakes never win? or do they...
-    // Q: What happens if all cards are snakes?
+    /* Snakes always lose */
     if (prev === "S") {
       return current;
     }

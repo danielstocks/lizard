@@ -78,6 +78,10 @@ describe("get trick winner", () => {
   test("first snake always loses", () => {
     assert.strictEqual(getTrickWinner(["S", "H2", "S", "S"], "C"), 1);
   });
+
+  test("first snake wins if only snakes are played", () => {
+    assert.strictEqual(getTrickWinner(["S", "S", "S"], "C"), 0);
+  });
 });
 
 // NOTE: These theses have been run in order
@@ -86,7 +90,6 @@ let roundState;
 describe("play round", () => {
   before(() => {
     roundState = createNewRound(3, 3);
-    console.log(roundState);
   });
 
   describe("first trick", () => {
