@@ -2,6 +2,7 @@ import { describe, test, before } from "node:test";
 import assert from "node:assert";
 import {
   createNewRound,
+  playRound,
   createDeck,
   playCard,
   getTrickWinner,
@@ -14,20 +15,27 @@ describe("create cards", () => {
   });
 });
 
-describe("new round", () => {
+let mockPlayers = [{ name: "daniel" }, { name: "sara" }, { name: "ruth" }];
+
+describe("play round", () => {
   test("number of hands", () => {
-    const newRound = createNewRound(3, 5);
-    assert.strictEqual(newRound.hands.length, 5);
+    const newRound = createNewRound(3, mockPlayers);
+    assert.strictEqual(newRound.moves[0].hands.length, 3);
   });
 
   test("number of dealt cards per hand", () => {
-    const newRound = createNewRound(3, 5);
-    assert.strictEqual(newRound.hands[0].length, 3);
+    const newRound = createNewRound(3, mockPlayers);
+    assert.strictEqual(newRound.moves[0].hands[0].length, 3);
   });
 
   test("trump card", () => {
-    const newRound = createNewRound(3, 5);
-    assert.strictEqual(newRound.trump, "C4");
+    const newRound = createNewRound(3, mockPlayers);
+    assert.strictEqual(newRound.trumpCard, "H11");
+  });
+
+  test("empty player estimates", () => {
+    const newRound = createNewRound(3, mockPlayers);
+    assert.deepStrictEqual(newRound.playerEstimates, []);
   });
 });
 
@@ -87,48 +95,50 @@ describe("get trick winner", () => {
 // NOTE: These theses have been run in order
 // as they rely on a mutating roundState
 let roundState;
+
 describe("play round", () => {
   before(() => {
-    roundState = createNewRound(3, 3);
+    roundState = playRound(3, [
+      { name: "Daniel" },
+      { name: "Bot 1" },
+      { name: "Bot 2" },
+    ]);
   });
 
   describe("first trick", () => {
     test("first play", () => {
       roundState = playCard("H2", roundState);
-      assert.deepStrictEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [
           ["H5", "H8"],
           ["H3", "H6", "H9"],
           ["H4", "H7", "H10"],
         ],
         tricks: [["H2"]],
-        trump: "H11",
       });
     });
 
     test("second play", () => {
       roundState = playCard("H9", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [
           ["H5", "H8"],
           ["H3", "H6"],
           ["H4", "H7", "H10"],
         ],
         tricks: [["H2", "H9"]],
-        trump: "H11",
       });
     });
 
     test("third play", () => {
       roundState = playCard("H7", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [
           ["H5", "H8"],
           ["H3", "H6"],
           ["H4", "H10"],
         ],
         tricks: [["H2", "H9", "H7"]],
-        trump: "H11",
       });
     });
   });
@@ -136,34 +146,31 @@ describe("play round", () => {
   describe("second trick", () => {
     test("first play", () => {
       roundState = playCard("H6", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [["H5", "H8"], ["H3"], ["H4", "H10"]],
         tricks: [["H2", "H9", "H7"], ["H6"]],
-        trump: "H11",
       });
     });
 
     test("second play", () => {
       roundState = playCard("H10", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [["H5", "H8"], ["H3"], ["H4"]],
         tricks: [
           ["H2", "H9", "H7"],
           ["H6", "H10"],
         ],
-        trump: "H11",
       });
     });
 
     test("third play", () => {
       roundState = playCard("H5", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [["H8"], ["H3"], ["H4"]],
         tricks: [
           ["H2", "H9", "H7"],
           ["H6", "H10", "H5"],
         ],
-        trump: "H11",
       });
     });
   });
@@ -171,36 +178,33 @@ describe("play round", () => {
   describe("third trick", () => {
     test("first play", () => {
       roundState = playCard("H4", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [["H8"], ["H3"], []],
         tricks: [["H2", "H9", "H7"], ["H6", "H10", "H5"], ["H4"]],
-        trump: "H11",
       });
     });
 
     test("second play", () => {
       roundState = playCard("H8", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [[], ["H3"], []],
         tricks: [
           ["H2", "H9", "H7"],
           ["H6", "H10", "H5"],
           ["H4", "H8"],
         ],
-        trump: "H11",
       });
     });
 
     test("third play", () => {
       roundState = playCard("H3", roundState);
-      assert.deepEqual(roundState, {
+      assert.deepStrictEqual(roundState.moves.at(-1), {
         hands: [[], [], []],
         tricks: [
           ["H2", "H9", "H7"],
           ["H6", "H10", "H5"],
           ["H4", "H8", "H3"],
         ],
-        trump: "H11",
       });
     });
   });

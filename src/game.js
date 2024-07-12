@@ -1,3 +1,57 @@
+/* 
+
+TODO: Start a new game:
+
+{
+  log: [
+    timestamp: "2024-07-12T12:33:42.320Z"
+    message: "Game started"
+  ]
+  players: [
+    { name: "Daniel", type: "human", playCard(), estimate()}
+    { name: "Bot 1", type: "bot", playCard(), estimate()}
+    { name: "Bot 2", type": bot", playCard(), estimate()}
+  ,],
+  startingPlayerIndex: 0
+  rounds: [
+    {
+      trump: "C9",
+      playerEstimates: [1, 0, 1]
+      // Adds a new entry for every move for undo/redo/replay
+      moves: [{
+        hands: [],
+        tricks: []
+      }],
+    },
+  ]
+}
+
+---
+3. ask/await for playerEstimate - prison rules
+4. all players estimated? begin play
+5. ask/await for playCard
+6. continue until all cards have been played (check for empty hands)
+---
+*/
+
+export function playRound(roundCount, players) {
+  let round = createNewRound(roundCount, players);
+  log(`Starting round ${roundCount} --`);
+
+  let playerEstimates = [];
+  log(`- Estimation Phase`);
+  for (let player of players) {
+    log(`-- ${player.name} thinks they can win ? tricks`);
+    playerEstimates.push("?");
+  }
+
+  //console.log(playerEstimates);
+
+  log(`- Play Phase`);
+
+  return round;
+}
+
 /**
  * Start a new round, returns a new round state
  * @param {number} round Number of round (how many cards to deal per player)
@@ -9,23 +63,29 @@ export function createNewRound(round, players) {
 
   // Initilize player hands
   let hands = [
-    ...Array(players)
+    ...Array(players.length)
       .keys()
       .map(() => []),
   ];
 
   // Deal cards
-  for (var i = 0; i < round * players; i++) {
+  for (var i = 0; i < round * players.length; i++) {
     let [dealtCard, remainingCards] = dealCardFromDeck(deck);
     deck = remainingCards;
-    hands[i % players].push(dealtCard);
+    hands[i % players.length].push(dealtCard);
   }
 
   // Create initial game state
   return {
-    hands,
-    tricks: [[]],
-    trump: dealCardFromDeck(deck)[0],
+    moves: [
+      {
+        hands,
+        tricks: [],
+      },
+    ],
+    trumpCard: dealCardFromDeck(deck)[0],
+    playerEstimates: [],
+    players,
   };
 }
 
@@ -181,34 +241,31 @@ export function isValidPlay(card, hand, trick) {
  * @returns {object} state New state of game after car has been played
  */
 export function playCard(card, currentState) {
-  let tricks = currentState.tricks.slice(0);
-  let hands = currentState.hands.slice(0);
+  let tricks = currentState.moves.at(-1).tricks.slice(0);
+  let hands = currentState.moves.at(-1).hands.slice(0);
+
   let currentTrick = tricks[tricks.length - 1];
 
   // Time for new trick?
-  if (hands.length === currentTrick.length) {
+  if (!currentTrick || hands.length === currentTrick.length) {
     tricks.push([]);
     currentTrick = tricks[tricks.length - 1];
+    log(`-- Playing trick #${tricks.length}`);
   }
 
-  // Figure out whos turn it is
-  let currentPlayerIndex;
+  // To find whos turn it is we need to look at
+  // all tricks to deduce know who won last trick
+  let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
+    if (trick[0] && trick[0][0] && trick.length == hands.length) {
+      return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
+    } else {
+      return prevTrickWinner;
+    }
+  }, 0);
 
-  if (tricks.length > 1) {
-    // We need to look at all previous tricks to get the winner of
-    // the current trick
-    let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
-      if (trick[0] && trick[0][0] && trick.length == hands.length) {
-        return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
-      } else {
-        return prevTrickWinner;
-      }
-    }, 0);
-
-    currentPlayerIndex = (prevTrickWinner + currentTrick.length) % hands.length;
-  } else {
-    currentPlayerIndex = currentTrick.length;
-  }
+  // Use som arithmetic to create a "circular" index accessed array
+  let currentPlayerIndex =
+    (prevTrickWinner + currentTrick.length) % hands.length;
 
   // is play valid?
   if (!isValidPlay(card, hands[currentPlayerIndex], currentTrick)) {
@@ -220,16 +277,33 @@ export function playCard(card, currentState) {
     };
   }
 
-  // Finally make the play!
+  // All good so far? Play the card!
   currentTrick.push(card);
-  currentTrick = [...currentTrick, card];
   hands[currentPlayerIndex] = hands[currentPlayerIndex].filter(
     (cardOnHand) => cardOnHand !== card,
   );
 
+  log(
+    `--- Player ${currentState.players[currentPlayerIndex].name} plays ${card}`,
+  );
+
+  // End of trick - Log winner
+  if (hands.length === currentTrick.length) {
+    let thisTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
+      return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
+    }, 0);
+
+    log(
+      `--- Winner: ${currentState.players[thisTrickWinner % hands.length].name}`,
+    );
+  }
+
   return {
     ...currentState,
-    hands,
-    tricks,
+    moves: [...currentState.moves, { hands, tricks }],
   };
+}
+
+function log(msg) {
+  console.log(new Date().toLocaleTimeString(), "| game log:", msg);
 }
