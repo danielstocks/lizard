@@ -56,6 +56,10 @@ export class MockPlayer extends Player {
   async estimate() {
     return 1;
   }
+  // Play first valid card
+  async playCard(hand, trick) {
+    return hand.find((card) => isValidPlay(card, hand, trick));
+  }
 }
 
 export class CLIPlayer extends Player {
