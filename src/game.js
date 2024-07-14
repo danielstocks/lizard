@@ -1,53 +1,119 @@
-/* 
-
-TODO: Start a new game:
-
-{
-  log: [
-    timestamp: "2024-07-12T12:33:42.320Z"
-    message: "Game started"
-  ]
-  players: [
-    { name: "Daniel", type: "human", playCard(), estimate()}
-    { name: "Bot 1", type: "bot", playCard(), estimate()}
-    { name: "Bot 2", type": bot", playCard(), estimate()}
-  ,],
-  startingPlayerIndex: 0
-  rounds: [
-    {
-      trump: "C9",
-      playerEstimates: [1, 0, 1]
-      // Adds a new entry for every move for undo/redo/replay
-      moves: [{
-        hands: [],
-        tricks: []
-      }],
-    },
-  ]
+// TODO: Prison Rules
+function isValidEstimate(estimate, roundCount) {
+  if (isNaN(estimate)) {
+    console.log("Estimate must be a valid number");
+    return false;
+  }
+  if (estimate > roundCount) {
+    console.log("Estimate cannot be larger than", roundCount);
+    return false;
+  }
+  if (estimate < 0) {
+    console.log("Estimate cannot be less than", 0);
+    return false;
+  }
+  return true;
 }
 
----
-5. ask/await for playCard
-6. continue until all cards have been played (check for empty hands)
----
-*/
+// Pass in a completed round and get what player won what trick
+function getTrickWinners(round) {
+  let tricks = round.moves.at(-1).tricks;
+  return tricks.reduce((acc, trick, i) => {
+    let prevWinner = acc[i] || 0;
+    let winner =
+      (getTrickWinner(trick, round.trump) + prevWinner) % trick.length;
+    //console.log("winner:", round.players[winner].name);
+    return [...acc, winner];
+  }, []);
+}
 
-export function playRound(roundCount, players) {
+// Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
+// aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
+function getAggregatePlayerWins(trickWinners, numPlayers) {
+  return trickWinners.reduce((acc, player) => {
+    if (acc[player]) {
+      acc[player] = acc[player] + 1;
+    } else {
+      acc[player] = 1;
+    }
+    return acc;
+  }, new Array(numPlayers).fill(0));
+}
+
+// Return the index of the player whos turn it is
+function getCurrentPlayerIndex(round) {
+  let tricks = round.moves.at(-1).tricks;
+  let hands = round.moves.at(-1).hands;
+  let currentTrick = tricks[tricks.length - 1] || [];
+
+  let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
+    if (trick[0] && trick[0][0] && trick.length == hands.length) {
+      return getTrickWinner(trick, round.trump) + prevTrickWinner;
+    } else {
+      return prevTrickWinner;
+    }
+  }, 0);
+  // Use some arithmetic to create a "circular" index accessed array
+  return (prevTrickWinner + currentTrick.length) % hands.length;
+}
+
+// Big badaboom function
+export async function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
-  log(`Starting round ${roundCount} --`);
+  log(`# Starting round ${roundCount}`);
 
+  // -- ESTIMATION PHASE --
   log(`- Estimation Phase`);
-  // TODO: Prison rules?
-  round.playerEstimates = players.map((player, i) => {
-    let estimate = player.estimate();
+  let i = 0;
+  for (let player of players) {
+    let estimate;
+    do {
+      estimate = parseFloat(await player.estimate(round.moves[0].hands[i]));
+    } while (!isValidEstimate(estimate, roundCount));
+
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${estimate !== 1 ? "s" : ""}`,
     );
-    return player.estimate(round.moves[0].hands[i]);
-  });
+    i++;
+    round.playerEstimates.push(estimate);
+  }
 
+  // -- PLAY PHASE --
   log(`- Play Phase`);
+  // Play until all hands in round are empty
+  while (round.moves.at(-1).hands.flat().length > 0) {
+    let tricks = round.moves.at(-1).tricks;
+    let hands = round.moves.at(-1).hands;
+    let currentTrick = tricks[tricks.length - 1] || [];
+    let currentPlayerIndex = getCurrentPlayerIndex(round);
+    let card = await players[currentPlayerIndex].playCard(
+      hands[currentPlayerIndex],
+      currentTrick,
+    );
+    const newRound = playCard(card, round);
+    if (newRound.error) {
+      console.log("\nError:", newRound.error, ":", card);
+    } else {
+      round = newRound;
+    }
+  }
 
+  // -- SUMMARY PHASE --
+  log("- Round Summary");
+  let aggregatePlayerWins = getAggregatePlayerWins(
+    getTrickWinners(round),
+    players.length,
+  );
+  let n = 0;
+  for (let player of players) {
+    let estimate = round.playerEstimates[n];
+    let pluralize = estimate !== 1 ? "s" : "";
+    let wins = aggregatePlayerWins[n];
+    log(
+      `-- ${player.name} estimated ${estimate} trick${pluralize} and won ${wins}`,
+    );
+    n++;
+  }
   return round;
 }
 
@@ -252,19 +318,7 @@ export function playCard(card, currentState) {
     log(`-- Playing trick #${tricks.length}`);
   }
 
-  // To find whos turn it is we need to look at
-  // all tricks to deduce know who won last trick
-  let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
-    if (trick[0] && trick[0][0] && trick.length == hands.length) {
-      return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
-    } else {
-      return prevTrickWinner;
-    }
-  }, 0);
-
-  // Use som arithmetic to create a "circular" index accessed array
-  let currentPlayerIndex =
-    (prevTrickWinner + currentTrick.length) % hands.length;
+  let currentPlayerIndex = getCurrentPlayerIndex(currentState);
 
   // is play valid?
   if (!isValidPlay(card, hands[currentPlayerIndex], currentTrick)) {
@@ -272,6 +326,7 @@ export function playCard(card, currentState) {
       error: "invalid play",
       currentPlayerIndex: currentPlayerIndex,
       hand: hands[currentPlayerIndex],
+      currentTrick,
       card,
     };
   }
@@ -291,10 +346,8 @@ export function playCard(card, currentState) {
     let thisTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
       return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
     }, 0);
-
-    log(
-      `--- Winner: ${currentState.players[thisTrickWinner % hands.length].name}`,
-    );
+    let playerName = currentState.players[thisTrickWinner % hands.length].name;
+    log(`--- Winner: ${playerName}`);
   }
 
   return {

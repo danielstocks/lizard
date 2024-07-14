@@ -1,5 +1,6 @@
 import { describe, test, before } from "node:test";
 import assert from "node:assert";
+import { MockPlayer } from "./player.js";
 import {
   createNewRound,
   playRound,
@@ -9,21 +10,17 @@ import {
   isValidPlay,
 } from "./game.js";
 
+let mockPlayers = [
+  new MockPlayer("Daniel"),
+  new MockPlayer("Ruth"),
+  new MockPlayer("Sara"),
+];
+
 describe("create cards", () => {
   test("64 cards in a deck", () => {
     assert.strictEqual(createDeck().length, 60);
   });
 });
-
-let estimate = function () {
-  return 1;
-};
-
-let mockPlayers = [
-  { name: "daniel", estimate },
-  { name: "sara", estimate },
-  { name: "ruth", estimate },
-];
 
 describe("play round", () => {
   test("number of hands", () => {
@@ -105,8 +102,8 @@ describe("get trick winner", () => {
 let roundState;
 
 describe("play round", () => {
-  before(() => {
-    roundState = playRound(3, mockPlayers);
+  before(async () => {
+    roundState = await playRound(3, mockPlayers);
   });
 
   describe("first trick", () => {

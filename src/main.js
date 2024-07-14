@@ -1,38 +1,16 @@
-import readline from "readline";
+import { playRound } from "./game.js";
+import { RandomBotPlayer, CLIPlayer } from "./player.js";
 
-function userInput(query) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) =>
-    rl.question(query, (ans) => {
-      rl.close();
-      resolve(ans);
-    }),
-  );
-}
+let players = [
+  new CLIPlayer("Daniel"),
+  new RandomBotPlayer("Sara"),
+  new RandomBotPlayer("Ruth"),
+];
 
 async function init() {
-  console.log("\nWelcome to Lizard!\n");
-
-  let input;
-
-  while (!["y", "n"].some((value) => value === input)) {
-    input = await userInput("Start a new game?\n - Yes (y)\n - No (n)\n=> ");
-  }
-
-  console.log(input);
-
-  if (input === "n") {
-    process.exit(1);
-  }
-  if (input === "y") {
-    console.log("\nStarting new game...");
-
-    process.exit(1);
-  }
+  console.log("\nWelcome to Lizard!");
+  console.log("\nStarting new game...\n");
+  await playRound(5, players);
 }
 
 init();
