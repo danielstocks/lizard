@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test node --test --watch",
+    "test:coverage": "NODE_ENV=test c8 -r html node --test --test-reporter dot"
   },
   "type": "module",
   "keywords": [],
@@ -14,6 +15,7 @@
     "node": "22.4.0"
   },
   "devDependencies": {
+    "c8": "^10.1.2",
     "prettier": "3.3.2"
   }
 }

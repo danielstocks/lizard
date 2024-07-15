@@ -68,7 +68,7 @@ export class CLIPlayer extends Player {
     let input = await userInput(
       "How many tricks do you think you can win?\n=> ",
     );
-    return input;
+    return parseFloat(input);
   }
   async playCard(hand, trick) {
     console.log("\nOn the table:", trick);

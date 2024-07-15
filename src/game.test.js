@@ -1,10 +1,11 @@
-import { describe, test } from "node:test";
 import assert from "node:assert";
+import { describe, test } from "node:test";
 import { MockPlayer } from "./player.js";
 import {
   createNewRound,
   playRound,
   createDeck,
+  isValidEstimate,
   getTrickWinner,
   isValidPlay,
 } from "./game.js";
@@ -14,6 +15,24 @@ let mockPlayers = [
   new MockPlayer("Ruth"),
   new MockPlayer("Sara"),
 ];
+
+describe("is valid estimate", () => {
+  test("must be a valid number", () => {
+    assert.strictEqual(isValidEstimate("x", 3), false);
+  });
+
+  test("less than number of rounds", () => {
+    assert.strictEqual(isValidEstimate(5, 3), false);
+  });
+
+  test("less than zero", () => {
+    assert.strictEqual(isValidEstimate(-1, 3), false);
+  });
+
+  test("valid estimate", () => {
+    assert.strictEqual(isValidEstimate(3, 3), true);
+  });
+});
 
 describe("create cards", () => {
   test("64 cards in a deck", () => {

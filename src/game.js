@@ -1,6 +1,6 @@
 // TODO: Prison Rules
-function isValidEstimate(estimate, roundCount) {
-  if (isNaN(estimate)) {
+export function isValidEstimate(estimate, roundCount) {
+  if (isNaN(estimate) || typeof estimate !== "number") {
     console.log("Estimate must be a valid number");
     return false;
   }
@@ -57,6 +57,10 @@ function getCurrentPlayerIndex(round) {
   return (prevTrickWinner + currentTrick.length) % hands.length;
 }
 
+function pluralize(count) {
+  return count !== 1 ? "s" : "";
+}
+
 // Big badaboom function
 export async function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
@@ -64,17 +68,15 @@ export async function playRound(roundCount, players) {
 
   // -- ESTIMATION PHASE --
   log(`- Estimation Phase`);
-  let i = 0;
-  for (let player of players) {
+  for (const [playerIndex, player] of players.entries()) {
     let estimate;
     do {
-      estimate = parseFloat(await player.estimate(round.moves[0].hands[i]));
+      estimate = await player.estimate(round.moves[0].hands[playerIndex]);
     } while (!isValidEstimate(estimate, roundCount));
 
     log(
-      `-- ${player.name} thinks they can win ${estimate} trick${estimate !== 1 ? "s" : ""}`,
+      `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
-    i++;
     round.playerEstimates.push(estimate);
   }
 
@@ -356,6 +358,10 @@ export function playCard(card, currentState) {
   };
 }
 
+/* c8 ignore start */
 function log(msg) {
-  console.log(new Date().toLocaleTimeString(), "| game log:", msg);
+  if (process.env.NODE_ENV !== "test") {
+    console.log(new Date().toLocaleTimeString(), "| game log:", msg);
+  }
 }
+/* c8 ignore end */
