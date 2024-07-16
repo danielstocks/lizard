@@ -4,6 +4,8 @@ import { MockPlayer } from "./player.js";
 import {
   createNewRound,
   playRound,
+  playCard,
+  playGame,
   createDeck,
   isValidEstimate,
   getTrickWinner,
@@ -126,5 +128,25 @@ describe("play round", () => {
         ["H10", "H8", "H9"],
       ],
     });
+  });
+});
+
+describe("play game", () => {
+  test("three with three players", async () => {
+    let result = await playGame(mockPlayers, 1);
+    assert.deepStrictEqual(result.rounds[0].moves.at(-1), {
+      hands: [[], [], []],
+      tricks: [["H2", "H3", "H4"]],
+    });
+  });
+});
+
+describe("play card", () => {
+  test("play invalid card", () => {
+    assert.deepStrictEqual(
+      playCard("D", { moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }] })
+        .error,
+      "invalid play",
+    );
   });
 });

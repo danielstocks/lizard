@@ -1,14 +1,14 @@
 # Backlog
 
 ## Todo
-- Play entire game of multiple rounds
 - Prison Rules
 - Calculate scores and declare winner
 
 ## In Progress
-- Refactor and test game.js
+- Play entire game of multiple rounds
 
 ### Done
+- Refactor and test game.js
 - Core Game Logic
 - Play single round
 - Random Bot Player

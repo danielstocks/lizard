@@ -1,3 +1,16 @@
+export async function playGame(players, roundsToPlay) {
+  if (!roundsToPlay) {
+    roundsToPlay = Math.floor(60 / players.length);
+  }
+  let game = { rounds: [] };
+  // TODO: Last round there is no trump card (Deck is empty), how to deal with that?
+  for (let i = 1; i <= roundsToPlay; i++) {
+    let round = await playRound(roundsToPlay, players);
+    game.rounds.push(round);
+  }
+  return game;
+}
+
 // TODO: Prison Rules
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
@@ -22,7 +35,6 @@ function getTrickWinners(round) {
     let prevWinner = acc[i] || 0;
     let winner =
       (getTrickWinner(trick, round.trump) + prevWinner) % trick.length;
-    //console.log("winner:", round.players[winner].name);
     return [...acc, winner];
   }, []);
 }
@@ -109,10 +121,9 @@ export async function playRound(roundCount, players) {
   let n = 0;
   for (let player of players) {
     let estimate = round.playerEstimates[n];
-    let pluralize = estimate !== 1 ? "s" : "";
     let wins = aggregatePlayerWins[n];
     log(
-      `-- ${player.name} estimated ${estimate} trick${pluralize} and won ${wins}`,
+      `-- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
     );
     n++;
   }
@@ -218,10 +229,6 @@ export function dealCardFromDeck(deck) {
 export function getTrickWinner(trick, suit) {
   let commandingSuit = suit === "L" ? trick[0][0] : suit;
   let winningCard = trick.reduce((prev, current) => {
-    if (!prev) {
-      return current;
-    }
-
     /* Lizards always win */
     if (prev === "L") {
       return prev;
