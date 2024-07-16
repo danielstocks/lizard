@@ -115,6 +115,10 @@ describe("get trick winner", () => {
   test("first snake wins if only snakes are played", () => {
     assert.strictEqual(getTrickWinner(["S", "S", "S"], "C"), 0);
   });
+
+  test("first lizard wins if only lizards are played", () => {
+    assert.strictEqual(getTrickWinner(["L", "L", "L"], "C"), 0);
+  });
 });
 
 describe("play round", () => {
@@ -147,6 +151,30 @@ describe("play card", () => {
       playCard("D", { moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }] })
         .error,
       "invalid play",
+    );
+  });
+
+  test("play lizards and snakes", () => {
+    assert.deepStrictEqual(
+      playCard("S", {
+        moves: [
+          {
+            tricks: [
+              ["L", "L", "L"],
+              ["L", "S"],
+            ],
+            hands: [[], [], ["S"]],
+          },
+        ],
+        players: mockPlayers,
+      }).moves.at(-1),
+      {
+        hands: [[], [], []],
+        tricks: [
+          ["L", "L", "L"],
+          ["L", "S", "S"],
+        ],
+      },
     );
   });
 });
