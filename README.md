@@ -1,13 +1,13 @@
 # Lizard Card Game
 
-<img src="https://github.com/danielstocks/lizard/assets/52788/39a139a0-e22a-40ab-8f38-134fa03cc50c" width=300 />
+![297210933-39a139a0-e22a-40ab-8f38-134fa03cc50c](https://github.com/user-attachments/assets/11fb46c4-b702-4ec6-8b12-14f2d6a144e1)
 
-Work in progres.
+
+A fun card game to play with friends (and foes). Work in progres.
+
 
 - Chek [RULES](RULES.md) for more information how the game is played.
-- Chek [BACKLOG](BACKLOG.md) for current developt status and roadmap
-
-
+- Chek [BACKLOG](BACKLOG.md) for current development status and roadmap.
 
 
 ## Development
@@ -37,7 +37,7 @@ Single test run with code coverage:
 
 ### Development philosophy and tech choices
 
-This is a personal hobby project and I've been wanting to explore the following
+This is a personal hobby project and I've been wanting to explore the following ideas:
 
 - How good can the DX with modern JavaScript and JSDoc be (compared to eg. TypeScript)
 - Use as few dependencies as possible
