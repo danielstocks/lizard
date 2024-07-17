@@ -1,16 +1,15 @@
 {
   "name": "lizard",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
+    "play": "node src/main.js",
     "test": "NODE_ENV=test node --test --watch",
     "test:coverage": "NODE_ENV=test c8 -r html node --test --test-reporter dot"
   },
   "type": "module",
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "The Lizard Card game",
   "volta": {
     "node": "22.4.0"
   },
