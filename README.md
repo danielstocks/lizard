@@ -1,9 +1,9 @@
-# Lizard Card Game
+# Lizard
 
-![297210933-39a139a0-e22a-40ab-8f38-134fa03cc50c](https://github.com/user-attachments/assets/11fb46c4-b702-4ec6-8b12-14f2d6a144e1)
+<img src="https://github.com/user-attachments/assets/11fb46c4-b702-4ec6-8b12-14f2d6a144e1" alt="The Lizard Card Game" width=320 />
+</br></br>
 
-
-A fun card game to play with friends (and foes). Work in progres.
+A fun card game to play with friends (or foes). Work in progres.
 
 
 - Chek [RULES](RULES.md) for more information how the game is played.
