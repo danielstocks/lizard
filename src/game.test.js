@@ -136,12 +136,17 @@ describe("play round", () => {
 });
 
 describe("play game", () => {
-  test("three with three players", async () => {
+  test("1 round with three players", async () => {
     let result = await playGame(mockPlayers, 1);
     assert.deepStrictEqual(result.rounds[0].moves.at(-1), {
       hands: [[], [], []],
       tricks: [["H2", "H3", "H4"]],
     });
+  });
+
+  test("three players", async () => {
+    let result = await playGame(mockPlayers);
+    assert.strictEqual(result.rounds.length, 20);
   });
 });
 
@@ -159,21 +164,19 @@ describe("play card", () => {
       playCard("S", {
         moves: [
           {
-            tricks: [
-              ["L", "L", "L"],
-              ["L", "S"],
+            hands: [
+              ["S", "S"],
+              ["L", "L"],
+              ["S12", "L"],
             ],
-            hands: [[], [], ["S"]],
+            tricks: [],
           },
         ],
         players: mockPlayers,
       }).moves.at(-1),
       {
-        hands: [[], [], []],
-        tricks: [
-          ["L", "L", "L"],
-          ["L", "S", "S"],
-        ],
+        hands: [["S"], ["L", "L"], ["S12", "L"]],
+        tricks: [["S"]],
       },
     );
   });

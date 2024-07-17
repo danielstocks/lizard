@@ -1,8 +1,10 @@
 # Backlog
 
 ## Todo
+- Unique identifiers for snake (Z) And Lizard (L) cards
 - Prison Rules
 - Calculate scores and declare winner
+- Last round there is no trump card (deck is empty)
 
 ## In Progress
 - Play entire game of multiple rounds

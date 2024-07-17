@@ -3,7 +3,6 @@ export async function playGame(players, roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
   }
   let game = { rounds: [] };
-  // TODO: Last round there is no trump card (Deck is empty), how to deal with that?
   for (let i = 1; i <= roundsToPlay; i++) {
     let round = await playRound(roundsToPlay, players);
     game.rounds.push(round);
@@ -11,7 +10,6 @@ export async function playGame(players, roundsToPlay) {
   return game;
 }
 
-// TODO: Prison Rules
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
     console.log("Estimate must be a valid number");
@@ -73,7 +71,12 @@ function pluralize(count) {
   return count !== 1 ? "s" : "";
 }
 
-// Big badaboom function
+/**
+ * Play a round
+ * @param {number} round Number of round to play
+ * @param {Array} players List of player objects
+ * @returns {object} state The final state and all moves made during the round
+ */
 export async function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
   log(`# Starting round ${roundCount}`);
@@ -134,6 +137,7 @@ export async function playRound(roundCount, players) {
  * Start a new round, returns a new round state
  * @param {number} round Number of round (how many cards to deal per player)
  * @param {number} players Number of participating players
+ * @returns {object} state Initial empty state of a round
  */
 export function createNewRound(round, players) {
   // Shuffle deck
@@ -328,13 +332,14 @@ export function playCard(card, currentState) {
   }
 
   let currentPlayerIndex = getCurrentPlayerIndex(currentState);
+  let currentPlayerHand = hands[currentPlayerIndex];
 
   // is play valid?
-  if (!isValidPlay(card, hands[currentPlayerIndex], currentTrick)) {
+  if (!isValidPlay(card, currentPlayerHand, currentTrick)) {
     return {
       error: "invalid play",
       currentPlayerIndex: currentPlayerIndex,
-      hand: hands[currentPlayerIndex],
+      hand: currentPlayerHand,
       currentTrick,
       card,
     };
@@ -342,8 +347,9 @@ export function playCard(card, currentState) {
 
   // All good so far? Play the card!
   currentTrick.push(card);
-  hands[currentPlayerIndex] = hands[currentPlayerIndex].filter(
-    (cardOnHand) => cardOnHand !== card,
+  hands[currentPlayerIndex] = currentPlayerHand.toSpliced(
+    currentPlayerHand.findIndex((cardOnHand) => cardOnHand === card),
+    1,
   );
 
   log(

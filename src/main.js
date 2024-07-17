@@ -11,7 +11,7 @@ let players = [
 async function init() {
   console.log("\nWelcome to Lizard!");
   console.log("\nStarting new game...\n");
-  await playGame(players, 18);
+  await playGame(players);
 }
 
 init();
