@@ -10,6 +10,7 @@ import {
   isValidEstimate,
   getTrickWinner,
   isValidPlay,
+  pluralize,
 } from "./game.js";
 
 let mockPlayers = [
@@ -17,6 +18,16 @@ let mockPlayers = [
   new MockPlayer("Ruth"),
   new MockPlayer("Sara"),
 ];
+
+describe("pluralize", () => {
+  test("singlular", () => {
+    assert.strictEqual(pluralize(1), "");
+  });
+  test("plural", () => {
+    assert.strictEqual(pluralize(0), "s");
+    assert.strictEqual(pluralize(2), "s");
+  });
+});
 
 describe("is valid estimate", () => {
   test("must be a valid number", () => {

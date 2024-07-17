@@ -67,7 +67,7 @@ function getCurrentPlayerIndex(round) {
   return (prevTrickWinner + currentTrick.length) % hands.length;
 }
 
-function pluralize(count) {
+export function pluralize(count) {
   return count !== 1 ? "s" : "";
 }
 
