@@ -1,12 +1,26 @@
+export function calculateRoundScore(round) {
+  let winners = getAggregatePlayerWins(getTrickWinners(round));
+  let points = round.playerEstimates.map((estimate, i) => {
+    let diff = winners[i] - estimate;
+    if (diff == 0) {
+      return 20 + estimate * 10;
+    } else {
+      return --diff * 10;
+    }
+  });
+  return points;
+}
+
 export async function playGame(players, roundsToPlay) {
   if (!roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
   }
   let game = { rounds: [] };
   for (let i = 1; i <= roundsToPlay; i++) {
-    let round = await playRound(roundsToPlay, players);
+    let round = await playRound(i, players);
     game.rounds.push(round);
   }
+  //console.log(JSON.stringify(game.rounds[3], null, 2));
   return game;
 }
 

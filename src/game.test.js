@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import { describe, test } from "node:test";
 import { MockPlayer } from "./player.js";
+import { gameTestFixture } from "./game.test.fixture.js";
 import {
   createNewRound,
   playRound,
@@ -11,6 +12,7 @@ import {
   getTrickWinner,
   isValidPlay,
   pluralize,
+  calculateRoundScore,
 } from "./game.js";
 
 let mockPlayers = [
@@ -18,6 +20,13 @@ let mockPlayers = [
   new MockPlayer("Ruth"),
   new MockPlayer("Sara"),
 ];
+
+describe("calculate round score", () => {
+  test("returns accurate score", () => {
+    let score = calculateRoundScore(gameTestFixture);
+    assert.deepStrictEqual(score, [-20, 30, 40]);
+  });
+});
 
 describe("pluralize", () => {
   test("singlular", () => {
@@ -158,6 +167,8 @@ describe("play game", () => {
   test("three players", async () => {
     let result = await playGame(mockPlayers);
     assert.strictEqual(result.rounds.length, 20);
+    assert.strictEqual(result.rounds[0].moves.length, 4);
+    assert.strictEqual(result.rounds.at(-1).moves.length, 61);
   });
 });
 

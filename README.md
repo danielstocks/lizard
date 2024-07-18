@@ -37,12 +37,19 @@ Single test run with code coverage:
 
 ### Development philosophy and tech choices
 
-This is a personal hobby project and I've been wanting to explore the following ideas:
+This is a personal hobby project and I've been wanting to explore the following concepts and ideas:
 
 - How good can the DX with modern JavaScript and JSDoc be (compared to eg. TypeScript)
 - Use as few dependencies as possible
-  - Using ESM natively without any transpilation or bundling
-  - Use built-in Node.js [test runner](https://nodejs.org/api/test.html)
+  - Server Side/Node.js
+    - Using ESM natively without any transpilation or bundling.
+    - Use built-in Node.js [test runner](https://nodejs.org/api/test.html).
+    - Use built-in Node.js [SQLite library](https://nodejs.org/api/sqlite.html).
+    - Use built-in WebSockets and/or Server Push Events
+  - Client Side
+     - No React :)
+     - Revisiting Modern "Vanilla" CSS. What's possible?
+     - View Transitions API
 
 
 ### Code conventions

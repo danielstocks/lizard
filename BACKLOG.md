@@ -9,7 +9,7 @@
 ## In Progress
 - Feature: Calculate scores and declare winner
 
-### Done
+## Done
 - Feature: Play entire game of multiple rounds in CLI
 - Chore: Refactor and test game.js
 - Feature: Play against bot player(s)

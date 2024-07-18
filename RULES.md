@@ -59,7 +59,7 @@ or if you play the highest trump card.
 
 #### Rules of play
 
-- The first card played determines the suit that has to be followed.  You must
+- The first card played determines the suit that has to be followed. You must
 - follow color and suit if you can A Lizard card will always win a trick (unless
 - a lizard has already been played by another player in the same trick) A snake
 - will always lose a trick (unless a snake has already been played by another
@@ -76,13 +76,9 @@ or if you play the highest trump card.
 
 At the end of the round, each player counts the number of tricks won.
 
-- If a player won the same number of tricks as estimated, they get 20 points,
-- plus 10 points for each trick won. For example: A player estimated and won 5
-- tricks, they get 70 points (20 + 50).
-- If a player didn't match their estimation, they get minus 10 points for the
-- difference between their estimation and number of tricks won. For example: A
-- player estimated 5 tricks, but only won 3, they get -20 points (5 - 3 = 2 x
-- 10)
+If a player won the same number of tricks as estimated, they get 20 points,plus 10 points for each trick won. For example: A player estimated and won 5 tricks, they get 70 points (20 + 50).
+ 
+If a player didn't match their estimation, they get minus 10 points for the difference between their estimation and number of tricks won. For example: A player estimated 5 tricks, but only won 3, they get -20 points (5 - 3 = 2 x 10)
 
 The score for each player during a round is subtracted/added to their existing
 score from previous rounds. Each player starts the first round with a score of
