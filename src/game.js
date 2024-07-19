@@ -1,5 +1,20 @@
+export function calculateGameScore(game) {
+  return game.rounds.reduce(
+    (acc, round) => {
+      let roundScore = calculateRoundScore(round);
+      return acc.map((score, i) => {
+        return score + roundScore[i];
+      });
+    },
+    [0, 0, 0],
+  );
+}
+
 export function calculateRoundScore(round) {
-  let winners = getAggregatePlayerWins(getTrickWinners(round));
+  let winners = getAggregatePlayerWins(
+    getTrickWinners(round),
+    round.players.length,
+  );
   return round.playerEstimates.map((estimate, i) => {
     let diff = winners[i] - estimate;
     if (diff == 0) {
@@ -19,7 +34,19 @@ export async function playGame(players, roundsToPlay) {
     let round = await playRound(i, players);
     game.rounds.push(round);
   }
-  //console.log(JSON.stringify(game.rounds[3], null, 2));
+  log("# Game over");
+
+  let gameScore = calculateGameScore(game);
+  let winningScore = Math.max(...gameScore);
+
+  gameScore.forEach((score, i) => {
+    let winner = false;
+    if (score === winningScore) {
+      winner = true;
+    }
+    log("-", players[i].name, score, winner ? "- WINNER!" : "");
+  });
+
   return game;
 }
 
@@ -93,6 +120,9 @@ export function pluralize(count) {
 export async function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
   log(`# Starting round ${roundCount}`);
+
+  log(`- Dealing cards`);
+  log(`- Trump Card: ` + round.trumpCard);
 
   // -- ESTIMATION PHASE --
   log(`- Estimation Phase`);
@@ -225,7 +255,12 @@ export function createDeck() {
  * @returns {Array} deck
  */
 export function shuffleDeck(deck) {
-  return deck;
+  let array = deck.slice(0);
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 /**
@@ -385,9 +420,9 @@ export function playCard(card, currentState) {
 }
 
 /* c8 ignore start */
-function log(msg) {
+function log(...args) {
   if (process.env.NODE_ENV !== "test") {
-    console.log(new Date().toLocaleTimeString(), "| game log:", msg);
+    console.log(new Date().toLocaleTimeString(), "| game log:", ...args);
   }
 }
 /* c8 ignore end */

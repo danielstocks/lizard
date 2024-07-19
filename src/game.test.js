@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { describe, test } from "node:test";
 import { MockPlayer } from "./player.js";
-import { gameTestFixture } from "./game.test.fixture.js";
+import { roundTestFixture } from "./game.test.fixture.js";
 import {
   createNewRound,
   playRound,
@@ -13,6 +13,7 @@ import {
   isValidPlay,
   pluralize,
   calculateRoundScore,
+  calculateGameScore,
 } from "./game.js";
 
 let mockPlayers = [
@@ -21,9 +22,17 @@ let mockPlayers = [
   new MockPlayer("Sara"),
 ];
 
+describe("calculate game score", () => {
+  test("returns accumulated score of multiple rounds", async () => {
+    let game = await playGame(mockPlayers, 3);
+    let score = calculateGameScore(game);
+    assert.deepStrictEqual(score, [10, -60, 90]);
+  });
+});
+
 describe("calculate round score", () => {
   test("returns accurate score", () => {
-    let score = calculateRoundScore(gameTestFixture);
+    let score = calculateRoundScore(roundTestFixture);
     assert.deepStrictEqual(score, [-20, 30, 40]);
   });
 });

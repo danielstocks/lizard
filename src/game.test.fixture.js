@@ -1,4 +1,4 @@
-export const gameTestFixture = {
+export const roundTestFixture = {
   moves: [
     {
       hands: [

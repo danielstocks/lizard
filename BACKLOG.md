@@ -7,9 +7,10 @@
 - Chore: Test case for "Invalid card player" in playRound function
 
 ## In Progress
-- Feature: Calculate scores and declare winner
+- Feature: Scoresheet
 
 ## Done
+- Feature: Calculate scores and declare winner
 - Feature: Play entire game of multiple rounds in CLI
 - Chore: Refactor and test game.js
 - Feature: Play against bot player(s)
