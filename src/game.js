@@ -1,6 +1,6 @@
 export function calculateRoundScore(round) {
   let winners = getAggregatePlayerWins(getTrickWinners(round));
-  let points = round.playerEstimates.map((estimate, i) => {
+  return round.playerEstimates.map((estimate, i) => {
     let diff = winners[i] - estimate;
     if (diff == 0) {
       return 20 + estimate * 10;
@@ -8,7 +8,6 @@ export function calculateRoundScore(round) {
       return --diff * 10;
     }
   });
-  return points;
 }
 
 export async function playGame(players, roundsToPlay) {
