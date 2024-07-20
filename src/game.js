@@ -1,3 +1,5 @@
+import { shuffleArray } from "./util.js";
+
 export function calculateGameScore(game) {
   return game.rounds.reduce(
     (acc, round) => {
@@ -184,7 +186,8 @@ export async function playRound(roundCount, players) {
  */
 export function createNewRound(round, players) {
   // Shuffle deck
-  let deck = shuffleDeck(createDeck());
+  let deck =
+    process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
 
   // Initilize player hands
   let hands = [
@@ -247,20 +250,6 @@ export function createDeck() {
     // Snakes
     ...["S", "S", "S", "S"],
   ];
-}
-
-/**
- * Shuffle and return deck of highCards
- * @param {Array} deck
- * @returns {Array} deck
- */
-export function shuffleDeck(deck) {
-  let array = deck.slice(0);
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
 }
 
 /**
