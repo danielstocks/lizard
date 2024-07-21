@@ -1,8 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
 
-import { MockPlayer } from "../packages/player.js";
-import { playRound, playGame } from "./tiny.js";
+import { playRound, playGame, MockPlayer } from "./tiny.js";
 
 let mockPlayers = [
   new MockPlayer("Daniel"),

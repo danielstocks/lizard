@@ -5,7 +5,7 @@
  * Simply run `node tiny.js --play` and follow the instructions to play.
  * @module tiny
  */
-
+import readline from "readline";
 import {
   getCurrentPlayerIndex,
   getAggregatePlayerWins,
@@ -15,8 +15,80 @@ import {
   calculateGameScore,
   isValidEstimate,
 } from "../packages/game.js";
-import { pluralize } from "../packages/util.js";
-import { RandomBotPlayer, CLIPlayer } from "../packages/player.js";
+import { pluralize, getRandomInt } from "../packages/util.js";
+import { isValidPlay } from "../packages/game.js";
+
+// Process and wait for user input via CLI
+function userInput(query) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) =>
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer);
+    }),
+  );
+}
+
+// Base clase for a player
+class Player {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+// A "bot" player that just makes random decisions
+export class RandomBotPlayer extends Player {
+  // Get random etimate
+  async estimate(hand) {
+    return getRandomInt(0, hand.length);
+  }
+
+  // Play random card
+  async playCard(hand, trick) {
+    let validCardsToPlay = hand.filter((card) =>
+      isValidPlay(card, hand, trick),
+    );
+    return validCardsToPlay[
+      Math.floor(Math.random() * validCardsToPlay.length)
+    ];
+  }
+}
+
+// Deterministic "mock" player for testing purposes
+export class MockPlayer extends Player {
+  // Always guess 1
+  async estimate() {
+    return 1;
+  }
+  // Always play first valid card on hand
+  async playCard(hand, trick) {
+    return hand.find((card) => isValidPlay(card, hand, trick));
+  }
+}
+
+// A human player awaiting CLI input
+export class CLIPlayer extends Player {
+  async estimate(hand) {
+    console.log("\nYour hand:", hand);
+    let input = await userInput(
+      "How many tricks do you think you can win?\n=> ",
+    );
+    return parseFloat(input);
+  }
+  async playCard(hand, trick) {
+    console.log("\nOn the table:", trick);
+    console.log("Your hand:", hand);
+
+    let input = await userInput("What card do you want to play?\n=> ");
+
+    // todo validate input
+    return input;
+  }
+}
 
 /**
  * Play a round
@@ -83,6 +155,20 @@ export async function playRound(roundCount, players) {
   return round;
 }
 
+/* BUG?
+10:12:38 AM | game log: - Trump Card: L
+On the table: []
+Your hand: [ 'H9', 'D8' ]
+What card do you want to play?
+=> D8
+10:13:18 AM | game log: -- Playing trick #1
+10:13:18 AM | game log: --- Player Daniel plays D8
+10:13:18 AM | game log: --- Player Button plays C11
+10:13:18 AM | game log: --- Player Sara plays S2
+10:13:18 AM | game log: --- Player Ruth plays D3
+10:13:18 AM | game log: --- Winner: Button
+*/
+
 export async function playGame(players, roundsToPlay) {
   if (!roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
@@ -108,16 +194,15 @@ export async function playGame(players, roundsToPlay) {
   return game;
 }
 
-let players = [
-  new CLIPlayer("Daniel"),
-  new RandomBotPlayer("Button"),
-  new RandomBotPlayer("Sara"),
-  new RandomBotPlayer("Ruth"),
-];
-
 async function init() {
   var args = process.argv.slice(2);
   if (args.includes("--play")) {
+    let players = [
+      new CLIPlayer("Daniel"),
+      new RandomBotPlayer("Button"),
+      new RandomBotPlayer("Sara"),
+      new RandomBotPlayer("Ruth"),
+    ];
     console.log("\nWelcome to Lizard!");
     console.log("\nStarting new game...\n");
     await playGame(players);

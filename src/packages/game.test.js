@@ -1,6 +1,5 @@
 import assert from "node:assert";
 import { describe, test } from "node:test";
-import { MockPlayer } from "./player.js";
 import { roundTestFixture } from "./game.test.fixture.js";
 import {
   createNewRound,
@@ -13,29 +12,7 @@ import {
   calculateGameScore,
 } from "./game.js";
 
-/* BUG?
- 
-10:12:38 AM | game log: - Trump Card: L
-
-On the table: []
-Your hand: [ 'H9', 'D8' ]
-What card do you want to play?
-=> D8
-
-10:13:18 AM | game log: -- Playing trick #1
-10:13:18 AM | game log: --- Player Daniel plays D8
-10:13:18 AM | game log: --- Player Button plays C11
-10:13:18 AM | game log: --- Player Sara plays S2
-10:13:18 AM | game log: --- Player Ruth plays D3
-10:13:18 AM | game log: --- Winner: Button
-
-*/
-
-let mockPlayers = [
-  new MockPlayer("Daniel"),
-  new MockPlayer("Ruth"),
-  new MockPlayer("Sara"),
-];
+let mockPlayers = [{ name: "Frodo" }, { name: "Sam" }, { name: "Merry" }];
 
 describe("calculate game score", () => {
   test("returns accumulated score of multiple rounds", async () => {
