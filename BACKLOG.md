@@ -4,21 +4,24 @@
 - Bug: Unique identifiers for snake (Z) And Lizard (L) cards
 - Bug: Implement proper prison Rules
 - Feature: In case of a draw?
+- Feature: Rotate Dealer
 - Bug: Last round there is no trump card (deck is empty)
 - Chore: Test case for "Invalid card player" in playRound function
 
 ## In Progress
-- Feature: Play game via HTTP (single player)
+- Feature: Server Game App (stateless, in memory-store)
 
 ## Done
 - Feature: Calculate scores and declare winner
-- Feature: Play entire game of multiple rounds in CLI
-- Chore: Refactor and test game.js
+- Chore: Refactor and write unit tests for core game logic
 - Feature: Play against bot player(s)
-- Feature: Play single round in CLI
-- Feature: Core Game Logic
+- Feature: Play entire game of multiple rounds in CLI (stateful)
+- Feature: Play single round in CLI (stateful)
+- Feature: Core Game Logi
 
 ## Roadmap 
-- Feature: Play game in a Web UI (singple player)
+- Feature: Play game via HTTP (single player)
+- Feature: Play game in Web UI (single player)
+- Feature: Play game in CLI (single player)
 - Feature: Scoresheet
 - Feature: Multiplayer

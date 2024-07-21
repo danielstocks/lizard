@@ -27,31 +27,6 @@ export function calculateRoundScore(round) {
   });
 }
 
-export async function playGame(players, roundsToPlay) {
-  if (!roundsToPlay) {
-    roundsToPlay = Math.floor(60 / players.length);
-  }
-  let game = { rounds: [] };
-  for (let i = 1; i <= roundsToPlay; i++) {
-    let round = await playRound(i, players);
-    game.rounds.push(round);
-  }
-  log("# Game over");
-
-  let gameScore = calculateGameScore(game);
-  let winningScore = Math.max(...gameScore);
-
-  gameScore.forEach((score, i) => {
-    let winner = false;
-    if (score === winningScore) {
-      winner = true;
-    }
-    log("-", players[i].name, score, winner ? "- WINNER!" : "");
-  });
-
-  return game;
-}
-
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
     console.log("Estimate must be a valid number");
@@ -69,7 +44,7 @@ export function isValidEstimate(estimate, roundCount) {
 }
 
 // Pass in a completed round and get what player won what trick
-function getTrickWinners(round) {
+export function getTrickWinners(round) {
   let tricks = round.moves.at(-1).tricks;
   return tricks.reduce((acc, trick, i) => {
     let prevWinner = acc[i] || 0;
@@ -81,7 +56,7 @@ function getTrickWinners(round) {
 
 // Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
 // aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
-function getAggregatePlayerWins(trickWinners, numPlayers) {
+export function getAggregatePlayerWins(trickWinners, numPlayers) {
   return trickWinners.reduce((acc, player) => {
     if (acc[player]) {
       acc[player] = acc[player] + 1;
@@ -93,7 +68,7 @@ function getAggregatePlayerWins(trickWinners, numPlayers) {
 }
 
 // Return the index of the player whos turn it is
-function getCurrentPlayerIndex(round) {
+export function getCurrentPlayerIndex(round) {
   let tricks = round.moves.at(-1).tricks;
   let hands = round.moves.at(-1).hands;
   let currentTrick = tricks[tricks.length - 1] || [];
@@ -107,75 +82,6 @@ function getCurrentPlayerIndex(round) {
   }, 0);
   // Use some arithmetic to create a "circular" index accessed array
   return (prevTrickWinner + currentTrick.length) % hands.length;
-}
-
-export function pluralize(count) {
-  return count !== 1 ? "s" : "";
-}
-
-/**
- * Play a round
- * @param {number} round Number of round to play
- * @param {Array} players List of player objects
- * @returns {object} state The final state and all moves made during the round
- */
-export async function playRound(roundCount, players) {
-  let round = createNewRound(roundCount, players);
-  log(`# Starting round ${roundCount}`);
-
-  log(`- Dealing cards`);
-  log(`- Trump Card: ` + round.trumpCard);
-
-  // -- ESTIMATION PHASE --
-  log(`- Estimation Phase`);
-  for (const [playerIndex, player] of players.entries()) {
-    let estimate;
-    do {
-      estimate = await player.estimate(round.moves[0].hands[playerIndex]);
-    } while (!isValidEstimate(estimate, roundCount));
-
-    log(
-      `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
-    );
-    round.playerEstimates.push(estimate);
-  }
-
-  // -- PLAY PHASE --
-  log(`- Play Phase`);
-  // Play until all hands in round are empty
-  while (round.moves.at(-1).hands.flat().length > 0) {
-    let tricks = round.moves.at(-1).tricks;
-    let hands = round.moves.at(-1).hands;
-    let currentTrick = tricks[tricks.length - 1] || [];
-    let currentPlayerIndex = getCurrentPlayerIndex(round);
-    let card = await players[currentPlayerIndex].playCard(
-      hands[currentPlayerIndex],
-      currentTrick,
-    );
-    const newRound = playCard(card, round);
-    if (newRound.error) {
-      console.log("\nError:", newRound.error, ":", card);
-    } else {
-      round = newRound;
-    }
-  }
-
-  // -- SUMMARY PHASE --
-  log("- Round Summary");
-  let aggregatePlayerWins = getAggregatePlayerWins(
-    getTrickWinners(round),
-    players.length,
-  );
-  let n = 0;
-  for (let player of players) {
-    let estimate = round.playerEstimates[n];
-    let wins = aggregatePlayerWins[n];
-    log(
-      `-- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
-    );
-    n++;
-  }
-  return round;
 }
 
 /**

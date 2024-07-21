@@ -3,7 +3,7 @@
 <img src="https://github.com/user-attachments/assets/11fb46c4-b702-4ec6-8b12-14f2d6a144e1" alt="The Lizard Card Game" width=320 />
 </br></br>
 
-A fun card game to play with friends (or foes). Work in progres.
+A fun card game to play with friends (or foes). Work in progress.
 
 
 - Chek [RULES](RULES.md) for more information how the game is played.
@@ -18,9 +18,9 @@ Install dependencies with `npm install` and you are ready to go.
 
 ### Play
 
-To play the game via the CLI run:
+To play a minimal implenentation of the game locally via the CLI you can run:
 
-`npm run play`
+`npm run tiny-play`
 
 
 ### Run Tests
@@ -46,10 +46,14 @@ This is a personal hobby project and I've been wanting to explore the following 
     - Use built-in Node.js [test runner](https://nodejs.org/api/test.html).
     - Use built-in Node.js [SQLite library](https://nodejs.org/api/sqlite.html).
     - Use built-in WebSockets and/or Server Push Events
+    - Use built-in watch mode eg. ´node --watch` instead of eg. Nodemon
   - Client Side
      - No React :)
      - Revisiting Modern "Vanilla" CSS. What's possible?
      - View Transitions API
+- Architecture
+  - Clear seperation of concerns: Isolated game core logic that allows for multiple implementations of the game
+  - Decouple stateless logic from protocol implementation eg. HTTP, allow game to be played via CLI or any theoretical protocol (telnet?)
 
 
 ### Code conventions

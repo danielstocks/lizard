@@ -4,17 +4,32 @@ import { MockPlayer } from "./player.js";
 import { roundTestFixture } from "./game.test.fixture.js";
 import {
   createNewRound,
-  playRound,
   playCard,
-  playGame,
   createDeck,
   isValidEstimate,
   getTrickWinner,
   isValidPlay,
-  pluralize,
   calculateRoundScore,
   calculateGameScore,
 } from "./game.js";
+
+/* BUG?
+ 
+10:12:38 AM | game log: - Trump Card: L
+
+On the table: []
+Your hand: [ 'H9', 'D8' ]
+What card do you want to play?
+=> D8
+
+10:13:18 AM | game log: -- Playing trick #1
+10:13:18 AM | game log: --- Player Daniel plays D8
+10:13:18 AM | game log: --- Player Button plays C11
+10:13:18 AM | game log: --- Player Sara plays S2
+10:13:18 AM | game log: --- Player Ruth plays D3
+10:13:18 AM | game log: --- Winner: Button
+
+*/
 
 let mockPlayers = [
   new MockPlayer("Daniel"),
@@ -24,9 +39,11 @@ let mockPlayers = [
 
 describe("calculate game score", () => {
   test("returns accumulated score of multiple rounds", async () => {
-    let game = await playGame(mockPlayers, 3);
+    let game = {
+      rounds: [roundTestFixture, roundTestFixture],
+    };
     let score = calculateGameScore(game);
-    assert.deepStrictEqual(score, [10, -60, 90]);
+    assert.deepStrictEqual(score, [-40, 60, 80]);
   });
 });
 
@@ -34,16 +51,6 @@ describe("calculate round score", () => {
   test("returns accurate score", () => {
     let score = calculateRoundScore(roundTestFixture);
     assert.deepStrictEqual(score, [-20, 30, 40]);
-  });
-});
-
-describe("pluralize", () => {
-  test("singlular", () => {
-    assert.strictEqual(pluralize(1), "");
-  });
-  test("plural", () => {
-    assert.strictEqual(pluralize(0), "s");
-    assert.strictEqual(pluralize(2), "s");
   });
 });
 
@@ -147,37 +154,6 @@ describe("get trick winner", () => {
 
   test("first lizard wins if only lizards are played", () => {
     assert.strictEqual(getTrickWinner(["L", "L", "L"], "C"), 0);
-  });
-});
-
-describe("play round", () => {
-  test("three with three players", async () => {
-    let result = await playRound(3, mockPlayers);
-    assert.deepStrictEqual(result.moves.at(-1), {
-      hands: [[], [], []],
-      tricks: [
-        ["H2", "H3", "H4"],
-        ["H7", "H5", "H6"],
-        ["H10", "H8", "H9"],
-      ],
-    });
-  });
-});
-
-describe("play game", () => {
-  test("1 round with three players", async () => {
-    let result = await playGame(mockPlayers, 1);
-    assert.deepStrictEqual(result.rounds[0].moves.at(-1), {
-      hands: [[], [], []],
-      tricks: [["H2", "H3", "H4"]],
-    });
-  });
-
-  test("three players", async () => {
-    let result = await playGame(mockPlayers);
-    assert.strictEqual(result.rounds.length, 20);
-    assert.strictEqual(result.rounds[0].moves.length, 4);
-    assert.strictEqual(result.rounds.at(-1).moves.length, 61);
   });
 });
 
