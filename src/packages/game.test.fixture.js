@@ -14,7 +14,7 @@ export const roundTestFixture = {
         ["H3", "H6", "H9", "H12"],
         ["H4", "H7", "H10", "H13"],
       ],
-      tricks: [["H11", "H6", "H10"]],
+      tricks: [["H11"]],
     },
     {
       hands: [
@@ -22,7 +22,7 @@ export const roundTestFixture = {
         ["H3", "H9", "H12"],
         ["H4", "H7", "H10", "H13"],
       ],
-      tricks: [["H11", "H6", "H10"]],
+      tricks: [["H11", "H6"]],
     },
     {
       hands: [
@@ -31,6 +31,7 @@ export const roundTestFixture = {
         ["H4", "H7", "H13"],
       ],
       tricks: [["H11", "H6", "H10"]],
+      // Winner: 0 (prev 0)
     },
     {
       hands: [
@@ -38,10 +39,7 @@ export const roundTestFixture = {
         ["H3", "H9", "H12"],
         ["H4", "H7", "H13"],
       ],
-      tricks: [
-        ["H11", "H6", "H10"],
-        ["H2", "H12", "H13"],
-      ],
+      tricks: [["H11", "H6", "H10"], ["H2"]],
     },
     {
       hands: [
@@ -51,7 +49,7 @@ export const roundTestFixture = {
       ],
       tricks: [
         ["H11", "H6", "H10"],
-        ["H2", "H12", "H13"],
+        ["H2", "H12"],
       ],
     },
     {
@@ -64,21 +62,18 @@ export const roundTestFixture = {
         ["H11", "H6", "H10"],
         ["H2", "H12", "H13"],
       ],
+      // Winner: 2 (prev 0)
     },
     {
       hands: [["H5", "H8"], ["H3", "H9"], ["H7"]],
-      tricks: [
-        ["H11", "H6", "H10"],
-        ["H2", "H12", "H13"],
-        ["H4", "H8", "H9"],
-      ],
+      tricks: [["H11", "H6", "H10"], ["H2", "H12", "H13"], ["H4"]],
     },
     {
       hands: [["H5"], ["H3", "H9"], ["H7"]],
       tricks: [
         ["H11", "H6", "H10"],
         ["H2", "H12", "H13"],
-        ["H4", "H8", "H9"],
+        ["H4", "H8"],
       ],
     },
     {
@@ -88,6 +83,7 @@ export const roundTestFixture = {
         ["H2", "H12", "H13"],
         ["H4", "H8", "H9"],
       ],
+      // Winner: 2 (- prev(2)) => 0
     },
     {
       hands: [["H5"], [], ["H7"]],
@@ -95,7 +91,7 @@ export const roundTestFixture = {
         ["H11", "H6", "H10"],
         ["H2", "H12", "H13"],
         ["H4", "H8", "H9"],
-        ["H3", "H7", "H5"],
+        ["H3"],
       ],
     },
     {
@@ -104,7 +100,7 @@ export const roundTestFixture = {
         ["H11", "H6", "H10"],
         ["H2", "H12", "H13"],
         ["H4", "H8", "H9"],
-        ["H3", "H7", "H5"],
+        ["H3", "H7"],
       ],
     },
     {
@@ -114,10 +110,11 @@ export const roundTestFixture = {
         ["H2", "H12", "H13"],
         ["H4", "H8", "H9"],
         ["H3", "H7", "H5"],
+        // Winner: 1 (- prev(0)) => 1
       ],
     },
   ],
-  trumpCard: "H14",
+  trump: "H14",
   playerEstimates: [2, 1, 2],
   players: [
     {

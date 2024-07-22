@@ -7,6 +7,7 @@ import {
   createDeck,
   isValidEstimate,
   getTrickWinner,
+  getTrickWinners,
   isValidPlay,
   calculateRoundScore,
   calculateGameScore,
@@ -20,32 +21,41 @@ describe("calculate game score", () => {
       rounds: [roundTestFixture, roundTestFixture],
     };
     let score = calculateGameScore(game);
-    assert.deepStrictEqual(score, [-40, 60, 80]);
+    assert.deepStrictEqual(score, [-20, 60, 80]);
   });
 });
 
 describe("calculate round score", () => {
   test("returns accurate score", () => {
     let score = calculateRoundScore(roundTestFixture);
-    assert.deepStrictEqual(score, [-20, 30, 40]);
+    assert.deepStrictEqual(score, [-10, 30, 40]);
+  });
+
+  test("returns accurate score with player wins more tricks than estimated", () => {
+    let fixture = {
+      ...roundTestFixture,
+      playerEstimates: [0, 0, 0],
+    };
+    let score = calculateRoundScore(fixture);
+    assert.deepStrictEqual(score, [-10, -10, -20]);
   });
 });
 
 describe("is valid estimate", () => {
   test("must be a valid number", () => {
-    assert.strictEqual(isValidEstimate("x", 3), false);
+    assert.strictEqual(isValidEstimate("x", 3)[0], false);
   });
 
   test("less than number of rounds", () => {
-    assert.strictEqual(isValidEstimate(5, 3), false);
+    assert.strictEqual(isValidEstimate(5, 3)[0], false);
   });
 
   test("less than zero", () => {
-    assert.strictEqual(isValidEstimate(-1, 3), false);
+    assert.strictEqual(isValidEstimate(-1, 3)[0], false);
   });
 
   test("valid estimate", () => {
-    assert.strictEqual(isValidEstimate(3, 3), true);
+    assert.strictEqual(isValidEstimate(3, 3)[0], true);
   });
 });
 
@@ -68,7 +78,7 @@ describe("play round", () => {
 
   test("trump card", () => {
     const newRound = createNewRound(3, mockPlayers);
-    assert.strictEqual(newRound.trumpCard, "H11");
+    assert.strictEqual(newRound.trump, "H11");
   });
 
   test("empty player estimates", () => {
@@ -104,6 +114,13 @@ describe("is valid play", () => {
   });
 });
 
+describe("get trick winners", () => {
+  test("should return the winners of each trick", () => {
+    let trickWinners = getTrickWinners(roundTestFixture, true);
+    assert.deepStrictEqual(trickWinners, [0, 2, 1, 2]);
+  });
+});
+
 describe("get trick winner", () => {
   test("highest card wins", () => {
     assert.strictEqual(getTrickWinner(["H9", "H14", "H3", "H13"], "C"), 1);
@@ -131,6 +148,14 @@ describe("get trick winner", () => {
 
   test("first lizard wins if only lizards are played", () => {
     assert.strictEqual(getTrickWinner(["L", "L", "L"], "C"), 0);
+  });
+
+  test("suited card wins middle", () => {
+    assert.strictEqual(getTrickWinner(["H2", "D3", "C10"], "D"), 1);
+  });
+
+  test("suited card wins when played last", () => {
+    assert.strictEqual(getTrickWinner(["H7", "D13", "S5"], "S"), 2);
   });
 });
 

@@ -1,15 +1,12 @@
 import { shuffleArray } from "./util.js";
 
 export function calculateGameScore(game) {
-  return game.rounds.reduce(
-    (acc, round) => {
-      let roundScore = calculateRoundScore(round);
-      return acc.map((score, i) => {
-        return score + roundScore[i];
-      });
-    },
-    [0, 0, 0],
-  );
+  return game.rounds.reduce((acc, round) => {
+    let roundScore = calculateRoundScore(round);
+    return acc.map((score, i) => {
+      return score + roundScore[i];
+    });
+  }, new Array(game.rounds[0].players.length).fill(0));
 }
 
 export function calculateRoundScore(round) {
@@ -18,38 +15,38 @@ export function calculateRoundScore(round) {
     round.players.length,
   );
   return round.playerEstimates.map((estimate, i) => {
-    let diff = winners[i] - estimate;
+    let diff = Math.abs(winners[i] - estimate);
     if (diff == 0) {
       return 20 + estimate * 10;
     } else {
-      return --diff * 10;
+      return diff * -10;
     }
   });
 }
 
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
-    console.log("Estimate must be a valid number");
-    return false;
+    return [false, "Estimate must be a valid number"];
   }
   if (estimate > roundCount) {
-    console.log("Estimate cannot be larger than", roundCount);
-    return false;
+    return [false, "Estimate cannot be larger than " + roundCount];
   }
   if (estimate < 0) {
-    console.log("Estimate cannot be less than", 0);
-    return false;
+    return [false, "Estimate cannot be less than 0"];
   }
-  return true;
+  return [true];
 }
 
 // Pass in a completed round and get what player won what trick
 export function getTrickWinners(round) {
   let tricks = round.moves.at(-1).tricks;
+  let hands = round.moves.at(-1).hands;
   return tricks.reduce((acc, trick, i) => {
-    let prevWinner = acc[i] || 0;
+    let prevWinner = acc[i - 1] || 0;
+
     let winner =
-      (getTrickWinner(trick, round.trump) + prevWinner) % trick.length;
+      (getTrickWinner(trick, round.trump) + prevWinner) % hands.length;
+
     return [...acc, winner];
   }, []);
 }
@@ -117,7 +114,10 @@ export function createNewRound(round, players) {
         tricks: [],
       },
     ],
-    trumpCard: dealCardFromDeck(deck)[0],
+    // If the card turned up is a Lizard, the dealer chooses one of the 4 suits as the trump suit.
+    // If the card turned up is a Snake, there is no trump card.
+    // If card deck is empty, same rules as if Snake turned up.
+    trump: dealCardFromDeck(deck)[0] || "S",
     playerEstimates: [],
     players,
   };
@@ -173,8 +173,9 @@ export function dealCardFromDeck(deck) {
  * @param {Array} trick
  * @returns {number} winner Index pointing to winning card in trick
  */
-export function getTrickWinner(trick, suit) {
-  let commandingSuit = suit === "L" ? trick[0][0] : suit;
+export function getTrickWinner(trick, trump) {
+  let commandingSuit = trump.includes("L", "S") ? trick[0][0] : trump[0];
+
   let winningCard = trick.reduce((prev, current) => {
     /* Lizards always win */
     if (prev === "L") {
@@ -194,6 +195,10 @@ export function getTrickWinner(trick, suit) {
 
     if (prev[0] === commandingSuit && current[0] !== commandingSuit) {
       return prev;
+    }
+
+    if (prev[0] !== commandingSuit && current[0] === commandingSuit) {
+      return current;
     }
 
     // High card wins
@@ -271,7 +276,6 @@ export function playCard(card, currentState) {
   if (!currentTrick || hands.length === currentTrick.length) {
     tricks.push([]);
     currentTrick = tricks[tricks.length - 1];
-    log(`-- Playing trick #${tricks.length}`);
   }
 
   let currentPlayerIndex = getCurrentPlayerIndex(currentState);
@@ -295,29 +299,8 @@ export function playCard(card, currentState) {
     1,
   );
 
-  log(
-    `--- Player ${currentState.players[currentPlayerIndex].name} plays ${card}`,
-  );
-
-  // End of trick - Log winner
-  if (hands.length === currentTrick.length) {
-    let thisTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
-      return getTrickWinner(trick, currentState.trump) + prevTrickWinner;
-    }, 0);
-    let playerName = currentState.players[thisTrickWinner % hands.length].name;
-    log(`--- Winner: ${playerName}`);
-  }
-
   return {
     ...currentState,
     moves: [...currentState.moves, { hands, tricks }],
   };
 }
-
-/* c8 ignore start */
-function log(...args) {
-  if (process.env.NODE_ENV !== "test") {
-    console.log(new Date().toLocaleTimeString(), "| game log:", ...args);
-  }
-}
-/* c8 ignore end */

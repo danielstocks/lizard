@@ -10,6 +10,7 @@ import {
   getCurrentPlayerIndex,
   getAggregatePlayerWins,
   getTrickWinners,
+  getTrickWinner,
   createNewRound,
   playCard,
   calculateGameScore,
@@ -98,18 +99,24 @@ export class CLIPlayer extends Player {
  */
 export async function playRound(roundCount, players) {
   let round = createNewRound(roundCount, players);
-  log(`# Starting round ${roundCount}`);
 
-  log(`- Dealing cards`);
-  log(`- Trump Card: ` + round.trumpCard);
+  log(`# Starting round ${roundCount}`);
+  log(`- Trump Card: ` + round.trump);
 
   // -- ESTIMATION PHASE --
   log(`- Estimation Phase`);
+
   for (const [playerIndex, player] of players.entries()) {
     let estimate;
+    let message;
+    let validEstimate = false;
     do {
       estimate = await player.estimate(round.moves[0].hands[playerIndex]);
-    } while (!isValidEstimate(estimate, roundCount));
+      [validEstimate, message] = isValidEstimate(estimate, roundCount);
+      if (message) {
+        console.log(message);
+      }
+    } while (!validEstimate);
 
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
@@ -129,11 +136,27 @@ export async function playRound(roundCount, players) {
       hands[currentPlayerIndex],
       currentTrick,
     );
+
     const newRound = playCard(card, round);
     if (newRound.error) {
       console.log("\nError:", newRound.error, ":", card);
     } else {
       round = newRound;
+    }
+
+    let newTricks = newRound.moves.at(-1).tricks;
+    if (newTricks.length > tricks.length) {
+      log(`-- Playing trick #${tricks.length + 1}`);
+    }
+
+    log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
+
+    if (newTricks.at(-1).length === players.length) {
+      let thisTrickWinner = newTricks.reduceRight((prevTrickWinner, trick) => {
+        return getTrickWinner(trick, round.trump[0]) + prevTrickWinner;
+      }, 0);
+      let playerName = players[thisTrickWinner % hands.length].name;
+      log(`--- Winner: ${playerName}`);
     }
   }
 
@@ -143,6 +166,7 @@ export async function playRound(roundCount, players) {
     getTrickWinners(round),
     players.length,
   );
+
   let n = 0;
   for (let player of players) {
     let estimate = round.playerEstimates[n];
@@ -155,20 +179,6 @@ export async function playRound(roundCount, players) {
   return round;
 }
 
-/* BUG?
-10:12:38 AM | game log: - Trump Card: L
-On the table: []
-Your hand: [ 'H9', 'D8' ]
-What card do you want to play?
-=> D8
-10:13:18 AM | game log: -- Playing trick #1
-10:13:18 AM | game log: --- Player Daniel plays D8
-10:13:18 AM | game log: --- Player Button plays C11
-10:13:18 AM | game log: --- Player Sara plays S2
-10:13:18 AM | game log: --- Player Ruth plays D3
-10:13:18 AM | game log: --- Winner: Button
-*/
-
 export async function playGame(players, roundsToPlay) {
   if (!roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
@@ -177,6 +187,13 @@ export async function playGame(players, roundsToPlay) {
   for (let i = 1; i <= roundsToPlay; i++) {
     let round = await playRound(i, players);
     game.rounds.push(round);
+
+    let gameScore = calculateGameScore(game);
+
+    log("- Accumulated scores:");
+    gameScore.forEach((score, i) => {
+      log("--", players[i].name, score);
+    });
   }
   log("# Game over");
 
@@ -198,14 +215,15 @@ async function init() {
   var args = process.argv.slice(2);
   if (args.includes("--play")) {
     let players = [
-      new CLIPlayer("Daniel"),
+      //new CLIPlayer("Daniel"),
+      new RandomBotPlayer("Daniel"),
       new RandomBotPlayer("Button"),
       new RandomBotPlayer("Sara"),
       new RandomBotPlayer("Ruth"),
     ];
     console.log("\nWelcome to Lizard!");
     console.log("\nStarting new game...\n");
-    await playGame(players);
+    await playGame(players, 3);
   }
 }
 
