@@ -15,9 +15,9 @@ import {
   playCard,
   calculateGameScore,
   isValidEstimate,
+  isValidPlay,
 } from "../packages/game.js";
 import { pluralize, getRandomInt } from "../packages/util.js";
-import { isValidPlay } from "../packages/game.js";
 
 // Process and wait for user input via CLI
 function userInput(query) {
