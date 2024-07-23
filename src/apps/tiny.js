@@ -1,8 +1,8 @@
 /*
  * A minimal playable implementation of the Lizard card game
- * using the core game package and libraries
  * that can be played locally through a CLI
- * Simply run `node tiny.js --play` and follow the instructions to play.
+ * Uses the core game package and libraries.
+ * To play, simply run `node tiny.js --play` and follow the instructions.
  * @module tiny
  */
 import readline from "readline";
@@ -10,7 +10,6 @@ import {
   getCurrentPlayerIndex,
   getAggregatePlayerWins,
   getTrickWinners,
-  getTrickWinner,
   createNewRound,
   playCard,
   calculateGameScore,
@@ -98,18 +97,17 @@ export class CLIPlayer extends Player {
  * @returns {object} state The final state and all moves made during the round
  */
 export async function playRound(roundCount, players) {
+  // -- SETUP ROUND --
   let round = createNewRound(roundCount, players);
-
   log(`# Starting round ${roundCount}`);
   log(`- Trump Card: ` + round.trump);
 
   // -- ESTIMATION PHASE --
   log(`- Estimation Phase`);
-
   for (const [playerIndex, player] of players.entries()) {
     let estimate;
     let message;
-    let validEstimate = false;
+    let validEstimate;
     do {
       estimate = await player.estimate(round.moves[0].hands[playerIndex]);
       [validEstimate, message] = isValidEstimate(estimate, roundCount);
@@ -117,7 +115,6 @@ export async function playRound(roundCount, players) {
         console.log(message);
       }
     } while (!validEstimate);
-
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
@@ -132,6 +129,7 @@ export async function playRound(roundCount, players) {
     let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];
     let currentPlayerIndex = getCurrentPlayerIndex(round);
+
     let card = await players[currentPlayerIndex].playCard(
       hands[currentPlayerIndex],
       currentTrick,
@@ -152,10 +150,8 @@ export async function playRound(roundCount, players) {
     log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
 
     if (newTricks.at(-1).length === players.length) {
-      let thisTrickWinner = newTricks.reduceRight((prevTrickWinner, trick) => {
-        return getTrickWinner(trick, round.trump[0]) + prevTrickWinner;
-      }, 0);
-      let playerName = players[thisTrickWinner % hands.length].name;
+      let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
+      let playerName = players[trickWinnerPlayerIndex].name;
       log(`--- Winner: ${playerName}`);
     }
   }
@@ -167,14 +163,12 @@ export async function playRound(roundCount, players) {
     players.length,
   );
 
-  let n = 0;
-  for (let player of players) {
-    let estimate = round.playerEstimates[n];
-    let wins = aggregatePlayerWins[n];
+  for (const [playerIndex, player] of players.entries()) {
+    let estimate = round.playerEstimates[playerIndex];
+    let wins = aggregatePlayerWins[playerIndex];
     log(
       `-- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
     );
-    n++;
   }
   return round;
 }
@@ -183,7 +177,7 @@ export async function playGame(players, roundsToPlay) {
   if (!roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
   }
-  let game = { rounds: [] };
+  const game = createNewGame();
   for (let i = 1; i <= roundsToPlay; i++) {
     let round = await playRound(i, players);
     game.rounds.push(round);

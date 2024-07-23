@@ -6,7 +6,7 @@ import {
   playCard,
   createDeck,
   isValidEstimate,
-  getTrickWinner,
+  getWinningCardIndex,
   getTrickWinners,
   isValidPlay,
   calculateRoundScore,
@@ -121,41 +121,47 @@ describe("get trick winners", () => {
   });
 });
 
-describe("get trick winner", () => {
+describe("get winning card index", () => {
   test("highest card wins", () => {
-    assert.strictEqual(getTrickWinner(["H9", "H14", "H3", "H13"], "C"), 1);
+    assert.strictEqual(getWinningCardIndex(["H9", "H14", "H3", "H13"], "C"), 1);
   });
 
   test("highest card that follows suit wins", () => {
-    assert.strictEqual(getTrickWinner(["H9", "C14", "H10", "C13"], "C"), 1);
+    assert.strictEqual(
+      getWinningCardIndex(["H9", "C14", "H10", "C13"], "C"),
+      1,
+    );
   });
 
   test("when suit card is lizard, first card determines suit", () => {
-    assert.strictEqual(getTrickWinner(["H9", "C14", "H10", "C13"], "L"), 2);
+    assert.strictEqual(
+      getWinningCardIndex(["H9", "C14", "H10", "C13"], "L"),
+      2,
+    );
   });
 
   test("first lizard always wins", () => {
-    assert.strictEqual(getTrickWinner(["C14", "L", "H10", "L"], "C"), 1);
+    assert.strictEqual(getWinningCardIndex(["C14", "L", "H10", "L"], "C"), 1);
   });
 
   test("first snake always loses", () => {
-    assert.strictEqual(getTrickWinner(["S", "H2", "S", "S"], "C"), 1);
+    assert.strictEqual(getWinningCardIndex(["S", "H2", "S", "S"], "C"), 1);
   });
 
   test("first snake wins if only snakes are played", () => {
-    assert.strictEqual(getTrickWinner(["S", "S", "S"], "C"), 0);
+    assert.strictEqual(getWinningCardIndex(["S", "S", "S"], "C"), 0);
   });
 
   test("first lizard wins if only lizards are played", () => {
-    assert.strictEqual(getTrickWinner(["L", "L", "L"], "C"), 0);
+    assert.strictEqual(getWinningCardIndex(["L", "L", "L"], "C"), 0);
   });
 
   test("suited card wins middle", () => {
-    assert.strictEqual(getTrickWinner(["H2", "D3", "C10"], "D"), 1);
+    assert.strictEqual(getWinningCardIndex(["H2", "D3", "C10"], "D"), 1);
   });
 
   test("suited card wins when played last", () => {
-    assert.strictEqual(getTrickWinner(["H7", "D13", "S5"], "S"), 2);
+    assert.strictEqual(getWinningCardIndex(["H7", "D13", "S5"], "S"), 2);
   });
 });
 

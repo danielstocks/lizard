@@ -1,5 +1,10 @@
 import { shuffleArray } from "./util.js";
 
+export function createNewGame() {
+  return { rounds: [] };
+}
+
+// Calculate player scores of a game (multiple rounds)
 export function calculateGameScore(game) {
   return game.rounds.reduce((acc, round) => {
     let roundScore = calculateRoundScore(round);
@@ -9,6 +14,7 @@ export function calculateGameScore(game) {
   }, new Array(game.rounds[0].players.length).fill(0));
 }
 
+// Calculate player scores of a single round
 export function calculateRoundScore(round) {
   let winners = getAggregatePlayerWins(
     getTrickWinners(round),
@@ -24,6 +30,11 @@ export function calculateRoundScore(round) {
   });
 }
 
+/*
+ * Checks wether given player estimate is valid
+ * @param {number) estimate
+ * @param {number} roundCount
+ */
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
     return [false, "Estimate must be a valid number"];
@@ -45,7 +56,7 @@ export function getTrickWinners(round) {
     let prevWinner = acc[i - 1] || 0;
 
     let winner =
-      (getTrickWinner(trick, round.trump) + prevWinner) % hands.length;
+      (getWinningCardIndex(trick, round.trump) + prevWinner) % hands.length;
 
     return [...acc, winner];
   }, []);
@@ -64,7 +75,11 @@ export function getAggregatePlayerWins(trickWinners, numPlayers) {
   }, new Array(numPlayers).fill(0));
 }
 
-// Return the index of the player whos turn it is
+/**
+ * Return the index of the player whos turn it is
+ * @param {object} current state of round
+ * @returns {number} player index
+ */
 export function getCurrentPlayerIndex(round) {
   let tricks = round.moves.at(-1).tricks;
   let hands = round.moves.at(-1).hands;
@@ -72,7 +87,7 @@ export function getCurrentPlayerIndex(round) {
 
   let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
     if (trick[0] && trick[0][0] && trick.length == hands.length) {
-      return getTrickWinner(trick, round.trump) + prevTrickWinner;
+      return getWinningCardIndex(trick, round.trump) + prevTrickWinner;
     } else {
       return prevTrickWinner;
     }
@@ -173,7 +188,7 @@ export function dealCardFromDeck(deck) {
  * @param {Array} trick
  * @returns {number} winner Index pointing to winning card in trick
  */
-export function getTrickWinner(trick, trump) {
+export function getWinningCardIndex(trick, trump) {
   let commandingSuit = trump.includes("L", "S") ? trick[0][0] : trump[0];
 
   let winningCard = trick.reduce((prev, current) => {
