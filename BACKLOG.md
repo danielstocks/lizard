@@ -1,14 +1,16 @@
 # Backlog
 
 ## Todo
-- Bug: Unique identifiers for snake (Z) And Lizard (L) cards
-- Bug: Implement proper prison Rules
+- Bug: Unique identifiers for snake (Z) And Lizard (L) cards?
+- Feature: Implement proper prison Rules
 - Feature: In case of a draw?
+- Feature: Randomize dealer offset at start of game
 
 ## In Progress
-- Feature: Rotate Dealer
+- Feature: Game Server App (stateless, in memory-store)
 
 ## Done
+- Feature: Rotate Dealer
 - Bug: Last round there is no trump card (deck is empty)
 - Feature: Calculate scores and declare winner
 - Chore: Refactor and write unit tests for core game logic
@@ -18,9 +20,9 @@
 - Feature: Core Game Logic
 
 ## Roadmap 
-- Feature: Server Game App (stateless, in memory-store)
+- Chore: // @ts-check all the things!
 - Feature: Play game via HTTP (single player)
 - Feature: Play game in Web UI (single player)
-- Feature: Play game in CLI (single player)
+- Feature: Persist games in SQLite
 - Feature: Scoresheet
 - Feature: Multiplayer

@@ -30,9 +30,9 @@ export function calculateRoundScore(round) {
   });
 }
 
-/*
+/**
  * Checks wether given player estimate is valid
- * @param {number) estimate
+ * @param {number} estimate
  * @param {number} roundCount
  */
 export function isValidEstimate(estimate, roundCount) {
@@ -84,7 +84,6 @@ export function getCurrentPlayerIndex(round) {
   let tricks = round.moves.at(-1).tricks;
   let hands = round.moves.at(-1).hands;
   let currentTrick = tricks[tricks.length - 1] || [];
-
   let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
     if (trick[0] && trick[0][0] && trick.length == hands.length) {
       return getWinningCardIndex(trick, round.trump) + prevTrickWinner;
@@ -93,7 +92,9 @@ export function getCurrentPlayerIndex(round) {
     }
   }, 0);
   // Use some arithmetic to create a "circular" index accessed array
-  return (prevTrickWinner + currentTrick.length) % hands.length;
+  return (
+    (round.dealerOffset + prevTrickWinner + currentTrick.length) % hands.length
+  );
 }
 
 /**
@@ -102,7 +103,7 @@ export function getCurrentPlayerIndex(round) {
  * @param {number} players Number of participating players
  * @returns {object} state Initial empty state of a round
  */
-export function createNewRound(round, players) {
+export function createNewRound(round, players, dealerOffset = 0) {
   // Shuffle deck
   let deck =
     process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
@@ -118,7 +119,7 @@ export function createNewRound(round, players) {
   for (var i = 0; i < round * players.length; i++) {
     let [dealtCard, remainingCards] = dealCardFromDeck(deck);
     deck = remainingCards;
-    hands[i % players.length].push(dealtCard);
+    hands[(i + dealerOffset) % players.length].push(dealtCard);
   }
 
   // Create initial game state
@@ -133,6 +134,7 @@ export function createNewRound(round, players) {
     // If the card turned up is a Snake, there is no trump card.
     // If card deck is empty, same rules as if Snake turned up.
     trump: dealCardFromDeck(deck)[0] || "S",
+    dealerOffset,
     playerEstimates: [],
     players,
   };
@@ -278,12 +280,12 @@ export function isValidPlay(card, hand, trick) {
  * or malicious user.
  *
  * @param {string} card Card to play eg. A7
- * @param {object} currentState Existing current state of game before play
- * @returns {object} state New state of game after car has been played
+ * @param {object} round Existing current state of round before play
+ * @returns {object} round New state of round after car has been played
  */
-export function playCard(card, currentState) {
-  let tricks = currentState.moves.at(-1).tricks.slice(0);
-  let hands = currentState.moves.at(-1).hands.slice(0);
+export function playCard(card, round) {
+  let tricks = round.moves.at(-1).tricks.slice(0);
+  let hands = round.moves.at(-1).hands.slice(0);
 
   let currentTrick = tricks[tricks.length - 1];
 
@@ -293,7 +295,7 @@ export function playCard(card, currentState) {
     currentTrick = tricks[tricks.length - 1];
   }
 
-  let currentPlayerIndex = getCurrentPlayerIndex(currentState);
+  let currentPlayerIndex = getCurrentPlayerIndex(round);
   let currentPlayerHand = hands[currentPlayerIndex];
 
   // is play valid?
@@ -315,7 +317,7 @@ export function playCard(card, currentState) {
   );
 
   return {
-    ...currentState,
-    moves: [...currentState.moves, { hands, tricks }],
+    ...round,
+    moves: [...round.moves, { hands, tricks }],
   };
 }

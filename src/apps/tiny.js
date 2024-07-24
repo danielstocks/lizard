@@ -11,12 +11,18 @@ import {
   getAggregatePlayerWins,
   getTrickWinners,
   createNewRound,
+  createNewGame,
   playCard,
   calculateGameScore,
   isValidEstimate,
   isValidPlay,
 } from "../packages/game.js";
-import { pluralize, getRandomInt } from "../packages/util.js";
+import {
+  pluralize,
+  getRandomInt,
+  offsetArray,
+  offsetIndex,
+} from "../packages/util.js";
 
 // Process and wait for user input via CLI
 function userInput(query) {
@@ -33,7 +39,7 @@ function userInput(query) {
   );
 }
 
-// Base clase for a player
+// Base class for a player
 class Player {
   constructor(name) {
     this.name = name;
@@ -73,15 +79,15 @@ export class MockPlayer extends Player {
 // A human player awaiting CLI input
 export class CLIPlayer extends Player {
   async estimate(hand) {
-    console.log("\nYour hand:", hand);
+    playerLog("\nYour hand:", hand);
     let input = await userInput(
       "How many tricks do you think you can win?\n=> ",
     );
     return parseFloat(input);
   }
   async playCard(hand, trick) {
-    console.log("\nOn the table:", trick);
-    console.log("Your hand:", hand);
+    playerLog("\nOn the table:", trick);
+    playerLog("Your hand:", hand);
 
     let input = await userInput("What card do you want to play?\n=> ");
 
@@ -96,23 +102,37 @@ export class CLIPlayer extends Player {
  * @param {Array} players List of player objects
  * @returns {object} state The final state and all moves made during the round
  */
-export async function playRound(roundCount, players) {
+export async function playRound(roundCount, players, dealerOffset) {
   // -- SETUP ROUND --
-  let round = createNewRound(roundCount, players);
+  let round = createNewRound(roundCount, players, dealerOffset);
   log(`# Starting round ${roundCount}`);
   log(`- Trump Card: ` + round.trump);
 
   // -- ESTIMATION PHASE --
+  // TODO: encapsulate in game.js logic so that it can easily be used across different impleentations? Including dealeroffset
+  //
   log(`- Estimation Phase`);
-  for (const [playerIndex, player] of players.entries()) {
+
+  // for(const player of estimationPhase(round)) { }
+
+  for (const [playerIndex, player] of offsetArray(
+    players,
+    -dealerOffset,
+  ).entries()) {
+    let offsetPlayerIndex = offsetIndex(
+      playerIndex,
+      players.length,
+      dealerOffset,
+    );
+
     let estimate;
     let message;
     let validEstimate;
     do {
-      estimate = await player.estimate(round.moves[0].hands[playerIndex]);
+      estimate = await player.estimate(round.moves[0].hands[offsetPlayerIndex]);
       [validEstimate, message] = isValidEstimate(estimate, roundCount);
       if (message) {
-        console.log(message);
+        playerLog(message);
       }
     } while (!validEstimate);
     log(
@@ -124,6 +144,9 @@ export async function playRound(roundCount, players) {
   // -- PLAY PHASE --
   log(`- Play Phase`);
   // Play until all hands in round are empty
+
+  // TODO: abstract this logic? roundInProgress(round) ?
+  // for(const player in playPhase(round) {}
   while (round.moves.at(-1).hands.flat().length > 0) {
     let tricks = round.moves.at(-1).tricks;
     let hands = round.moves.at(-1).hands;
@@ -137,7 +160,7 @@ export async function playRound(roundCount, players) {
 
     const newRound = playCard(card, round);
     if (newRound.error) {
-      console.log("\nError:", newRound.error, ":", card);
+      playerLog("\nError:", newRound.error, ":", card);
     } else {
       round = newRound;
     }
@@ -179,7 +202,7 @@ export async function playGame(players, roundsToPlay) {
   }
   const game = createNewGame();
   for (let i = 1; i <= roundsToPlay; i++) {
-    let round = await playRound(i, players);
+    let round = await playRound(i, players, (i - 1) % players.length);
     game.rounds.push(round);
 
     let gameScore = calculateGameScore(game);
@@ -210,20 +233,26 @@ async function init() {
   if (args.includes("--play")) {
     let players = [
       //new CLIPlayer("Daniel"),
-      new RandomBotPlayer("Daniel"),
+      //new RandomBotPlayer("Daniel"),
       new RandomBotPlayer("Button"),
       new RandomBotPlayer("Sara"),
       new RandomBotPlayer("Ruth"),
     ];
-    console.log("\nWelcome to Lizard!");
-    console.log("\nStarting new game...\n");
-    await playGame(players, 3);
+    playerLog("\nWelcome to Lizard!");
+    playerLog("\nStarting new game...\n");
+    await playGame(players, 2);
   }
 }
 
 function log(...args) {
   if (process.env.NODE_ENV !== "test") {
     console.log(new Date().toLocaleTimeString(), "| game log:", ...args);
+  }
+}
+
+function playerLog(...args) {
+  if (process.env.NODE_ENV !== "test") {
+    console.log(...args);
   }
 }
 

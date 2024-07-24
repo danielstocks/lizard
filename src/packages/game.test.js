@@ -65,6 +65,22 @@ describe("create cards", () => {
   });
 });
 
+describe("create new round", () => {
+  test("dealer offset", () => {
+    const round = createNewRound(3, mockPlayers, 1);
+    assert.equal(round.dealerOffset, 1);
+  });
+
+  test("dealer offset cards dealt", () => {
+    const round = createNewRound(3, mockPlayers, 1);
+    assert.deepStrictEqual(round.moves.at(-1).hands, [
+      ["H4", "H7", "H10"],
+      ["H2", "H5", "H8"],
+      ["H3", "H6", "H9"],
+    ]);
+  });
+});
+
 describe("play round", () => {
   test("number of hands", () => {
     const newRound = createNewRound(3, mockPlayers);
@@ -168,8 +184,10 @@ describe("get winning card index", () => {
 describe("play card", () => {
   test("play invalid card", () => {
     assert.deepStrictEqual(
-      playCard("D", { moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }] })
-        .error,
+      playCard("D", {
+        moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }],
+        dealerOffset: 0,
+      }).error,
       "invalid play",
     );
   });
@@ -187,6 +205,7 @@ describe("play card", () => {
             tricks: [],
           },
         ],
+        dealerOffset: 0,
         players: mockPlayers,
       }).moves.at(-1),
       {

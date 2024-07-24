@@ -34,15 +34,15 @@ A round consists of four phases
 At the beginning of the first round each player is dealt **one** card. The
 second round each player is dealt two cards and so on.
 
-After every player as been dealt their cards, the top of card of the deck is
-turned face up, the color of the cards determines the "trump" color for that
-round. For example: if a nine of hearts is turned up, hearts are the trump color
+After all cards have been dealt, the top of card of the deck is
+turned face up, the suit of the cards determines the "trump" suit for that
+round. For example: if a nine of hearts is turned up, hearts is the suit
 for that round.
 
 
 #### Estimation phase
 
-Before the play starts each player shall estimate how many tricks they will win.
+Before the play starts each player shall, starting clockwise from the dealer, estimate how many tricks they will win.
 The number of tricks in a round equals to the number of cards each player has
 been dealt. For example: in the third round there are three tricks to be won.
 
