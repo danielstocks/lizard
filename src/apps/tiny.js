@@ -10,8 +10,8 @@ import {
   getCurrentPlayerIndex,
   getAggregatePlayerWins,
   getTrickWinners,
-  createNewRound,
-  createNewGame,
+  createRound,
+  createGame,
   playCard,
   calculateGameScore,
   isValidEstimate,
@@ -104,13 +104,11 @@ export class CLIPlayer extends Player {
  */
 export async function playRound(roundCount, players, dealerOffset) {
   // -- SETUP ROUND --
-  let round = createNewRound(roundCount, players, dealerOffset);
+  let round = createRound(roundCount, players, dealerOffset);
   log(`# Starting round ${roundCount}`);
   log(`- Trump Card: ` + round.trump);
 
   // -- ESTIMATION PHASE --
-  // TODO: encapsulate in game.js logic so that it can easily be used across different impleentations? Including dealeroffset
-  //
   log(`- Estimation Phase`);
 
   // for(const player of estimationPhase(round)) { }
@@ -200,7 +198,7 @@ export async function playGame(players, roundsToPlay) {
   if (!roundsToPlay) {
     roundsToPlay = Math.floor(60 / players.length);
   }
-  const game = createNewGame();
+  const game = createGame();
   for (let i = 1; i <= roundsToPlay; i++) {
     let round = await playRound(i, players, (i - 1) % players.length);
     game.rounds.push(round);
@@ -240,7 +238,7 @@ async function init() {
     ];
     playerLog("\nWelcome to Lizard!");
     playerLog("\nStarting new game...\n");
-    await playGame(players, 2);
+    await playGame(players);
   }
 }
 

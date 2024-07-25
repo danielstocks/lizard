@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { shuffleArray } from "./util.js";
 
-export function createNewGame() {
-  return { rounds: [] };
+export function createGame() {
+  return { id: randomUUID(), rounds: [] };
 }
 
 // Calculate player scores of a game (multiple rounds)
@@ -103,7 +104,7 @@ export function getCurrentPlayerIndex(round) {
  * @param {number} players Number of participating players
  * @returns {object} state Initial empty state of a round
  */
-export function createNewRound(round, players, dealerOffset = 0) {
+export function createRound(round, players, dealerOffset = 0) {
   // Shuffle deck
   let deck =
     process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();

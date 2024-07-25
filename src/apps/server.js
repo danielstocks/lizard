@@ -1,14 +1,12 @@
-import { randomUUID } from "node:crypto";
+// @ts-check
+import { createGame } from "../packages/game.js";
 
-let gameMemoryStore = {};
+export const gameMemoryStore = {};
 
-export function startNewGame() {
-  // Createw new unique gameId
-  let gameId = randomUUID();
-  gameMemoryStore[gameId] = { gameId };
-  return {
-    gameId,
-  };
+export function startGame() {
+  let game = createGame();
+  gameMemoryStore[game.id] = game;
+  return game;
 }
 
 export function estimate(gameId) {

@@ -44,6 +44,7 @@ export function pluralize(count) {
  * @param {number} offset
  */
 export function offsetIndex(index, length, offset) {
+  // TODO: just kill this function later, needless abstraction
   let sum = index + offset;
   if (sum < length) {
     return sum;

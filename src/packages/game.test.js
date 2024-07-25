@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { describe, test } from "node:test";
 import { roundTestFixture } from "./game.test.fixture.js";
 import {
-  createNewRound,
+  createRound,
   playCard,
   createDeck,
   isValidEstimate,
@@ -67,12 +67,12 @@ describe("create cards", () => {
 
 describe("create new round", () => {
   test("dealer offset", () => {
-    const round = createNewRound(3, mockPlayers, 1);
+    const round = createRound(3, mockPlayers, 1);
     assert.equal(round.dealerOffset, 1);
   });
 
   test("dealer offset cards dealt", () => {
-    const round = createNewRound(3, mockPlayers, 1);
+    const round = createRound(3, mockPlayers, 1);
     assert.deepStrictEqual(round.moves.at(-1).hands, [
       ["H4", "H7", "H10"],
       ["H2", "H5", "H8"],
@@ -83,22 +83,22 @@ describe("create new round", () => {
 
 describe("play round", () => {
   test("number of hands", () => {
-    const newRound = createNewRound(3, mockPlayers);
+    const newRound = createRound(3, mockPlayers);
     assert.strictEqual(newRound.moves[0].hands.length, 3);
   });
 
   test("number of dealt cards per hand", () => {
-    const newRound = createNewRound(3, mockPlayers);
+    const newRound = createRound(3, mockPlayers);
     assert.strictEqual(newRound.moves[0].hands[0].length, 3);
   });
 
   test("trump card", () => {
-    const newRound = createNewRound(3, mockPlayers);
+    const newRound = createRound(3, mockPlayers);
     assert.strictEqual(newRound.trump, "H11");
   });
 
   test("empty player estimates", () => {
-    const newRound = createNewRound(3, mockPlayers);
+    const newRound = createRound(3, mockPlayers);
     assert.deepStrictEqual(newRound.playerEstimates, []);
   });
 });
