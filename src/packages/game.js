@@ -1,9 +1,45 @@
-import { randomUUID } from "node:crypto";
 import { shuffleArray } from "./util.js";
 
-export function createGame() {
-  return { id: randomUUID(), rounds: [] };
+/**
+ * Create new game
+ * @param {object} options
+ * @returns {object} game
+ * TODO: Clarify: player can be a array of players of any shape based on implementation, the * core game logic only care about number of players (length) of array
+ * TODO: make roundsToPlay optional arg?
+ */
+export function createGame({ id, creatorPlayerId, players, roundsToPlay }) {
+  if (players.length > 5 || players.length < 3) {
+    throw new Error("Game can only be played with 3 - 5 players");
+  }
+  if (!roundsToPlay) {
+    roundsToPlay = Math.floor(60 / players.length);
+  }
+  return {
+    id,
+    creatorPlayerId,
+    rounds: [],
+    players,
+    roundsToPlay,
+    status: "pending",
+  };
 }
+
+export function startGame(game) {
+  return {
+    ...game,
+    status: "started",
+  };
+}
+
+/* TODO
+export function addPlayerToGame(game, player) {
+  if (game.players.length === 5) {
+    throw new Error("Game can be played with max 5 players");
+  }
+  game.players.push(player);
+  return true;
+}
+*/
 
 // Calculate player scores of a game (multiple rounds)
 export function calculateGameScore(game) {
@@ -12,7 +48,7 @@ export function calculateGameScore(game) {
     return acc.map((score, i) => {
       return score + roundScore[i];
     });
-  }, new Array(game.rounds[0].players.length).fill(0));
+  }, new Array(game.players.length).fill(0));
 }
 
 // Calculate player scores of a single round
@@ -104,7 +140,10 @@ export function getCurrentPlayerIndex(round) {
  * @param {number} players Number of participating players
  * @returns {object} state Initial empty state of a round
  */
-export function createRound(round, players, dealerOffset = 0) {
+export function createRound(round, players) {
+  // Rotate dealer positon
+  let dealerOffset = (round - 1) % players.length;
+
   // Shuffle deck
   let deck =
     process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
@@ -131,6 +170,7 @@ export function createRound(round, players, dealerOffset = 0) {
         tricks: [],
       },
     ],
+    // TODO: turn the below statements to tests
     // If the card turned up is a Lizard, the dealer chooses one of the 4 suits as the trump suit.
     // If the card turned up is a Snake, there is no trump card.
     // If card deck is empty, same rules as if Snake turned up.

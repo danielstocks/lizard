@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/main.js",
   "scripts": {
-    "tiny": "node src/apps/tiny.js --play",
+    "tiny": "node src/apps/tiny/tiny.js --play",
     "test": "NODE_ENV=test node --test --watch",
     "test:coverage": "NODE_ENV=test c8 -r html node --test --test-reporter dot"
   },

@@ -24,5 +24,6 @@
 - Feature: Play game via HTTP (single player)
 - Feature: Play game in Web UI (single player)
 - Feature: Persist games in SQLite
+- Feature: Make a bot that can actually play :D
 - Feature: Scoresheet
 - Feature: Multiplayer

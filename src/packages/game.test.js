@@ -18,6 +18,7 @@ let mockPlayers = [{ name: "Frodo" }, { name: "Sam" }, { name: "Merry" }];
 describe("calculate game score", () => {
   test("returns accumulated score of multiple rounds", async () => {
     let game = {
+      players: mockPlayers,
       rounds: [roundTestFixture, roundTestFixture],
     };
     let score = calculateGameScore(game);
@@ -68,15 +69,15 @@ describe("create cards", () => {
 describe("create new round", () => {
   test("dealer offset", () => {
     const round = createRound(3, mockPlayers, 1);
-    assert.equal(round.dealerOffset, 1);
+    assert.equal(round.dealerOffset, 2);
   });
 
   test("dealer offset cards dealt", () => {
-    const round = createRound(3, mockPlayers, 1);
+    const round = createRound(3, mockPlayers);
     assert.deepStrictEqual(round.moves.at(-1).hands, [
+      ["H3", "H6", "H9"],
       ["H4", "H7", "H10"],
       ["H2", "H5", "H8"],
-      ["H3", "H6", "H9"],
     ]);
   });
 });
