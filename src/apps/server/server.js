@@ -43,7 +43,6 @@ export function createGame(playerName) {
 
 /**
  * Return error if not enough players (min 3)
- * set game status to started, can only be called by gameCreatorId(?)
  * @param {object} gameId id of game
  * @param {string} playerId of player estimating
  */
@@ -55,13 +54,18 @@ export function startGame(gameId, playerId) {
         error: "Only game creator can start game",
       };
     }
-    core.startGame(game);
+    if (game.players.length < 3) {
+      return {
+        error: "Game needs at least 3 players to start",
+      };
+    }
+    gameMemoryStore[gameId] = core.startGame(game);
     return {
       message: "ok",
     };
   } else {
     return {
-      error: "gameId not found",
+      error: "game with id '" + gameId + "' not found",
     };
   }
 }
@@ -95,6 +99,9 @@ export function estimate(gameId, playerId, estimate) {
  * or not players turn
  * if successfull estimate, run any bot players
  * turns immedetieatly afterwards
+ * @param {string} gameId of game
+ * @param {string} playerId of player estimating
+ * @param {string} card to play
  */
 export function playCard(gameId, playerId, card) {
   if (gameMemoryStore[gameId]) {

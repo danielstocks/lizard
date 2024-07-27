@@ -5,6 +5,7 @@ import { shuffleArray } from "./util.js";
  * @param {object} options
  * @returns {object} game
  * TODO: Clarify: player can be a array of players of any shape based on implementation, the * core game logic only care about number of players (length) of array
+ * Game id and creator also optional.....
  * TODO: make roundsToPlay optional arg?
  */
 export function createGame({ id, creatorPlayerId, players, roundsToPlay }) {
