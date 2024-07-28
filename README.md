@@ -53,7 +53,9 @@ This is a personal hobby project and I've been wanting to explore the following 
      - View Transitions API
 - Architecture
   - Clear seperation of concerns: Isolated game core logic that allows for multiple implementations of the game
-  - Decouple stateless logic from protocol implementation eg. HTTP, allow game to be played via CLI or any theoretical protocol (telnet?)
+  - Service logic decouploed from protocol layer (HTTP/SSH/Telnet etc.) & API layer (REST, GraphQL, RPC etc.)
+- Deployment
+  - Deploy "anywhere": Edge/Serverless/Docker?
 
 
 ### Code conventions

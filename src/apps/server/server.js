@@ -1,6 +1,7 @@
 // @ts-check
 import * as core from "../../packages/game.js";
 import { randomUUID } from "node:crypto";
+import { RandomBotPlayer } from "./bot-player.js";
 
 /* Save game in memory for now, add SQLIte later for persistence */
 export const gameMemoryStore = {};
@@ -18,20 +19,13 @@ export function createGame(playerName) {
     status: "pending",
     creatorPlayerId: playerId,
     players: [
+      new RandomBotPlayer("Scooby", "bot-1"),
       {
         name: playerName,
         id: playerId,
+        type: "human",
       },
-      {
-        id: "bot-1",
-        name: "Scooby",
-        type: "bot",
-      },
-      {
-        id: "bot-2",
-        name: "Wilma",
-        type: "bot",
-      },
+      new RandomBotPlayer("Wilma", "bot-2"),
     ],
   });
   gameMemoryStore[gameId] = game;
@@ -60,6 +54,18 @@ export function startGame(gameId, playerId) {
       };
     }
     gameMemoryStore[gameId] = core.startGame(game);
+
+    for (var player of game.players) {
+      if (player.type === "human") break;
+      estimate(gameId, player.id, player.estimate([]));
+    }
+
+    // Once the game has started:
+    // First Round starts
+    // -- Wait for first player estimation
+    // ---- If bot, do it automatically
+    // ---- If human, wait for estimate function to be called
+
     return {
       message: "ok",
     };
@@ -71,11 +77,7 @@ export function startGame(gameId, playerId) {
 }
 
 /**
- * Attempt to estimate
- * return error if it's invalid estimate
- * or not players turn
- * if successfull estimate, run any bot players
- * turns immedetieatly afterwards
+ * Recieve player estimate
  * @param {string} gameId of game
  * @param {string} playerId of player estimating
  * @param {string} estimate
@@ -83,6 +85,14 @@ export function startGame(gameId, playerId) {
 export function estimate(gameId, playerId, estimate) {
   let game = gameMemoryStore[gameId];
   if (game) {
+    // Check first that game is in estimation phase
+    // Check that it's the players turn to estimate
+    // -- Run estimate
+    // -- Run any bot player estimates
+    // -- Wait for additional estimates
+    // If all players have estimated, move on to play phase
+    // console.log("estimate", playerId, estimate);
+
     return {
       message: "ok",
     };
@@ -114,11 +124,3 @@ export function playCard(gameId, playerId, card) {
     };
   }
 }
-
-/**
- * Allow player to join game, returns a playerID that the player
- * can later use to perform actions on behalf of that player
- * Return error if game is full, or if game status is not pending
- * @param {string} name Name of player
- */
-// TODO: export function joinGame(name) {}

@@ -27,7 +27,7 @@ class Player {
 
 // A "bot" player that just makes random decisions
 export class RandomBotPlayer extends Player {
-  // Get random etimate
+  // Get random estimate
   async estimate(hand) {
     return getRandomInt(0, hand.length);
   }
@@ -65,7 +65,7 @@ export class CLIPlayer extends Player {
     return parseFloat(input);
   }
   async playCard(hand, trick) {
-    playerLog("\nOn the table:", trick);
+    playerLog("On the table:", trick);
     playerLog("Your hand:", hand);
 
     let input = await userInput("What card do you want to play?\n=> ");

@@ -10,14 +10,19 @@ import {
   getAggregatePlayerWins,
   getTrickWinners,
   createRound,
+  getPlayerHand,
   createGame,
   playCard,
   calculateGameScore,
   isValidEstimate,
 } from "../../packages/game.js";
-import { pluralize, offsetArray, offsetIndex } from "../../packages/util.js";
-import { RandomBotPlayer } from "./player.js";
+import { pluralize, offsetArray } from "../../packages/util.js";
+import { RandomBotPlayer, CLIPlayer } from "./player.js";
 import { playerLog, log } from "./log.js";
+
+function estimationPhase(round, players) {
+  return offsetArray(players, -round.dealerOffset).entries();
+}
 
 /**
  * Play a round
@@ -37,25 +42,20 @@ export async function playRound(roundCount, players) {
   // -- ESTIMATION PHASE --
   //
   log(`- Estimation Phase`);
-  for (const [playerIndex, player] of offsetArray(
-    players,
-    -round.dealerOffset,
-  ).entries()) {
-    let offsetPlayerIndex = offsetIndex(
-      playerIndex,
-      players.length,
-      round.dealerOffset,
-    );
+  for (const [playerIndex, player] of estimationPhase(round, players)) {
+    let playerHand = getPlayerHand(round, playerIndex);
     let estimate;
     let message;
     let validEstimate;
+
     do {
-      estimate = await player.estimate(round.moves[0].hands[offsetPlayerIndex]);
+      estimate = await player.estimate(playerHand);
       [validEstimate, message] = isValidEstimate(estimate, roundCount);
       if (message) {
         playerLog(message);
       }
     } while (!validEstimate);
+
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
@@ -71,26 +71,31 @@ export async function playRound(roundCount, players) {
     let tricks = round.moves.at(-1).tricks;
     let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];
+
     let currentPlayerIndex = getCurrentPlayerIndex(round);
+
     let card = await players[currentPlayerIndex].playCard(
       hands[currentPlayerIndex],
       currentTrick,
     );
+
     const newRound = playCard(card, round);
+
     if (newRound.error) {
-      playerLog("\nError:", newRound.error, ":", card);
+      playerLog(`\n${newRound.error}: ${card}`);
     } else {
       round = newRound;
-    }
-    let newTricks = newRound.moves.at(-1).tricks;
-    if (newTricks.length > tricks.length) {
-      log(`-- Playing trick #${tricks.length + 1}`);
-    }
-    log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
-    if (newTricks.at(-1).length === players.length) {
-      let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
-      let playerName = players[trickWinnerPlayerIndex].name;
-      log(`--- Winner: ${playerName}`);
+
+      let newTricks = newRound.moves.at(-1).tricks;
+      if (newTricks.length > tricks.length) {
+        log(`-- Playing trick #${tricks.length + 1}`);
+      }
+      log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
+      if (newTricks.at(-1).length === players.length) {
+        let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
+        let playerName = players[trickWinnerPlayerIndex].name;
+        log(`--- Winner: ${playerName}`);
+      }
     }
   }
 

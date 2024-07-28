@@ -21,7 +21,7 @@ describe("create new game", () => {
 
   test("player is participating", () => {
     let { playerId, gameId } = game;
-    assert.strictEqual(playerId, gameMemoryStore[gameId].players[0].id);
+    assert.strictEqual(playerId, gameMemoryStore[gameId].players[1].id);
   });
 
   test("game status is pending", () => {
@@ -31,7 +31,7 @@ describe("create new game", () => {
 
   test("sets player name", () => {
     let { gameId } = game;
-    assert.strictEqual(gameMemoryStore[gameId].players[0].name, "daniel");
+    assert.strictEqual(gameMemoryStore[gameId].players[1].name, "daniel");
   });
 });
 

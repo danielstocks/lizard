@@ -1,4 +1,4 @@
-import { shuffleArray } from "./util.js";
+import { shuffleArray, offsetIndex } from "./util.js";
 
 /**
  * Create new game
@@ -25,22 +25,22 @@ export function createGame({ id, creatorPlayerId, players, roundsToPlay }) {
   };
 }
 
+export function getPlayerHand(round, playerIndex) {
+  let hands = round.moves.at(-1).hands;
+  let offsetPlayerIndex = offsetIndex(
+    playerIndex,
+    hands.length,
+    round.dealerOffset,
+  );
+  return hands[offsetPlayerIndex];
+}
+
 export function startGame(game) {
   return {
     ...game,
     status: "started",
   };
 }
-
-/* TODO
-export function addPlayerToGame(game, player) {
-  if (game.players.length === 5) {
-    throw new Error("Game can be played with max 5 players");
-  }
-  game.players.push(player);
-  return true;
-}
-*/
 
 // Calculate player scores of a game (multiple rounds)
 export function calculateGameScore(game) {
@@ -118,6 +118,7 @@ export function getAggregatePlayerWins(trickWinners, numPlayers) {
  * @param {object} current state of round
  * @returns {number} player index
  */
+// TODO: also return in estimation phase?
 export function getCurrentPlayerIndex(round) {
   let tricks = round.moves.at(-1).tricks;
   let hands = round.moves.at(-1).hands;
