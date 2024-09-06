@@ -5,6 +5,7 @@
 - Feature: Implement proper prison Rules
 - Feature: In case of a draw?
 - Feature: Randomize dealer offset at start of game
+- Feature: Dealer choses trump card if trump card is Lizard
 
 ## In Progress
 - Feature: Game Server App (stateless, in memory-store)

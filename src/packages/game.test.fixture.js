@@ -1,3 +1,4 @@
+/* This fixture simulates a round consisting of 4 tricks */
 export const roundTestFixture = {
   moves: [
     {
@@ -115,16 +116,7 @@ export const roundTestFixture = {
     },
   ],
   trump: "H14",
+  dealerOffset: 0,
   playerEstimates: [2, 1, 2],
-  players: [
-    {
-      name: "Daniel",
-    },
-    {
-      name: "Sara",
-    },
-    {
-      name: "Ruth",
-    },
-  ],
+  numberOfPlayers: 3,
 };

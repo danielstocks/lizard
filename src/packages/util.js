@@ -44,7 +44,7 @@ export function pluralize(count) {
  * @param {number} offset
  */
 export function offsetIndex(index, length, offset) {
-  // TODO: just kill this function later, needless abstraction
+  // TODO: just kill this function later, needless abstraction?
   let sum = index + offset;
   if (sum < length) {
     return sum;
@@ -63,4 +63,51 @@ export function offsetArray(array, offset) {
   const length = copy.length;
   copy.push(...copy.splice(0, ((-offset % length) + length) % length));
   return copy;
+}
+
+/**
+ * Creates a range of cards with given suit
+ * 2-10, J=11, Q=12, K=13, A=14
+ * @param {string} suit
+ * @returns {Array}
+ */
+export function createCardRange(suit) {
+  const lowCards = [];
+  for (var i = 2; i < 15; i++) {
+    lowCards.push(suit + i);
+  }
+  return lowCards;
+}
+
+/**
+ * Create a new deck of cards to use in a game
+ * @returns {Array}
+ */
+export function createDeck() {
+  return [
+    // Hearts
+    ...createCardRange("H"),
+    // Clubs
+    ...createCardRange("C"),
+    // Spades
+    ...createCardRange("S"),
+    // Diamonds
+    ...createCardRange("D"),
+    // Lizards
+    ...Array(4).fill("LIZARD"),
+    // Snakes
+    ...Array(4).fill("SNAKE"),
+  ];
+}
+
+/**
+ * Deal a card from top of deck
+ * returns dealt card and remaining deck
+ * @param {Array} deck
+ * @returns {Array} deck
+ */
+export function dealCardFromDeck(deck) {
+  let dealtCard = deck.slice(0, 1)[0];
+  let remainingCards = deck.slice(1);
+  return [dealtCard, remainingCards];
 }

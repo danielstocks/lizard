@@ -1,31 +1,81 @@
-import { shuffleArray, offsetIndex } from "./util.js";
+import {
+  shuffleArray,
+  offsetIndex,
+  createDeck,
+  dealCardFromDeck,
+} from "./util.js";
 
 /**
- * Create new game
- * @param {object} options
+ * Create and return new game state
+ * @param {number} numberOfPlayers of players to participate in game
+ * @param {number} [roundsToPlay] optionally specify number of rounds to play
  * @returns {object} game
- * TODO: Clarify: player can be a array of players of any shape based on implementation, the * core game logic only care about number of players (length) of array
- * Game id and creator also optional.....
- * TODO: make roundsToPlay optional arg?
  */
-export function createGame({ id, creatorPlayerId, players, roundsToPlay }) {
-  if (players.length > 5 || players.length < 3) {
-    throw new Error("Game can only be played with 3 - 5 players");
+export function createGame(numberOfPlayers, roundsToPlay) {
+  if (isNaN(numberOfPlayers) || numberOfPlayers > 5 || numberOfPlayers < 3) {
+    throw new Error("Number of players must be between 3 and 5");
   }
   if (!roundsToPlay) {
-    roundsToPlay = Math.floor(60 / players.length);
+    roundsToPlay = Math.floor(60 / numberOfPlayers);
   }
   return {
-    id,
-    creatorPlayerId,
     rounds: [],
-    players,
+    numberOfPlayers,
     roundsToPlay,
-    status: "pending",
   };
 }
 
-export function getPlayerHand(round, playerIndex) {
+/**
+ * Create and return new round state
+ * @param {number} roundNumber Number of current round (how many cards to deal per player)
+ * @param {number} numberOfPlayers Number of participating players in round
+ * @returns {object} state Initial empty state of a round
+ */
+export function createRound(roundNumber, numberOfPlayers) {
+  // Rotate dealer positon
+  const dealerOffset = (roundNumber - 1) % numberOfPlayers;
+
+  // Shuffle deck
+  let deck =
+    process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
+
+  // Initilize player hands
+  const hands = [
+    ...Array(numberOfPlayers)
+      .keys()
+      .map(() => []),
+  ];
+
+  // Deal cards
+  for (var i = 0; i < roundNumber * numberOfPlayers; i++) {
+    let [dealtCard, remainingCards] = dealCardFromDeck(deck);
+    deck = remainingCards;
+    hands[(i + dealerOffset) % numberOfPlayers].push(dealtCard);
+  }
+
+  // Create initial game state
+  return {
+    moves: [
+      {
+        hands,
+        tricks: [],
+      },
+    ],
+    trump: dealCardFromDeck(deck)[0],
+    dealerOffset,
+    playerEstimates: [],
+    numberOfPlayers,
+  };
+}
+
+/**
+ * Return hand of player given current round state
+ * player index is offset by round dealer offset
+ * @param {object} round Current state of round
+ * @param {number} playerIndex Index of player to get hand from
+ * @returns {array} hand Array of cards
+ */
+export function getOffsetPlayerHand(round, playerIndex) {
   let hands = round.moves.at(-1).hands;
   let offsetPlayerIndex = offsetIndex(
     playerIndex,
@@ -35,43 +85,11 @@ export function getPlayerHand(round, playerIndex) {
   return hands[offsetPlayerIndex];
 }
 
-export function startGame(game) {
-  return {
-    ...game,
-    status: "started",
-  };
-}
-
-// Calculate player scores of a game (multiple rounds)
-export function calculateGameScore(game) {
-  return game.rounds.reduce((acc, round) => {
-    let roundScore = calculateRoundScore(round);
-    return acc.map((score, i) => {
-      return score + roundScore[i];
-    });
-  }, new Array(game.players.length).fill(0));
-}
-
-// Calculate player scores of a single round
-export function calculateRoundScore(round) {
-  let winners = getAggregatePlayerWins(
-    getTrickWinners(round),
-    round.players.length,
-  );
-  return round.playerEstimates.map((estimate, i) => {
-    let diff = Math.abs(winners[i] - estimate);
-    if (diff == 0) {
-      return 20 + estimate * 10;
-    } else {
-      return diff * -10;
-    }
-  });
-}
-
 /**
  * Checks wether given player estimate is valid
  * @param {number} estimate
  * @param {number} roundCount
+ * @returns {[boolean, (string|undefined)]}
  */
 export function isValidEstimate(estimate, roundCount) {
   if (isNaN(estimate) || typeof estimate !== "number") {
@@ -83,42 +101,61 @@ export function isValidEstimate(estimate, roundCount) {
   if (estimate < 0) {
     return [false, "Estimate cannot be less than 0"];
   }
-  return [true];
-}
-
-// Pass in a completed round and get what player won what trick
-export function getTrickWinners(round) {
-  let tricks = round.moves.at(-1).tricks;
-  let hands = round.moves.at(-1).hands;
-  return tricks.reduce((acc, trick, i) => {
-    let prevWinner = acc[i - 1] || 0;
-
-    let winner =
-      (getWinningCardIndex(trick, round.trump) + prevWinner) % hands.length;
-
-    return [...acc, winner];
-  }, []);
-}
-
-// Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
-// aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
-export function getAggregatePlayerWins(trickWinners, numPlayers) {
-  return trickWinners.reduce((acc, player) => {
-    if (acc[player]) {
-      acc[player] = acc[player] + 1;
-    } else {
-      acc[player] = 1;
-    }
-    return acc;
-  }, new Array(numPlayers).fill(0));
+  return [true, undefined];
 }
 
 /**
- * Return the index of the player whos turn it is
- * @param {object} current state of round
+ * Return index of winning card in a trick
+ * @param {Array} trick
+ * @param {string} trump
+ * @returns {number} winner Index pointing to winning card in trick
+ */
+export function getWinningCardIndex(trick, trump) {
+  // If trump card is lizard or snake
+  // the first card in the trick determines
+  // the commanding suite instead
+  let commandingSuit = ["LIZARD", "SNAKE"].includes(trump)
+    ? trick[0][0]
+    : trump[0];
+
+  let winningCard = trick.reduce((prev, current) => {
+    /* Lizards always win :) */
+    if (prev === "LIZARD") {
+      return prev;
+    }
+    if (current === "LIZARD") {
+      return current;
+    }
+
+    /* Snakes always lose :( */
+    if (prev === "SNAKE") {
+      return current;
+    }
+    if (current === "SNAKE") {
+      return prev;
+    }
+
+    if (prev[0] === commandingSuit && current[0] !== commandingSuit) {
+      return prev;
+    }
+
+    if (prev[0] !== commandingSuit && current[0] === commandingSuit) {
+      return current;
+    }
+
+    // High card wins
+    return parseFloat(prev.slice(1)) > parseFloat(current.slice(1))
+      ? prev
+      : current;
+  });
+  return trick.indexOf(winningCard);
+}
+
+/**
+ * Return the index of the player whos turn it is to play a card
+ * @param {object} round current state of round
  * @returns {number} player index
  */
-// TODO: also return in estimation phase?
 export function getCurrentPlayerIndex(round) {
   let tricks = round.moves.at(-1).tricks;
   let hands = round.moves.at(-1).hands;
@@ -137,136 +174,65 @@ export function getCurrentPlayerIndex(round) {
 }
 
 /**
- * Start a new round, returns a new round state
- * @param {number} round Number of round (how many cards to deal per player)
- * @param {number} players Number of participating players
- * @returns {object} state Initial empty state of a round
+ * Pass in a round and get the playerIndex of each trick winner
+ * @param {object} round current state of round
+ * @returns {Array} player index of winner of each trick
  */
-export function createRound(round, players) {
-  // Rotate dealer positon
-  let dealerOffset = (round - 1) % players.length;
-
-  // Shuffle deck
-  let deck =
-    process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
-
-  // Initilize player hands
-  let hands = [
-    ...Array(players.length)
-      .keys()
-      .map(() => []),
-  ];
-
-  // Deal cards
-  for (var i = 0; i < round * players.length; i++) {
-    let [dealtCard, remainingCards] = dealCardFromDeck(deck);
-    deck = remainingCards;
-    hands[(i + dealerOffset) % players.length].push(dealtCard);
-  }
-
-  // Create initial game state
-  return {
-    moves: [
-      {
-        hands,
-        tricks: [],
-      },
-    ],
-    // TODO: turn the below statements to tests
-    // If the card turned up is a Lizard, the dealer chooses one of the 4 suits as the trump suit.
-    // If the card turned up is a Snake, there is no trump card.
-    // If card deck is empty, same rules as if Snake turned up.
-    trump: dealCardFromDeck(deck)[0] || "S",
-    dealerOffset,
-    playerEstimates: [],
-    players,
-  };
+export function getTrickWinners(round) {
+  let tricks = round.moves.at(-1).tricks;
+  let hands = round.moves.at(-1).hands;
+  return tricks.reduce((acc, trick, i) => {
+    let prevWinner = i > 0 ? acc.at(-1) : round.dealerOffset;
+    let winner =
+      (prevWinner + getWinningCardIndex(trick, round.trump)) % hands.length;
+    return [...acc, winner];
+  }, []);
 }
 
-/**
- * Creates a range of cards with given suit
- * 2-10, J=11, Q=12, K=13, A=14
- * @param {string} suit
- * @returns {Array}
+/*
+ * ####
+ * ---- BELOW NOT TESTED ----
+ * ###
  */
-function createCardRange(suit) {
-  const lowCards = [];
-  for (var i = 2; i < 15; i++) {
-    lowCards.push(suit + i);
-  }
-  return lowCards;
-}
 
-/**
- * Create a new deck of cards to use in a game
- * @returns {Array}
- */
-export function createDeck() {
-  return [
-    // Hearts
-    ...createCardRange("H"),
-    // Clubs
-    ...createCardRange("C"),
-    // Spades
-    ...createCardRange("S"),
-    // Diamonds
-    ...createCardRange("D"),
-    // Lizards
-    ...["L", "L", "L", "L"],
-    // Snakes
-    ...["S", "S", "S", "S"],
-  ];
-}
-
-/**
- * Deal a card from top of deck
- * returns dealt card and remaining deck
- * @returns {Array} deck
- */
-export function dealCardFromDeck(deck) {
-  let dealtCard = deck.slice(0, 1)[0];
-  let remainingCards = deck.slice(1);
-  return [dealtCard, remainingCards];
-}
-
-/* Return index of winning card in a trick
- * @param {Array} trick
- * @returns {number} winner Index pointing to winning card in trick
- */
-export function getWinningCardIndex(trick, trump) {
-  let commandingSuit = trump.includes("L", "S") ? trick[0][0] : trump[0];
-
-  let winningCard = trick.reduce((prev, current) => {
-    /* Lizards always win */
-    if (prev === "L") {
-      return prev;
+// Calculate scores of a finished round
+export function calculateRoundScore(round) {
+  // Check if round has fininsiehd?
+  let winners = getAggregatePlayerWins(
+    getTrickWinners(round),
+    round.numberOfPlayers,
+  );
+  return round.playerEstimates.map((estimate, i) => {
+    let diff = Math.abs(winners[i] - estimate);
+    if (diff == 0) {
+      return 20 + estimate * 10;
+    } else {
+      return diff * -10;
     }
-    if (current === "L") {
-      return current;
-    }
-
-    /* Snakes always lose */
-    if (prev === "S") {
-      return current;
-    }
-    if (current === "S") {
-      return prev;
-    }
-
-    if (prev[0] === commandingSuit && current[0] !== commandingSuit) {
-      return prev;
-    }
-
-    if (prev[0] !== commandingSuit && current[0] === commandingSuit) {
-      return current;
-    }
-
-    // High card wins
-    return parseFloat(prev.slice(1)) > parseFloat(current.slice(1))
-      ? prev
-      : current;
   });
-  return trick.indexOf(winningCard);
+}
+
+// Calculate player scores of a game (multiple rounds)
+export function calculateGameScore(game) {
+  return game.rounds.reduce((acc, round) => {
+    let roundScore = calculateRoundScore(round);
+    return acc.map((score, i) => {
+      return score + roundScore[i];
+    });
+  }, new Array(game.numberOfPlayers).fill(0));
+}
+
+// Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
+// aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
+export function getAggregatePlayerWins(trickWinners, numPlayers) {
+  return trickWinners.reduce((acc, player) => {
+    if (acc[player]) {
+      acc[player] = acc[player] + 1;
+    } else {
+      acc[player] = 1;
+    }
+    return acc;
+  }, new Array(numPlayers).fill(0));
 }
 
 /**

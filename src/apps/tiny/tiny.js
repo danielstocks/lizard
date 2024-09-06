@@ -10,7 +10,7 @@ import {
   getAggregatePlayerWins,
   getTrickWinners,
   createRound,
-  getPlayerHand,
+  getOffsetPlayerHand,
   createGame,
   playCard,
   calculateGameScore,
@@ -24,18 +24,29 @@ function estimationPhase(round, players) {
   return offsetArray(players, -round.dealerOffset).entries();
 }
 
+function isPlayPhase(round) {
+  return round.moves.at(-1).hands.flat().length > 0;
+}
+
+const players = [
+  new CLIPlayer("Daniel"),
+  new RandomBotPlayer("Scooby"),
+  new RandomBotPlayer("Scrappy"),
+  //new RandomBotPlayer("Button"),
+];
+
 /**
  * Play a round
- * @param {number} round Number of round to play
+ * @param {number} roundNumber The current round number
  * @param {Array} players List of player objects
  * @returns {object} state The final state and all moves made during the round
  */
-export async function playRound(roundCount, players) {
+export async function playRound(roundNumber) {
   //
   // -- SETUP PHASE --
   //
-  let round = createRound(roundCount, players);
-  log(`# Starting round ${roundCount}`);
+  let round = createRound(roundNumber, players.length);
+  log(`# Starting round ${roundNumber}`);
   log(`- Trump Card: ` + round.trump);
 
   //
@@ -43,14 +54,14 @@ export async function playRound(roundCount, players) {
   //
   log(`- Estimation Phase`);
   for (const [playerIndex, player] of estimationPhase(round, players)) {
-    let playerHand = getPlayerHand(round, playerIndex);
+    let playerHand = getOffsetPlayerHand(round, playerIndex);
     let estimate;
     let message;
     let validEstimate;
 
     do {
       estimate = await player.estimate(playerHand);
-      [validEstimate, message] = isValidEstimate(estimate, roundCount);
+      [validEstimate, message] = isValidEstimate(estimate, roundNumber);
       if (message) {
         playerLog(message);
       }
@@ -59,15 +70,14 @@ export async function playRound(roundCount, players) {
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
-    round.playerEstimates.push(estimate);
+    round.playerEstimates[playerIndex] = estimate;
   }
 
   //
   // -- PLAY PHASE --
   //
   log(`- Play Phase`);
-  // Play until all hands in round are empty
-  while (round.moves.at(-1).hands.flat().length > 0) {
+  while (isPlayPhase(round)) {
     let tricks = round.moves.at(-1).tricks;
     let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];
@@ -83,19 +93,23 @@ export async function playRound(roundCount, players) {
 
     if (newRound.error) {
       playerLog(`\n${newRound.error}: ${card}`);
-    } else {
-      round = newRound;
+      continue;
+    }
+    round = newRound;
+    // Start of new trick?
+    let newTricks = newRound.moves.at(-1).tricks;
+    if (newTricks.length > tricks.length) {
+      log(`-- Playing trick #${tricks.length + 1}`);
+    }
 
-      let newTricks = newRound.moves.at(-1).tricks;
-      if (newTricks.length > tricks.length) {
-        log(`-- Playing trick #${tricks.length + 1}`);
-      }
-      log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
-      if (newTricks.at(-1).length === players.length) {
-        let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
-        let playerName = players[trickWinnerPlayerIndex].name;
-        log(`--- Winner: ${playerName}`);
-      }
+    // Log current play (after start and before end of trick)
+    log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
+
+    // End of current trick?
+    if (newTricks.at(-1).length === players.length) {
+      let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
+      let playerName = players[trickWinnerPlayerIndex].name;
+      log(`--- Winner: ${playerName}`);
     }
   }
 
@@ -119,13 +133,12 @@ export async function playRound(roundCount, players) {
 
 /**
  * Play a game
- * @param {object} game The game object to play
- * @returns {object} state The final state and all moves made during the round
+ * @param {object} game start state of game
+ * @returns {object} game end state of game
  */
 export async function playGame(game) {
-  let players = game.players;
   for (let i = 1; i <= game.roundsToPlay; i++) {
-    let round = await playRound(i, players);
+    let round = await playRound(i);
 
     game.rounds.push(round);
 
@@ -139,14 +152,9 @@ export async function playGame(game) {
   log("# Game over");
 
   let gameScore = calculateGameScore(game);
-  let winningScore = Math.max(...gameScore);
-
   gameScore.forEach((score, i) => {
-    let winner = false;
-    if (score === winningScore) {
-      winner = true;
-    }
-    log("-", players[i].name, score, winner ? "- WINNER!" : "");
+    const isWinner = score === Math.max(...gameScore);
+    log("-", players[i].name, score, isWinner ? "- WINNER!" : "");
   });
 
   return game;
@@ -155,16 +163,9 @@ export async function playGame(game) {
 async function init() {
   var args = process.argv.slice(2);
   if (args.includes("--play")) {
-    let players = [
-      //new CLIPlayer("Daniel"),
-      //new RandomBotPlayer("Daniel"),
-      new RandomBotPlayer("Button"),
-      new RandomBotPlayer("Sara"),
-      new RandomBotPlayer("Ruth"),
-    ];
     playerLog("\nWelcome to Lizard!");
     playerLog("\nStarting new game...\n");
-    let game = createGame({ players });
+    let game = createGame(players.length, 3);
     await playGame(game);
   }
 }
