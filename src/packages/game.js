@@ -114,8 +114,6 @@ export function getWinningCardIndex(trick, trump) {
     ? trick[0][0]
     : trump[0];
 
-  console.log(commandingSuit);
-
   let winningCard = trick.reduce((prev, current) => {
     /* Lizards always win :) */
     if (prev === "LIZARD") {
