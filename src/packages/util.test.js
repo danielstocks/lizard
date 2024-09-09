@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
 
-import { pluralize, offsetArray, offsetIndex } from "./util.js";
+import { pluralize, offsetArray, offsetIndex, createDeck } from "./util.js";
 
 describe("pluralize", () => {
   test("singlular", () => {
@@ -27,5 +27,11 @@ describe("offset index", () => {
 
   test("offsets an index by given offset and length variation", () => {
     assert.deepStrictEqual(offsetIndex(2, 3, 1), 0);
+  });
+});
+
+describe("create cards", () => {
+  test("64 cards in a deck", () => {
+    assert.strictEqual(createDeck().length, 60);
   });
 });

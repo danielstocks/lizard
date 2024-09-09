@@ -270,75 +270,44 @@ describe("calculate round score", () => {
     let score = calculateRoundScore(round);
     assert.deepStrictEqual(score, [-10, 40, 20]);
   });
-
-  /*
-  test("returns accurate score with player wins more tricks than estimated", () => {
-    let fixture = {
-      ...roundTestFixture,
-      playerEstimates: [0, 0, 0],
-    };
-    let score = calculateRoundScore(fixture);
-    assert.deepStrictEqual(score, [-10, -10, -20]);
-  });
-  */
 });
 
-/*
 describe("calculate game score", () => {
-  test("returns accumulated score of multiple rounds", () => {
-    let game = {
-      players: mockPlayers,
-      rounds: [roundTestFixture, roundTestFixture],
-    };
-    let score = calculateGameScore(game);
-    assert.deepStrictEqual(score, [-20, 60, 80]);
-  });
-});
+  let game = createGame(3);
 
+  // Setup first round
+  let round1 = createRound(1, 3);
+  round1.playerEstimates = [1, 0, 1];
 
+  // Play first round, first trick
+  round1 = playCard("H2", round1);
+  round1 = playCard("H3", round1);
+  round1 = playCard("H4", round1);
+  game.rounds.push(round1);
 
-describe("create cards", () => {
-  test("64 cards in a deck", () => {
-    assert.strictEqual(createDeck().length, 60);
-  });
-});
+  // Score after first round
+  let partialScore = calculateGameScore(game);
+  assert.deepStrictEqual(partialScore, [-10, 20, 30]);
 
-describ("create new round", () => {
-  test("dealer offset", () => {
-    const round = createRound(3, mockPlayers, 1);
-    assert.equal(round.dealerOffset, 2);
-  });
+  // Setup second round
+  let round2 = createRound(2, 3);
+  round2.playerEstimates = [2, 1, 0];
 
-  test("dealer offset cards dealt", () => {
-    const round = createRound(3, mockPlayers);
-    assert.deepStrictEqual(round.moves.at(-1).hands, [
-      ["H3", "H6", "H9"],
-      ["H4", "H7", "H10"],
-      ["H2", "H5", "H8"],
-    ]);
-  });
-});
+  // Play second round, first trick
+  round2 = playCard("H2", round2);
+  round2 = playCard("H3", round2);
+  round2 = playCard("H4", round2);
 
-describe("play round", () => {
-  test("number of hands", () => {
-    const newRound = createRound(3, mockPlayers);
-    assert.strictEqual(newRound.moves[0].hands.length, 3);
-  });
+  // Play second round, second trick
+  round2 = playCard("H7", round2);
+  round2 = playCard("H5", round2);
+  round2 = playCard("H6", round2);
 
-  test("number of dealt cards per hand", () => {
-    const newRound = createRound(3, mockPlayers);
-    assert.strictEqual(newRound.moves[0].hands[0].length, 3);
-  });
+  game.rounds.push(round2);
 
-  test("trump card", () => {
-    const newRound = createRound(3, mockPlayers);
-    assert.strictEqual(newRound.trump, "H11");
-  });
-
-  test("empty player estimates", () => {
-    const newRound = createRound(3, mockPlayers);
-    assert.deepStrictEqual(newRound.playerEstimates, []);
-  });
+  // Calculate final game score
+  let score = calculateGameScore(game);
+  assert.deepStrictEqual(score, [30, 10, 50]);
 });
 
 describe("is valid play", () => {
@@ -368,14 +337,6 @@ describe("is valid play", () => {
   });
 });
 
-describe("get trick winners", () => {
-  test("should return the winners of each trick", () => {
-    let trickWinners = getTrickWinners(roundTestFixture, true);
-    assert.deepStrictEqual(trickWinners, [0, 2, 1, 2]);
-  });
-});
-
-
 describe("play card", () => {
   test("play invalid card", () => {
     assert.deepStrictEqual(
@@ -401,7 +362,7 @@ describe("play card", () => {
           },
         ],
         dealerOffset: 0,
-        players: mockPlayers,
+        numberOfPlayers: 3,
       }).moves.at(-1),
       {
         hands: [["S"], ["L", "L"], ["S12", "L"]],
@@ -410,4 +371,3 @@ describe("play card", () => {
     );
   });
 });
-*/

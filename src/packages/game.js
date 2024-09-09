@@ -207,24 +207,13 @@ export function calculateRoundScore(round) {
   });
 }
 
-/*
- * ####
- * ---- BELOW NOT TESTED ----
- * ###
+/**
+ * Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
+ * aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
+ * @param {Array} trickWinners array of winners
+ * @param {number} numberOfPlayers number of players in game
+ * @returns {Array} aggregated wins per player index
  */
-
-// Calculate player scores of a game (multiple rounds)
-export function calculateGameScore(game) {
-  return game.rounds.reduce((acc, round) => {
-    let roundScore = calculateRoundScore(round);
-    return acc.map((score, i) => {
-      return score + roundScore[i];
-    });
-  }, new Array(game.numberOfPlayers).fill(0));
-}
-
-// Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
-// aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
 function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
   return trickWinners.reduce((acc, player) => {
     if (acc[player]) {
@@ -234,6 +223,20 @@ function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
     }
     return acc;
   }, new Array(numberOfPlayers).fill(0));
+}
+
+/**
+ * Calculate scores of a finished game based on round wins
+ * @param {object} game current state of round
+ * @returns {Array} total score
+ */
+export function calculateGameScore(game) {
+  return game.rounds.reduce((acc, round) => {
+    let roundScore = calculateRoundScore(round);
+    return acc.map((score, i) => {
+      return score + roundScore[i];
+    });
+  }, new Array(game.numberOfPlayers).fill(0));
 }
 
 /**
