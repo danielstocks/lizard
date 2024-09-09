@@ -107,12 +107,14 @@ export function isValidEstimate(estimate, roundCount) {
  * @returns {number} winner Index pointing to winning card in trick
  */
 export function getWinningCardIndex(trick, trump) {
-  // If trump card is lizard or snake
+  // If trump card is lizard or snake or undefine,
   // the first card in the trick determines
   // the commanding suite instead
-  let commandingSuit = ["LIZARD", "SNAKE"].includes(trump)
+  let commandingSuit = ["LIZARD", "SNAKE", undefined].includes(trump)
     ? trick[0][0]
     : trump[0];
+
+  console.log(commandingSuit);
 
   let winningCard = trick.reduce((prev, current) => {
     /* Lizards always win :) */
@@ -139,11 +141,17 @@ export function getWinningCardIndex(trick, trump) {
       return current;
     }
 
-    // High card wins
+    // Only cards that follow suit at this point can win
+    if (prev[0] !== current[0]) {
+      return prev;
+    }
+
+    // Finally: High card wins
     return parseFloat(prev.slice(1)) > parseFloat(current.slice(1))
       ? prev
       : current;
   });
+
   return trick.indexOf(winningCard);
 }
 
@@ -214,7 +222,7 @@ export function calculateRoundScore(round) {
  * @param {number} numberOfPlayers number of players in game
  * @returns {Array} aggregated wins per player index
  */
-function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
+export function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
   return trickWinners.reduce((acc, player) => {
     if (acc[player]) {
       acc[player] = acc[player] + 1;

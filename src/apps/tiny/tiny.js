@@ -20,6 +20,9 @@ import { pluralize, offsetArray } from "../../packages/util.js";
 import { RandomBotPlayer, CLIPlayer } from "./player.js";
 import { playerLog, log } from "./log.js";
 
+const COLOR_RESET = "\x1b[0m";
+const COLOR_MAGENTA = "\x1b[35m";
+
 function estimationPhase(round, players) {
   return offsetArray(players, -round.dealerOffset).entries();
 }
@@ -46,8 +49,9 @@ export async function playRound(roundNumber) {
   // -- SETUP PHASE --
   //
   let round = createRound(roundNumber, players.length);
+  console.log("\n\n"); // Create some breathing room
   log(`# Starting round ${roundNumber}`);
-  log(`- Trump Card: ` + round.trump);
+  log(`- Trump Card:${COLOR_MAGENTA} ` + round.trump + COLOR_RESET);
 
   //
   // -- ESTIMATION PHASE --
@@ -70,7 +74,9 @@ export async function playRound(roundNumber) {
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
-    round.playerEstimates[playerIndex] = estimate;
+
+    round.playerEstimates[(playerIndex + round.dealerOffset) % players.length] =
+      estimate;
   }
 
   //
@@ -81,6 +87,12 @@ export async function playRound(roundNumber) {
     let tricks = round.moves.at(-1).tricks;
     let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];
+
+    // Check if new trick (this check is done inside playCard but the player
+    // needs to know in advance
+    if (currentTrick.length === players.length) {
+      currentTrick = [];
+    }
 
     let currentPlayerIndex = getCurrentPlayerIndex(round);
 
@@ -103,7 +115,7 @@ export async function playRound(roundNumber) {
     }
 
     // Log current play (after start and before end of trick)
-    log(`--- Player ${players[currentPlayerIndex].name} plays ${card}`);
+    log(`--- ${players[currentPlayerIndex].name} plays ${card}`);
 
     // End of current trick?
     if (newTricks.at(-1).length === players.length) {
@@ -165,7 +177,7 @@ async function init() {
   if (args.includes("--play")) {
     playerLog("\nWelcome to Lizard!");
     playerLog("\nStarting new game...\n");
-    let game = createGame(players.length, 3);
+    let game = createGame(players.length);
     await playGame(game);
   }
 }

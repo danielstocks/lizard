@@ -122,7 +122,6 @@ describe("is valid estimate", () => {
   test("less than number of rounds", () => {
     assert.strictEqual(isValidEstimate(5, 3)[0], false);
   });
-
   test("less than zero", () => {
     assert.strictEqual(isValidEstimate(-1, 3)[0], false);
   });
@@ -133,6 +132,10 @@ describe("is valid estimate", () => {
 });
 
 describe("get winning card index", () => {
+  test("comanding suit highest card wins", () => {
+    assert.strictEqual(getWinningCardIndex(["H5", "S8", "S7"], "D"), 0);
+  });
+
   test("highest card wins", () => {
     assert.strictEqual(getWinningCardIndex(["H9", "H14", "H3", "H13"], "C"), 1);
   });
@@ -186,6 +189,13 @@ describe("get winning card index", () => {
   test("when trump card is snake, first card determines trump", () => {
     assert.strictEqual(
       getWinningCardIndex(["H9", "C14", "H10", "C13"], "SNAKE"),
+      2,
+    );
+  });
+
+  test("when trump card is undefined, first card determines trump", () => {
+    assert.strictEqual(
+      getWinningCardIndex(["H9", "C14", "H10", "C13"], undefined),
       2,
     );
   });
@@ -247,6 +257,10 @@ describe("get trick winners", () => {
   });
 });
 
+describe("get aggregate playerWins", () => {
+  // TODO: test getAggregatePlayerWins
+});
+
 describe("calculate round score", () => {
   test("returns accurate score", () => {
     let round = createRound(3, 3);
@@ -273,41 +287,43 @@ describe("calculate round score", () => {
 });
 
 describe("calculate game score", () => {
-  let game = createGame(3);
+  test("it calculates game score", () => {
+    let game = createGame(3);
 
-  // Setup first round
-  let round1 = createRound(1, 3);
-  round1.playerEstimates = [1, 0, 1];
+    // Setup first round
+    let round1 = createRound(1, 3);
+    round1.playerEstimates = [1, 0, 1];
 
-  // Play first round, first trick
-  round1 = playCard("H2", round1);
-  round1 = playCard("H3", round1);
-  round1 = playCard("H4", round1);
-  game.rounds.push(round1);
+    // Play first round, first trick
+    round1 = playCard("H2", round1);
+    round1 = playCard("H3", round1);
+    round1 = playCard("H4", round1);
+    game.rounds.push(round1);
 
-  // Score after first round
-  let partialScore = calculateGameScore(game);
-  assert.deepStrictEqual(partialScore, [-10, 20, 30]);
+    // Score after first round
+    let partialScore = calculateGameScore(game);
+    assert.deepStrictEqual(partialScore, [-10, 20, 30]);
 
-  // Setup second round
-  let round2 = createRound(2, 3);
-  round2.playerEstimates = [2, 1, 0];
+    // Setup second round
+    let round2 = createRound(2, 3);
+    round2.playerEstimates = [2, 1, 0];
 
-  // Play second round, first trick
-  round2 = playCard("H2", round2);
-  round2 = playCard("H3", round2);
-  round2 = playCard("H4", round2);
+    // Play second round, first trick
+    round2 = playCard("H2", round2);
+    round2 = playCard("H3", round2);
+    round2 = playCard("H4", round2);
 
-  // Play second round, second trick
-  round2 = playCard("H7", round2);
-  round2 = playCard("H5", round2);
-  round2 = playCard("H6", round2);
+    // Play second round, second trick
+    round2 = playCard("H7", round2);
+    round2 = playCard("H5", round2);
+    round2 = playCard("H6", round2);
 
-  game.rounds.push(round2);
+    game.rounds.push(round2);
 
-  // Calculate final game score
-  let score = calculateGameScore(game);
-  assert.deepStrictEqual(score, [30, 10, 50]);
+    // Calculate final game score
+    let score = calculateGameScore(game);
+    assert.deepStrictEqual(score, [30, 10, 50]);
+  });
 });
 
 describe("is valid play", () => {

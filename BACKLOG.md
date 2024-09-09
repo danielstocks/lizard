@@ -1,7 +1,6 @@
 # Backlog
 
 ## Todo
-- Bug: Unique identifiers for snake (Z) And Lizard (L) cards?
 - Feature: Implement proper prison Rules
 - Feature: In case of a draw?
 - Feature: Randomize dealer offset at start of game
@@ -11,6 +10,7 @@
 - Feature: Game Server App (stateless, in memory-store)
 
 ## Done
+- Bug: Fix Unique identifiers for (Snake) cards, not be confused with Spades (S)
 - Feature: Rotate Dealer
 - Bug: Last round there is no trump card (deck is empty)
 - Feature: Calculate scores and declare winner
@@ -25,6 +25,6 @@
 - Feature: Play game via HTTP (single player)
 - Feature: Play game in Web UI (single player)
 - Feature: Persist games in SQLite
-- Feature: Make a bot that can actually play :D
-- Feature: Scoresheet
+- Feature: Make a bot that can actually play :D (Not just random)
+- Feature: Scoresheet UI
 - Feature: Multiplayer

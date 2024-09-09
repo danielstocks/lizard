@@ -65,7 +65,7 @@ export class CLIPlayer extends Player {
     return parseFloat(input);
   }
   async playCard(hand, trick) {
-    playerLog("On the table:", trick);
+    playerLog("\nOn the table:", trick);
     playerLog("Your hand:", hand);
 
     let input = await userInput("What card do you want to play?\n=> ");

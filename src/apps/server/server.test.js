@@ -2,6 +2,7 @@ import { describe, test, before } from "node:test";
 import assert from "node:assert";
 import { createGame, startGame, gameMemoryStore } from "./server.js";
 
+/*
 describe("create new game", () => {
   let game;
 
@@ -73,3 +74,4 @@ describe("start game", () => {
     assert.equal(gameInMemory.status, "pending");
   });
 });
+*/

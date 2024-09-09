@@ -5,7 +5,8 @@
   "scripts": {
     "tiny": "node src/apps/tiny/tiny.js --play",
     "test": "NODE_ENV=test node --test --watch",
-    "test:coverage": "NODE_ENV=test c8 -r html node --test src/packages/game.test.js"
+    "test-only": "NODE_ENV=test node --test --test-only --watch",
+    "test:coverage": "NODE_ENV=test c8 -r html node --test"
   },
   "type": "module",
   "license": "ISC",
