@@ -40,11 +40,7 @@ export function createRound(roundNumber, numberOfPlayers) {
     process.env.NODE_ENV !== "test" ? shuffleArray(createDeck()) : createDeck();
 
   // Initilize player hands
-  const hands = [
-    ...Array(numberOfPlayers)
-      .keys()
-      .map(() => []),
-  ];
+  const hands = new Array(numberOfPlayers).fill(null).map(() => []);
 
   // Deal cards
   for (var i = 0; i < roundNumber * numberOfPlayers; i++) {
@@ -201,8 +197,6 @@ export function calculateRoundScore(round) {
     round.numberOfPlayers,
   );
 
-  console.log(winners);
-
   return round.playerEstimates.map((estimate, i) => {
     let diff = Math.abs(winners[i] - estimate);
     if (diff == 0) {
@@ -250,8 +244,8 @@ function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
  * what cards are already in play in a trick
  * @param {string} card
  * @param {array} hand
- * @param {array} trick
- * @returns {bool} valid
+ * @param {array} trick
+ * @returns {boolean} valid
  */
 export function isValidPlay(card, hand, trick) {
   // First of all check player has card on hand

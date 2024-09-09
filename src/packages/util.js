@@ -104,7 +104,7 @@ export function createDeck() {
  * Deal a card from top of deck
  * returns dealt card and remaining deck
  * @param {Array} deck
- * @returns {Array} deck
+ * @returns {[string, string[]]}
  */
 export function dealCardFromDeck(deck) {
   let dealtCard = deck.slice(0, 1)[0];
