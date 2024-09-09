@@ -250,6 +250,7 @@ describe("get trick winners", () => {
 describe("calculate round score", () => {
   test("returns accurate score", () => {
     let round = createRound(3, 3);
+    round.playerEstimates = [2, 2, 0];
 
     // Play first trick
     round = playCard("H2", round);
@@ -267,7 +268,7 @@ describe("calculate round score", () => {
     round = playCard("H5", round);
 
     let score = calculateRoundScore(round);
-    assert.deepStrictEqual(score, [-10, 30, 40]);
+    assert.deepStrictEqual(score, [-10, 40, 20]);
   });
 
   /*

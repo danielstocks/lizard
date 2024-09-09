@@ -189,19 +189,20 @@ export function getTrickWinners(round) {
   }, []);
 }
 
-/*
- * ####
- * ---- BELOW NOT TESTED ----
- * ###
+/**
+ * Calculate scores of a finished round based on trick wins vs
+ * actual player estimate
+ * @param {object} round current state of round
+ * @returns {Array} round score for each player
  */
-
-// Calculate scores of a finished round
 export function calculateRoundScore(round) {
-  // Check if round has fininsiehd?
   let winners = getAggregatePlayerWins(
     getTrickWinners(round),
     round.numberOfPlayers,
   );
+
+  console.log(winners);
+
   return round.playerEstimates.map((estimate, i) => {
     let diff = Math.abs(winners[i] - estimate);
     if (diff == 0) {
@@ -211,6 +212,12 @@ export function calculateRoundScore(round) {
     }
   });
 }
+
+/*
+ * ####
+ * ---- BELOW NOT TESTED ----
+ * ###
+ */
 
 // Calculate player scores of a game (multiple rounds)
 export function calculateGameScore(game) {
@@ -224,7 +231,7 @@ export function calculateGameScore(game) {
 
 // Takes an array of playerIndex winners eg. [0, 0, 1, 3, 3] and
 // aggragtes into a new array counting wins per play eg. [2, 1, 0, 2]
-export function getAggregatePlayerWins(trickWinners, numPlayers) {
+function getAggregatePlayerWins(trickWinners, numberOfPlayers) {
   return trickWinners.reduce((acc, player) => {
     if (acc[player]) {
       acc[player] = acc[player] + 1;
@@ -232,7 +239,7 @@ export function getAggregatePlayerWins(trickWinners, numPlayers) {
       acc[player] = 1;
     }
     return acc;
-  }, new Array(numPlayers).fill(0));
+  }, new Array(numberOfPlayers).fill(0));
 }
 
 /**
