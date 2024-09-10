@@ -263,12 +263,17 @@ export function isValidPlay(card, hand, trick) {
   }
 
   // Player can always play lizard
-  if (card === "L") {
+  if (card === "LIZARD") {
     return true;
   }
 
   // Player can always play snake
-  if (card === "S") {
+  if (card === "SNAKE") {
+    return true;
+  }
+
+  // Any card can be played if commanding suit is LIZARD or SNAKE
+  if (trick[0] && ["LIZARD", "SNAKE"].includes(trick[0])) {
     return true;
   }
 

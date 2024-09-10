@@ -328,28 +328,51 @@ describe("calculate game score", () => {
 
 describe("is valid play", () => {
   test("Player must have card on hand to play it", () => {
-    assert.strictEqual(isValidPlay("H6", ["H5", "C6", "L"], []), false);
+    assert.strictEqual(isValidPlay("H6", ["H5", "C6", "LIZARD"], []), false);
   });
 
   test("player can play any card in empty trick", () => {
-    assert.strictEqual(isValidPlay("H5", ["H5", "C6", "L"], []), true);
+    assert.strictEqual(isValidPlay("H5", ["H5", "C6", "LIZARD"], []), true);
   });
 
   test("player most follow suit", () => {
-    assert.strictEqual(isValidPlay("H5", ["H5", "C6", "L"], ["C9"]), false);
-    assert.strictEqual(isValidPlay("C6", ["H5", "C6", "L"], ["C9"]), true);
+    assert.strictEqual(
+      isValidPlay("H5", ["H5", "C6", "LIZARD"], ["C9"]),
+      false,
+    );
+    assert.strictEqual(isValidPlay("C6", ["H5", "C6", "LIZARD"], ["C9"]), true);
   });
 
   test("player can play any card if they cant follow suit", () => {
-    assert.strictEqual(isValidPlay("H5", ["H5", "L"], ["C9"]), true);
+    assert.strictEqual(isValidPlay("H5", ["H5", "LIZARD"], ["C9"]), true);
   });
 
   test("player can break suit with lizard", () => {
-    assert.strictEqual(isValidPlay("L", ["H5", "C6", "L"], ["C9"]), true);
+    assert.strictEqual(
+      isValidPlay("LIZARD", ["H5", "C6", "LIZARD"], ["C9"]),
+      true,
+    );
   });
 
   test("player can break suit with snake", () => {
-    assert.strictEqual(isValidPlay("S", ["H5", "C6", "S"], ["C9"]), true);
+    assert.strictEqual(
+      isValidPlay("SNAKE", ["H5", "C6", "SNAKE"], ["C9"]),
+      true,
+    );
+  });
+
+  test("player can play any card if first card in trick is lizard", () => {
+    assert.strictEqual(
+      isValidPlay("H5", ["H5", "C6", "LIZARD"], ["LIZARD"]),
+      true,
+    );
+  });
+
+  test("player can play any card first card in trick is snake", () => {
+    assert.strictEqual(
+      isValidPlay("H5", ["H5", "C6", "SNAKE"], ["SNAKE"]),
+      true,
+    );
   });
 });
 
@@ -366,13 +389,13 @@ describe("play card", () => {
 
   test("play lizards and snakes", () => {
     assert.deepStrictEqual(
-      playCard("S", {
+      playCard("SNAKE", {
         moves: [
           {
             hands: [
-              ["S", "S"],
-              ["L", "L"],
-              ["S12", "L"],
+              ["SNAKE", "SNAKE"],
+              ["LIZARD", "LIZARD"],
+              ["S12", "LIZARD"],
             ],
             tricks: [],
           },
@@ -381,8 +404,8 @@ describe("play card", () => {
         numberOfPlayers: 3,
       }).moves.at(-1),
       {
-        hands: [["S"], ["L", "L"], ["S12", "L"]],
-        tricks: [["S"]],
+        hands: [["SNAKE"], ["LIZARD", "LIZARD"], ["S12", "LIZARD"]],
+        tricks: [["SNAKE"]],
       },
     );
   });
