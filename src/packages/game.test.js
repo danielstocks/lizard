@@ -5,7 +5,6 @@ import {
   isValidEstimate,
   getWinningCardIndex,
   createGame,
-  getOffsetPlayerHand,
   getTrickWinners,
   playCard,
   isValidPlay,
@@ -94,29 +93,13 @@ describe("createRound", () => {
   });
 });
 
-describe("get offset player hand", () => {
-  test("first player, first round", () => {
-    const round1 = createRound(1, 3);
-    const hand = getOffsetPlayerHand(round1, 0);
-    assert.deepStrictEqual(hand, ["H2"]);
-  });
-
-  test("first player, second round", () => {
-    const round2 = createRound(2, 3);
-    const hand = getOffsetPlayerHand(round2, 0);
-    assert.deepStrictEqual(hand, ["H2", "H5"]);
-  });
-
-  test("third player, second round", () => {
-    const round2 = createRound(2, 3);
-    const hand = getOffsetPlayerHand(round2, 2);
-    assert.deepStrictEqual(hand, ["H4", "H7"]);
-  });
-});
-
 describe("is valid estimate", () => {
   test("must be a valid number", () => {
     assert.strictEqual(isValidEstimate("x", 3)[0], false);
+  });
+
+  test("must be an integer", () => {
+    assert.strictEqual(isValidEstimate(2.5, 3)[0], false);
   });
 
   test("less than number of rounds", () => {

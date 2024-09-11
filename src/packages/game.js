@@ -93,20 +93,12 @@ export function getRoundPhase(round) {
 }
 
 /**
- * Return hand of player given current round state
- * player index is offset by round dealer offset
- * @param {object} round Current state of round
- * @param {number} playerIndex Index of player to get hand from
- * @returns {array} hand Array of cards
+ * Get cards on for current player
+ * @param {object} round
  */
-export function getOffsetPlayerHand(round, playerIndex) {
-  let hands = round.moves.at(-1).hands;
-  let offsetPlayerIndex = offsetIndex(
-    playerIndex,
-    hands.length,
-    round.dealerOffset,
-  );
-  return hands[offsetPlayerIndex];
+export function getCurrentPlayerHand(round) {
+  let playerIndex = getCurrentPlayerIndex(round);
+  return round.moves.at(-1).hands[playerIndex];
 }
 
 /**
@@ -116,8 +108,12 @@ export function getOffsetPlayerHand(round, playerIndex) {
  * @returns {[boolean, (string|undefined)]}
  */
 export function isValidEstimate(estimate, roundCount) {
-  if (isNaN(estimate) || typeof estimate !== "number") {
-    return [false, "Estimate must be a valid number"];
+  if (
+    isNaN(estimate) ||
+    typeof estimate !== "number" ||
+    !Number.isInteger(estimate)
+  ) {
+    return [false, "Estimate must be a valid integer"];
   }
   if (estimate > roundCount) {
     return [false, "Estimate cannot be larger than " + roundCount];

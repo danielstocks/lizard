@@ -9,31 +9,68 @@ import {
   getCurrentPlayerIndex,
   getAggregatePlayerWins,
   getTrickWinners,
+  getCurrentPlayerHand,
   createRound,
-  getOffsetPlayerHand,
   createGame,
   playCard,
   getRoundPhase,
   calculateGameScore,
   isValidEstimate,
 } from "../../packages/game.js";
-import { pluralize, offsetArray } from "../../packages/util.js";
+import { pluralize } from "../../packages/util.js";
 import { RandomBotPlayer, CLIPlayer } from "./player.js";
 import { playerLog, log } from "./log.js";
 
 const COLOR_RESET = "\x1b[0m";
 const COLOR_MAGENTA = "\x1b[35m";
 
-function estimationPhase(round, players) {
-  return offsetArray(players, -round.dealerOffset).entries();
-}
-
 const players = [
-  //new CLIPlayer("Daniel"),
+  new CLIPlayer("Daniel"),
   new RandomBotPlayer("Scooby"),
   new RandomBotPlayer("Scrappy"),
   new RandomBotPlayer("Button"),
 ];
+
+// Automatically initialize on load
+init();
+
+/**
+ * Initialize game
+ */
+async function init() {
+  var args = process.argv.slice(2);
+  // To play the game
+  if (args.includes("--play")) {
+    playerLog("\nWelcome to Lizard!");
+    playerLog("\nStarting new game...\n");
+    let game = createGame(players.length, 3);
+    await playGame(game);
+  }
+}
+
+/**
+ * Play a game
+ * @param {object} game start state of game
+ * @returns {object} game end state of game
+ */
+export async function playGame(game) {
+  for (let i = 1; i <= game.roundsToPlay; i++) {
+    let round = await playRound(i);
+    game.rounds.push(round);
+    let gameScore = calculateGameScore(game);
+    log("- Accumulated scores:");
+    gameScore.forEach((score, i) => {
+      log("--", players[i].name, score);
+    });
+  }
+  log("# Game over");
+  let gameScore = calculateGameScore(game);
+  gameScore.forEach((score, i) => {
+    const isWinner = score === Math.max(...gameScore);
+    log("-", players[i].name, score, isWinner ? "- WINNER!" : "");
+  });
+  return game;
+}
 
 /**
  * Play a round
@@ -52,11 +89,14 @@ export async function playRound(roundNumber) {
   // -- ESTIMATION PHASE --
   //
   log(`- Estimation Phase`);
-  for (const [playerIndex, player] of estimationPhase(round, players)) {
-    let playerHand = getOffsetPlayerHand(round, playerIndex);
-    let estimate;
+  while (getRoundPhase(round) === "ESTIMATION") {
+    let playerIndex = getCurrentPlayerIndex(round);
+    let playerHand = getCurrentPlayerHand(round);
+    let player = players[playerIndex];
+
     let message;
     let validEstimate;
+    let estimate;
 
     do {
       estimate = await player.estimate(playerHand);
@@ -70,8 +110,7 @@ export async function playRound(roundNumber) {
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
 
-    round.playerEstimates[(playerIndex + round.dealerOffset) % players.length] =
-      estimate;
+    round.playerEstimates[playerIndex] = estimate;
   }
 
   //
@@ -80,7 +119,6 @@ export async function playRound(roundNumber) {
   log(`- Play Phase`);
   while (getRoundPhase(round) === "PLAY") {
     let tricks = round.moves.at(-1).tricks;
-    let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];
 
     // Check if new trick (this check is done inside playCard but the player
@@ -92,7 +130,7 @@ export async function playRound(roundNumber) {
     let currentPlayerIndex = getCurrentPlayerIndex(round);
 
     let card = await players[currentPlayerIndex].playCard(
-      hands[currentPlayerIndex],
+      getCurrentPlayerHand(round),
       currentTrick,
     );
 
@@ -137,44 +175,3 @@ export async function playRound(roundNumber) {
   }
   return round;
 }
-
-/**
- * Play a game
- * @param {object} game start state of game
- * @returns {object} game end state of game
- */
-export async function playGame(game) {
-  for (let i = 1; i <= game.roundsToPlay; i++) {
-    let round = await playRound(i);
-
-    game.rounds.push(round);
-
-    let gameScore = calculateGameScore(game);
-
-    log("- Accumulated scores:");
-    gameScore.forEach((score, i) => {
-      log("--", players[i].name, score);
-    });
-  }
-  log("# Game over");
-
-  let gameScore = calculateGameScore(game);
-  gameScore.forEach((score, i) => {
-    const isWinner = score === Math.max(...gameScore);
-    log("-", players[i].name, score, isWinner ? "- WINNER!" : "");
-  });
-
-  return game;
-}
-
-async function init() {
-  var args = process.argv.slice(2);
-  if (args.includes("--play")) {
-    playerLog("\nWelcome to Lizard!");
-    playerLog("\nStarting new game...\n");
-    let game = createGame(players.length);
-    await playGame(game);
-  }
-}
-
-init();

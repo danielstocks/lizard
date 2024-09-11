@@ -52,7 +52,6 @@ export function createGame() {
   game.rounds.push(core.createRound(1, game.numberOfPlayers));
   game.players = players;
   gameMemoryStore[game.id] = game;
-
   return serializeGame(game);
 }
 
