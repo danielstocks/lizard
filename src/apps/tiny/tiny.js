@@ -13,6 +13,7 @@ import {
   getOffsetPlayerHand,
   createGame,
   playCard,
+  getRoundPhase,
   calculateGameScore,
   isValidEstimate,
 } from "../../packages/game.js";
@@ -27,21 +28,16 @@ function estimationPhase(round, players) {
   return offsetArray(players, -round.dealerOffset).entries();
 }
 
-function isPlayPhase(round) {
-  return round.moves.at(-1).hands.flat().length > 0;
-}
-
 const players = [
-  new CLIPlayer("Daniel"),
+  //new CLIPlayer("Daniel"),
   new RandomBotPlayer("Scooby"),
   new RandomBotPlayer("Scrappy"),
-  //new RandomBotPlayer("Button"),
+  new RandomBotPlayer("Button"),
 ];
 
 /**
  * Play a round
  * @param {number} roundNumber The current round number
- * @param {Array} players List of player objects
  * @returns {object} state The final state and all moves made during the round
  */
 export async function playRound(roundNumber) {
@@ -49,7 +45,6 @@ export async function playRound(roundNumber) {
   // -- SETUP PHASE --
   //
   let round = createRound(roundNumber, players.length);
-  console.log("\n\n"); // Create some breathing room
   log(`# Starting round ${roundNumber}`);
   log(`- Trump Card:${COLOR_MAGENTA} ` + round.trump + COLOR_RESET);
 
@@ -83,7 +78,7 @@ export async function playRound(roundNumber) {
   // -- PLAY PHASE --
   //
   log(`- Play Phase`);
-  while (isPlayPhase(round)) {
+  while (getRoundPhase(round) === "PLAY") {
     let tricks = round.moves.at(-1).tricks;
     let hands = round.moves.at(-1).hands;
     let currentTrick = tricks[tricks.length - 1] || [];

@@ -1,10 +1,9 @@
 # Backlog
 
 ## Todo
-- Feature: Implement proper Prison Rules
-- Feature: In case of a draw?
-- Feature: Randomize dealer offset at start of game
-- Feature: Dealer choses trump card if trump card is LIZARD
+- Feature: Play game via HTTP (single player)
+- Feature: Play game in Web UI (single player)
+- Feature: Multiplayer
 
 ## In Progress
 - Feature: Game Server App (stateless, in memory-store)
@@ -21,10 +20,11 @@
 - Feature: Core Game Logic
 
 ## Roadmap 
-- Chore: // @ts-check all the things!
-- Feature: Play game via HTTP (single player)
-- Feature: Play game in Web UI (single player)
-- Feature: Persist games in SQLite
+- Feature: Implement proper Prison Rules
+- Feature: In case of a draw?
+- Feature: Randomize dealer offset at start of game
+- Feature: Dealer choses trump card if trump card is LIZARD
 - Feature: Make a bot that can actually play :D (Not just random)
 - Feature: Scoresheet UI
-- Feature: Multiplayer
+- Feature: Persist games in SQLite
+- Chore: // @ts-check all the things!

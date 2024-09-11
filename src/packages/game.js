@@ -32,6 +32,10 @@ export function createGame(numberOfPlayers, roundsToPlay) {
  * @returns {object} state Initial empty state of a round
  */
 export function createRound(roundNumber, numberOfPlayers) {
+  if (isNaN(roundNumber) || roundNumber > 20 || roundNumber < 1) {
+    throw new Error("Round number must be between 1 and 20");
+  }
+
   // Rotate dealer positon
   const dealerOffset = (roundNumber - 1) % numberOfPlayers;
 
@@ -59,9 +63,33 @@ export function createRound(roundNumber, numberOfPlayers) {
     ],
     trump: dealCardFromDeck(deck)[0],
     dealerOffset,
-    playerEstimates: [],
+    playerEstimates: new Array(numberOfPlayers).fill(undefined),
     numberOfPlayers,
   };
+}
+
+/**
+ * Create a new game and persist game state in memory store
+ * @param {object} round
+ */
+export function getRoundPhase(round) {
+  // A round is in estimation phase if we're still awaing player estimates
+  if (
+    round.playerEstimates.some(
+      /** @param {number} estimate */
+      (estimate) => typeof estimate === "undefined",
+    )
+  ) {
+    return "ESTIMATION";
+  }
+
+  // A round is complete when all cards have been played
+  if (round.moves.at(-1).hands.flat().length > 0) {
+    return "PLAY";
+  }
+
+  // Otherwise a round is done
+  return "DONE";
 }
 
 /**
