@@ -182,25 +182,41 @@ export function getWinningCardIndex(trick, trump) {
 }
 
 /**
- * Return the index of the player whos turn it is to play a card
+ * Return the index of the player whos turn it is to play a card or make an estimate
  * @param {object} round current state of round
- * @returns {number} player index
+ * @returns {number|undefined} player index
  */
 export function getCurrentPlayerIndex(round) {
-  let tricks = round.moves.at(-1).tricks;
-  let hands = round.moves.at(-1).hands;
-  let currentTrick = tricks[tricks.length - 1] || [];
-  let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
-    if (trick[0] && trick[0][0] && trick.length == hands.length) {
-      return getWinningCardIndex(trick, round.trump) + prevTrickWinner;
-    } else {
-      return prevTrickWinner;
+  if (getRoundPhase(round) === "PLAY") {
+    let tricks = round.moves.at(-1).tricks;
+    let hands = round.moves.at(-1).hands;
+    let currentTrick = tricks[tricks.length - 1] || [];
+    let prevTrickWinner = tricks.reduceRight((prevTrickWinner, trick) => {
+      if (trick[0] && trick[0][0] && trick.length == hands.length) {
+        return getWinningCardIndex(trick, round.trump) + prevTrickWinner;
+      } else {
+        return prevTrickWinner;
+      }
+    }, 0);
+    // Use some arithmetic to create a "circular" index accessed array
+    return (
+      (round.dealerOffset + prevTrickWinner + currentTrick.length) %
+      hands.length
+    );
+  }
+
+  if (getRoundPhase(round) === "ESTIMATION") {
+    let i = round.dealerOffset;
+    let end = round.dealerOffset + round.numberOfPlayers;
+
+    while (i < end) {
+      let playerIndex = i % round.numberOfPlayers;
+      if (typeof round.playerEstimates[playerIndex] === "undefined") {
+        return playerIndex;
+      }
+      i++;
     }
-  }, 0);
-  // Use some arithmetic to create a "circular" index accessed array
-  return (
-    (round.dealerOffset + prevTrickWinner + currentTrick.length) % hands.length
-  );
+  }
 }
 
 /**

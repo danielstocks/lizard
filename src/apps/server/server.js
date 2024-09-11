@@ -1,7 +1,6 @@
 // @ts-check
 import * as core from "../../packages/game.js";
 import { randomUUID } from "node:crypto";
-import { offsetIndex } from "../../packages/util.js";
 
 /* Object to save game state */
 const gameMemoryStore = {};
@@ -32,7 +31,7 @@ function serializeGame(game) {
       dealerOffset: currentRound.dealerOffset,
       phase: core.getRoundPhase(currentRound),
       playerEstimate: currentRound.playerEstimates,
-      currentPlayerIndex: getCurrentPlayerIndex(currentRound),
+      currentPlayerIndex: core.getCurrentPlayerIndex(currentRound),
     },
   };
 }
@@ -74,30 +73,6 @@ export function estimate(gameId, estimate) {
   game.rounds.at(-1).playerEstimates[2] = 1;
 
   return serializeGame(game);
-}
-
-/**
- * Return the index of the player whos turn it is to play a card or make an estimate
- * @param {object} round current state of round
- * @returns {number|undefined} player index
- */
-export function getCurrentPlayerIndex(round) {
-  if (core.getRoundPhase(round) === "PLAY") {
-    return core.getCurrentPlayerIndex(round);
-  }
-
-  if (core.getRoundPhase(round) === "ESTIMATION") {
-    let i = round.dealerOffset;
-    let end = round.dealerOffset + round.numberOfPlayers;
-
-    while (i < end) {
-      let playerIndex = i % round.numberOfPlayers;
-      if (typeof round.playerEstimates[playerIndex] === "undefined") {
-        return playerIndex;
-      }
-      i++;
-    }
-  }
 }
 
 // ---- RUN GAME BELOW ----

@@ -209,6 +209,7 @@ describe("get current player index", () => {
 
   test("play third round", () => {
     let round = createRound(3, 3);
+    round.playerEstimates = [3, 2, 1];
 
     // Initial state
     assert.strictEqual(getCurrentPlayerIndex(round), 2);
@@ -229,13 +230,16 @@ describe("get current player index", () => {
     round = playCard("H6", round);
     round = playCard("H10", round);
     round = playCard("H5", round);
-    assert.equal(getCurrentPlayerIndex(round), 1);
+
+    // Round is completed
+    assert.equal(getCurrentPlayerIndex(round), undefined);
   });
 });
 
 describe("get trick winners", () => {
   test("should return the winners of each trick", () => {
     let round = createRound(3, 3);
+    round.playerEstimates = [3, 2, 1];
 
     // Play first trick
     round = playCard("H2", round);
@@ -382,6 +386,8 @@ describe("play card", () => {
       playCard("D", {
         moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }],
         dealerOffset: 0,
+        playerEstimates: [1, 0, 0],
+        numberOfPlayers: 3,
       }).error,
       "invalid play",
     );
@@ -401,6 +407,7 @@ describe("play card", () => {
           },
         ],
         dealerOffset: 0,
+        playerEstimates: [1, 0, 0],
         numberOfPlayers: 3,
       }).moves.at(-1),
       {
