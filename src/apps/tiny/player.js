@@ -1,5 +1,5 @@
 import readline from "readline";
-import { isValidPlay } from "../../packages/game.js";
+import { isValidPlay, isValidEstimate } from "../../packages/game.js";
 import { getRandomInt } from "../../packages/util.js";
 import { playerLog } from "./log.js";
 
@@ -59,18 +59,25 @@ export class MockPlayer extends Player {
 export class CLIPlayer extends Player {
   async estimate(hand) {
     playerLog("\nYour hand:", hand);
-    let input = await userInput(
-      "How many tricks do you think you can win?\n=> ",
-    );
-    return parseFloat(input);
+
+    let message;
+    let validEstimate;
+    let input;
+
+    do {
+      input = await userInput("How many tricks do you think you can win?\n=> ");
+      input = parseFloat(input);
+      [validEstimate, message] = isValidEstimate(input, hand.length);
+      if (message) {
+        playerLog(message);
+      }
+    } while (!validEstimate);
+
+    return input;
   }
   async playCard(hand, trick) {
     playerLog("\nOn the table:", trick);
     playerLog("Your hand:", hand);
-
-    let input = await userInput("What card do you want to play?\n=> ");
-
-    // todo validate input
-    return input;
+    return await userInput("What card do you want to play?\n=> ");
   }
 }

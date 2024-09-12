@@ -102,6 +102,14 @@ export function getCurrentPlayerHand(round) {
 }
 
 /**
+ * Get cards on hand for specified player
+ * @param {object} round
+ */
+export function getPlayerHand(round, playerIndex) {
+  return round.moves.at(-1).hands[playerIndex];
+}
+
+/**
  * Checks wether given player estimate is valid
  * @param {number} estimate
  * @param {number} roundCount
@@ -180,7 +188,7 @@ export function getWinningCardIndex(trick, trump) {
 /**
  * Return the index of the player whos turn it is to play a card or make an estimate
  * @param {object} round current state of round
- * @returns {number|undefined} player index
+ * @returns {number} player index
  */
 export function getCurrentPlayerIndex(round) {
   if (getRoundPhase(round) === "PLAY") {
@@ -213,6 +221,10 @@ export function getCurrentPlayerIndex(round) {
       i++;
     }
   }
+
+  throw new Error(
+    "getPlayerIndex can only be called in PLAY or ESTIMATION phase",
+  );
 }
 
 /**

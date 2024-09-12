@@ -15,7 +15,6 @@ import {
   playCard,
   getRoundPhase,
   calculateGameScore,
-  isValidEstimate,
 } from "../../packages/game.js";
 import { pluralize } from "../../packages/util.js";
 import { RandomBotPlayer, CLIPlayer } from "./player.js";
@@ -93,18 +92,7 @@ export async function playRound(roundNumber) {
     let playerIndex = getCurrentPlayerIndex(round);
     let playerHand = getCurrentPlayerHand(round);
     let player = players[playerIndex];
-
-    let message;
-    let validEstimate;
-    let estimate;
-
-    do {
-      estimate = await player.estimate(playerHand);
-      [validEstimate, message] = isValidEstimate(estimate, roundNumber);
-      if (message) {
-        playerLog(message);
-      }
-    } while (!validEstimate);
+    let estimate = await player.estimate(playerHand);
 
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,

@@ -208,14 +208,6 @@ describe("get current player index", () => {
     round = playCard("H8", round);
     round = playCard("H9", round);
     assert.equal(getCurrentPlayerIndex(round), 0);
-
-    // Play third trick
-    round = playCard("H6", round);
-    round = playCard("H10", round);
-    round = playCard("H5", round);
-
-    // Round is completed
-    assert.equal(getCurrentPlayerIndex(round), undefined);
   });
 });
 
