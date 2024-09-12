@@ -92,6 +92,11 @@ export function getRoundPhase(round) {
   return "DONE";
 }
 
+export function getCurrentTrick(round) {
+  let tricks = round.moves.at(-1).tricks;
+  return tricks[tricks.length - 1] || [];
+}
+
 /**
  * Get cards on for current player
  * @param {object} round

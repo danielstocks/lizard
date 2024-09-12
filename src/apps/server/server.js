@@ -38,6 +38,7 @@ function serializeGame(game) {
       }),
     ),
     currentRound: {
+      currentTrick: core.getCurrentTrick(currentRound),
       dealerOffset: currentRound.dealerOffset,
       phase: core.getRoundPhase(currentRound),
       playerEstimate: currentRound.playerEstimates,
@@ -61,7 +62,7 @@ function randomEstimate(hand) {
  * @param {object} currentRound
  * @param {object} game
  */
-function makeBotEstimations(currentRound, game) {
+function runBotEstimations(currentRound, game) {
   while (core.getRoundPhase(currentRound) === "ESTIMATION") {
     let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
     let currentPlayer = game.players[currentPlayerIndex];
@@ -73,6 +74,32 @@ function makeBotEstimations(currentRound, game) {
       break;
     }
   }
+}
+
+/**
+ * @param {object} currentRound
+ * @param {object} game
+ */
+function runBotPlays(currentRound, game) {
+  while (core.getRoundPhase(currentRound) === "PLAY") {
+    let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
+    let currentPlayer = game.players[currentPlayerIndex];
+    let currentPlayerHand = core.getCurrentPlayerHand(currentRound);
+    let currentTrick = core.getCurrentTrick(currentRound);
+    if (currentPlayer.type === "bot") {
+      let validCardsToPlay = currentPlayerHand.filter(
+        /** @param {string} card */
+        (card) => core.isValidPlay(card, currentPlayerHand, currentTrick),
+      );
+      currentRound = core.playCard(
+        validCardsToPlay[Math.floor(Math.random() * validCardsToPlay.length)],
+        currentRound,
+      );
+    } else {
+      break;
+    }
+  }
+  return currentRound;
 }
 
 /**
@@ -92,8 +119,8 @@ export function createGame() {
   game.players = players;
   gameMemoryStore[game.id] = game;
 
-  makeBotEstimations(round, game);
-
+  // Tick tock...
+  runBotEstimations(round, game);
   return serializeGame(game);
 }
 
@@ -127,9 +154,21 @@ export function estimate(gameId, estimate) {
 
   // Proceed with estimation
   currentRound.playerEstimates[authenticatedUserIndex] = estimate;
-  makeBotEstimations(currentRound, game);
+
+  // Tick tock...
+  runBotEstimations(currentRound, game);
+  // Immutable or mutable... make your bloody mind up
+  let updated = runBotPlays(currentRound, game);
+  game.rounds[game.rounds.length - 1] = updated;
+
   return serializeGame(game);
 }
+
+// NEXT UP
+// - export function play(gameId, card) {}
+// - play next round
+// - finish game condition
+// - HTTP server
 
 // ---- RUN GAME BELOW ----
 let response;

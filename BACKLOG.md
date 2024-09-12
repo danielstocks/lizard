@@ -7,7 +7,7 @@
 
 ## In Progress
 - Feature: Game Server App (stateless, in memory-store)
-- Bug:
+- Bug: I don't have to play Snake here
     On the table: [ 'S14', 'C8' ]
     Your hand: [ 'SNAKE', 'D6' ]
     What card do you want to play?
@@ -15,8 +15,8 @@
     invalid play: D6
 
 ## Done
-- Bug: Fix Unique identifiers for (Snake) cards, not be confused with Spades (S)
-- Feature: Rotate Dealer
+- Bug: Added unique ids for Snake (SNAKE) cards, not be confused with Spades (S)
+- Feature: Rotate dealer every new round
 - Bug: Last round there is no trump card (deck is empty)
 - Feature: Calculate scores and declare winner
 - Chore: Refactor and write unit tests for core game logic
