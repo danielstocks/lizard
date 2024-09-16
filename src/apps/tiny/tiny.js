@@ -11,6 +11,7 @@ import {
   getTrickWinners,
   getCurrentPlayerHand,
   getCurrentTrick,
+  getCurrentTricks,
   createRound,
   createGame,
   playCard,
@@ -94,11 +95,9 @@ export async function playRound(roundNumber) {
     let playerHand = getCurrentPlayerHand(round);
     let player = players[playerIndex];
     let estimate = await player.estimate(playerHand);
-
     log(
       `-- ${player.name} thinks they can win ${estimate} trick${pluralize(estimate)}`,
     );
-
     round.playerEstimates[playerIndex] = estimate;
   }
 
@@ -116,7 +115,7 @@ export async function playRound(roundNumber) {
 
     // Start of new trick?
     if (currentTrick.length === 0) {
-      log(`-- Playing trick #${round.moves.at(-1).tricks.length}`);
+      log(`-- Playing trick #${getCurrentTricks(round).length}`);
     }
 
     const newRound = playCard(card, round);
