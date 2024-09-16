@@ -170,9 +170,48 @@ export function estimate(gameId, estimate) {
 // - finish game condition
 // - HTTP server
 
+/**
+ * @param {string} gameId
+ * @param {string} card
+ */
+export function play(gameId, card) {
+  const [game, error] = getGame(gameId);
+  if (error) {
+    return { error: error.message };
+  }
+
+  let currentRound = game.rounds.at(-1);
+  let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
+
+  // Validation
+  if (core.getRoundPhase(currentRound) !== "PLAY") {
+    return { error: "Round is not in play phase" };
+  }
+  if (currentPlayerIndex !== authenticatedUserIndex) {
+    return { error: "Not your turn to play" };
+  }
+
+  let currentPlayerHand = core.getCurrentPlayerHand(currentRound);
+  let currenTrick = core.getCurrentTrick(currentRound);
+
+  if (!core.isValidPlay(card, currentPlayerHand, currenTrick)) {
+    return { error: "invalid play" };
+  }
+
+  return { message: "OK" };
+
+  // Proceed with the play
+
+  // Tick Tock...
+  // Return serialized game
+}
+
 // ---- RUN GAME BELOW ----
 let response;
 response = createGame();
 console.log("\ncreate game response", response);
 response = estimate(response.id, 1);
 console.log("\nestimate response", response);
+
+response = play(response.id, "LOL");
+console.log("\nplay response", response);

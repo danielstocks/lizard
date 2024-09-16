@@ -10,6 +10,7 @@ import {
   getAggregatePlayerWins,
   getTrickWinners,
   getCurrentPlayerHand,
+  getCurrentTrick,
   createRound,
   createGame,
   playCard,
@@ -42,7 +43,7 @@ async function init() {
   if (args.includes("--play")) {
     playerLog("\nWelcome to Lizard!");
     playerLog("\nStarting new game...\n");
-    let game = createGame(players.length, 3);
+    let game = createGame(players.length);
     await playGame(game);
   }
 }
@@ -106,44 +107,35 @@ export async function playRound(roundNumber) {
   //
   log(`- Play Phase`);
   while (getRoundPhase(round) === "PLAY") {
-    let tricks = round.moves.at(-1).tricks;
-    let currentTrick = tricks[tricks.length - 1] || [];
-
-    // Check if new trick (this check is done inside playCard but the player
-    // needs to know in advance
-    if (currentTrick.length === players.length) {
-      currentTrick = [];
-    }
-
+    let currentTrick = getCurrentTrick(round);
     let currentPlayerIndex = getCurrentPlayerIndex(round);
-
     let card = await players[currentPlayerIndex].playCard(
       getCurrentPlayerHand(round),
       currentTrick,
     );
 
-    const newRound = playCard(card, round);
+    // Start of new trick?
+    if (currentTrick.length === 0) {
+      log(`-- Playing trick #${round.moves.at(-1).tricks.length}`);
+    }
 
+    const newRound = playCard(card, round);
     if (newRound.error) {
       playerLog(`\n${newRound.error}: ${card}`);
       continue;
     }
-    round = newRound;
-    // Start of new trick?
-    let newTricks = newRound.moves.at(-1).tricks;
-    if (newTricks.length > tricks.length) {
-      log(`-- Playing trick #${tricks.length + 1}`);
-    }
 
-    // Log current play (after start and before end of trick)
     log(`--- ${players[currentPlayerIndex].name} plays ${card}`);
 
-    // End of current trick?
-    if (newTricks.at(-1).length === players.length) {
-      let trickWinnerPlayerIndex = getTrickWinners(newRound).at(-1);
+    // Trick completed
+    if (currentTrick.length === players.length) {
+      let trickWinnerPlayerIndex = getTrickWinners(round).at(-1);
       let playerName = players[trickWinnerPlayerIndex].name;
       log(`--- Winner: ${playerName}`);
     }
+
+    // Lastly, overwrite old round
+    round = newRound;
   }
 
   //

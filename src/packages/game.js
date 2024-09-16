@@ -1,9 +1,4 @@
-import {
-  shuffleArray,
-  offsetIndex,
-  createDeck,
-  dealCardFromDeck,
-} from "./util.js";
+import { shuffleArray, createDeck, dealCardFromDeck } from "./util.js";
 
 /**
  * Create and return new game state
@@ -58,7 +53,7 @@ export function createRound(roundNumber, numberOfPlayers) {
     moves: [
       {
         hands,
-        tricks: [],
+        tricks: [[]],
       },
     ],
     trump: dealCardFromDeck(deck)[0],
@@ -95,6 +90,14 @@ export function getRoundPhase(round) {
 export function getCurrentTrick(round) {
   let tricks = round.moves.at(-1).tricks;
   return tricks[tricks.length - 1] || [];
+}
+
+export function getCurrentTricks(round) {
+  return round.moves.at(-1).tricks;
+}
+
+export function getCurrentHands(round) {
+  return round.moves.at(-1).hands;
 }
 
 /**
@@ -355,27 +358,16 @@ export function isValidPlay(card, hand, trick) {
  *
  * The function will figure out what player and what trick is in play
  * based on the card input & current state, and return a new state
- *
- * Will return an { error: "invalid play" } if an invalid play is made, altough
- * this should be made impossible via the game UI, but in case of a UI bug
- * or malicious user.
+ * Returns  an { error: "invalid play" } if an invalid play is made.
  *
  * @param {string} card Card to play eg. A7
  * @param {object} round Existing current state of round before play
  * @returns {object} round New state of round after car has been played
  */
 export function playCard(card, round) {
-  let tricks = round.moves.at(-1).tricks.slice(0);
-  let hands = round.moves.at(-1).hands.slice(0);
-
-  let currentTrick = tricks[tricks.length - 1];
-
-  // Time for new trick?
-  if (!currentTrick || hands.length === currentTrick.length) {
-    tricks.push([]);
-    currentTrick = tricks[tricks.length - 1];
-  }
-
+  let tricks = getCurrentTricks(round).slice(0);
+  let hands = getCurrentHands(round).slice(0);
+  let currentTrick = tricks.at(-1);
   let currentPlayerIndex = getCurrentPlayerIndex(round);
   let currentPlayerHand = hands[currentPlayerIndex];
 
@@ -397,8 +389,18 @@ export function playCard(card, round) {
     1,
   );
 
-  return {
+  let newRoundState = {
     ...round,
     moves: [...round.moves, { hands, tricks }],
   };
+
+  // If still in play phase, check if time for a new trick?
+  if (
+    getRoundPhase(newRoundState) === "PLAY" &&
+    hands.length === currentTrick.length
+  ) {
+    newRoundState.moves.at(-1).tricks.push([]);
+  }
+
+  return newRoundState;
 }

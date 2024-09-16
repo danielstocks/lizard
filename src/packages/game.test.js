@@ -43,7 +43,7 @@ describe("createRound", () => {
       moves: [
         {
           hands: [["H2"], ["H3"], ["H4"]],
-          tricks: [],
+          tricks: [[]],
         },
       ],
       trump: "H5",
@@ -211,7 +211,7 @@ describe("get current player index", () => {
   });
 });
 
-describe("get trick winners", () => {
+describe("get trick winners",() => {
   test("should return the winners of each trick", () => {
     let round = createRound(3, 3);
     round.playerEstimates = [3, 2, 1];
@@ -359,7 +359,7 @@ describe("play card", () => {
   test("play invalid card", () => {
     assert.deepStrictEqual(
       playCard("D", {
-        moves: [{ tricks: [], hands: [["A"], ["B"], ["C"]] }],
+        moves: [{ tricks: [[]], hands: [["A"], ["B"], ["C"]] }],
         dealerOffset: 0,
         playerEstimates: [1, 0, 0],
         numberOfPlayers: 3,
@@ -378,7 +378,7 @@ describe("play card", () => {
               ["LIZARD", "LIZARD"],
               ["S12", "LIZARD"],
             ],
-            tricks: [],
+            tricks: [[]],
           },
         ],
         dealerOffset: 0,
