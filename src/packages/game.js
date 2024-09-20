@@ -66,6 +66,7 @@ export function createRound(roundNumber, numberOfPlayers) {
 /**
  * Create a new game and persist game state in memory store
  * @param {object} round
+ * @returns {"ESTIMATION"|"PLAY"|"DONE"}
  */
 export function getRoundPhase(round) {
   // A round is in estimation phase if we're still awaing player estimates
