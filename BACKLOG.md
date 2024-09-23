@@ -1,18 +1,12 @@
 # Backlog
 
-## Todo
-- Feature: Play game via HTTP (single player)
+## Next
 - Feature: Play game in Web UI (single player)
 - Feature: Multiplayer
 
 ## In Progress
+- Feature: Play game via HTTP (single player)
 - Feature: Game Server App (stateless, in memory-store)
-- Bug: I don't have to play Snake here
-    On the table: [ 'S14', 'C8' ]
-    Your hand: [ 'SNAKE', 'D6' ]
-    What card do you want to play?
-    => D6
-    invalid play: D6
 
 ## Done
 - Bug: Added unique ids for Snake (SNAKE) cards, not be confused with Spades (S)
@@ -33,3 +27,9 @@
 - Feature: Scoresheet (both for CLI and web UI)
 - Feature: Persist games in SQLite
 - Chore: // @ts-check all the things!
+- Bug: I don't have to play Snake here
+    On the table: [ 'S14', 'C8' ]
+    Your hand: [ 'SNAKE', 'D6' ]
+    What card do you want to play?
+    => D6
+    invalid play: D6

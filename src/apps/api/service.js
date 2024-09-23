@@ -39,10 +39,11 @@ function serializeGame(game) {
       }),
     ),
     currentRound: {
+      number: game.rounds.length,
       currentTrick: core.getCurrentTrick(currentRound),
       dealerOffset: currentRound.dealerOffset,
       phase: core.getRoundPhase(currentRound),
-      playerEstimate: currentRound.playerEstimates,
+      playerEstimates: currentRound.playerEstimates,
       currentPlayerIndex: core.getCurrentPlayerIndex(currentRound),
       authenticatedPlayerHand: core.getPlayerHand(
         currentRound,
@@ -56,6 +57,10 @@ function serializeGame(game) {
  * @param {Array} hand
  */
 function randomEstimate(hand) {
+  // Determinstic for testing purposes
+  if (process.env.NODE_ENV === "test") {
+    return 1;
+  }
   return getRandomInt(0, hand.length);
 }
 
@@ -107,20 +112,19 @@ function runBotPlays(currentRound, game) {
  * Create a new game and persist game state in memory store
  * @returns {object} gameId Returns unique id of game
  */
-export function createGame() {
-  let players = [
+export function createGame(
+  players = [
     { name: "Daniel", type: "human" },
     { name: "Button", type: "bot", estimate: randomEstimate },
     { name: "Bruno", type: "bot", estimate: randomEstimate },
-  ];
-  let game = core.createGame(players.length, 3);
+  ],
+) {
+  const game = core.createGame(players.length, 3);
   const round = core.createRound(1, game.numberOfPlayers);
-  game.id = "abc123"; // randomUUID(); <---- DEBUG
+  game.id = randomUUID();
   game.rounds.push(round);
   game.players = players;
   gameMemoryStore[game.id] = game;
-
-  // Tick tock...
   runBotEstimations(round, game);
   return serializeGame(game);
 }
@@ -214,6 +218,10 @@ export function play(gameId, card) {
       game.rounds.length + 1,
       game.numberOfPlayers,
     );
+
+    // Tick tock...
+    runBotEstimations(round, game);
+
     game.rounds.push(round);
 
     // TODO if game rounds length === 20 = GAME OVER
