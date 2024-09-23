@@ -7,20 +7,21 @@ let gameId;
 /* A test that creates a game with3 rounds and plays them all */
 describe("service", () => {
   test("create game", () => {
-    let game = createGame();
+    let game = createGame(3);
     gameId = game.id;
     assert.equal(game.players.length, 3);
     assert.equal(game.currentRound.number, 1);
   });
 
   // Round 1
-  test("estimate", () => {
+  test("estimate round one", () => {
     let result = estimate(gameId, 0);
+    assert.equal(result.currentRound.dealerOffset, 0);
     assert.equal(result.currentRound.number, 1);
     assert.deepStrictEqual(result.currentRound.playerEstimates, [0, 1, 1]);
   });
 
-  test("play", () => {
+  test("play round one", () => {
     let result = play(gameId, "H2");
     assert.equal(result.currentRound.number, 2);
     assert.deepStrictEqual(result.currentRound.playerEstimates, [
@@ -31,18 +32,52 @@ describe("service", () => {
   });
 
   // Round 2
-  test("estimate", () => {
+  test("estimate round two", () => {
     let result = estimate(gameId, 1);
+    assert.equal(result.currentRound.dealerOffset, 1);
     assert.equal(result.currentRound.number, 2);
     assert.deepStrictEqual(result.currentRound.playerEstimates, [1, 1, 1]);
   });
 
-  test("play", () => {});
-  test("play", () => {});
+  test("play round two first card", () => {
+    let result = play(gameId, "H4");
+    assert.deepStrictEqual(result.currentRound.authenticatedPlayerHand, ["H7"]);
+  });
+
+  test("play round two second", () => {
+    let result = play(gameId, "H7");
+    assert.equal(result.currentRound.number, 3);
+  });
 
   // Round 3
-  test("estimate", () => {});
-  test("play", () => {});
-  test("play", () => {});
-  test("play", () => {});
+  test("estimate third round", () => {
+    let result = estimate(gameId, 0);
+    assert.equal(result.currentRound.dealerOffset, 2);
+    assert.equal(result.currentRound.number, 3);
+    assert.deepStrictEqual(result.currentRound.playerEstimates, [0, 1, 1]);
+  });
+
+  test("play third round first card", () => {
+    let result = play(gameId, "H3");
+    assert.equal(result.currentRound.number, 3);
+  });
+  test("play third round second card", () => {
+    let result = play(gameId, "H6");
+    assert.equal(result.currentRound.number, 3);
+  });
+  test("play third round third card", () => {
+    let result = play(gameId, "H9");
+    assert.deepStrictEqual(result, { error: "game is over" });
+  });
+
+  // Game over
+  test("play when game is over", () => {
+    let result = play(gameId, "LIZARD");
+    assert.deepStrictEqual(result, { error: "game is over" });
+  });
+
+  test("estimate when game is over", () => {
+    let result = estimate(gameId, 0);
+    assert.deepStrictEqual(result, { error: "game is over" });
+  });
 });

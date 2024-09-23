@@ -5,10 +5,10 @@
 - Feature: Multiplayer
 
 ## In Progress
-- Feature: Play game via HTTP (single player)
-- Feature: Game Server App (stateless, in memory-store)
 
 ## Done
+- Feature: Play game via HTTP (single player)
+- Feature: Game Server App (stateless, in memory-store)
 - Bug: Added unique ids for Snake (SNAKE) cards, not be confused with Spades (S)
 - Feature: Rotate dealer every new round
 - Bug: Last round there is no trump card (deck is empty)

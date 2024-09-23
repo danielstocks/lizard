@@ -111,15 +111,17 @@ function runBotPlays(currentRound, game) {
 /**
  * Create a new game and persist game state in memory store
  * @returns {object} gameId Returns unique id of game
+ * @param {number} roundsToPlay number of rounds to play
  */
 export function createGame(
+  roundsToPlay,
   players = [
     { name: "Daniel", type: "human" },
     { name: "Button", type: "bot", estimate: randomEstimate },
     { name: "Bruno", type: "bot", estimate: randomEstimate },
   ],
 ) {
-  const game = core.createGame(players.length, 3);
+  const game = core.createGame(players.length, roundsToPlay);
   const round = core.createRound(1, game.numberOfPlayers);
   game.id = randomUUID();
   game.rounds.push(round);
@@ -140,6 +142,11 @@ export function estimate(gameId, estimate) {
   }
 
   let currentRound = game.rounds.at(-1);
+
+  if (core.getGamePhase(game, currentRound) === "DONE") {
+    return { error: "game is over" };
+  }
+
   let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
 
   // Validation
@@ -175,11 +182,17 @@ export function estimate(gameId, estimate) {
  */
 export function play(gameId, card) {
   const [game, error] = getGame(gameId);
+
   if (error) {
     return { error: error.message };
   }
 
   let currentRound = game.rounds.at(-1);
+
+  if (core.getGamePhase(game, currentRound) === "DONE") {
+    return { error: "game is over" };
+  }
+
   let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
 
   // Validation
@@ -214,6 +227,10 @@ export function play(gameId, card) {
 
   // If round is is done phase === start next round
   if (core.getRoundPhase(currentRound) === "DONE") {
+    if (core.getGamePhase(game, currentRound) === "DONE") {
+      return { error: "game is over" };
+    }
+
     const round = core.createRound(
       game.rounds.length + 1,
       game.numberOfPlayers,
@@ -221,10 +238,7 @@ export function play(gameId, card) {
 
     // Tick tock...
     runBotEstimations(round, game);
-
     game.rounds.push(round);
-
-    // TODO if game rounds length === 20 = GAME OVER
   }
 
   return serializeGame(game);
