@@ -10,16 +10,21 @@ const gameMemoryStore = {};
 const authenticatedUserIndex = 0;
 
 /**
- * Helper function for getting game from memory store
+ * Helper function for getting active game
  * @param {string} id
  * @returns {object} state Returns current game
  */
-function getGame(id) {
+function getActiveGame(id) {
   const game = gameMemoryStore[id];
   if (!game) {
-    return [undefined, { message: "game not found" }];
+    return [undefined, undefined, undefined, { message: "game not found" }];
   }
-  return [game, undefined];
+  let currentRound = game.rounds.at(-1);
+  if (core.getGamePhase(game, currentRound) === "DONE") {
+    return [undefined, undefined, undefined, { message: "game is over" }];
+  }
+  let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
+  return [game, currentRound, currentPlayerIndex, undefined];
 }
 
 /**
@@ -134,28 +139,23 @@ export function createGame(
 /**
  * @param {string} gameId
  * @param {number} estimate
+ * @returns {object} game serialized game object
  */
 export function estimate(gameId, estimate) {
-  const [game, error] = getGame(gameId);
+  const [game, currentRound, currentPlayerIndex, error] = getActiveGame(gameId);
+
   if (error) {
     return { error: error.message };
   }
 
-  let currentRound = game.rounds.at(-1);
-
-  if (core.getGamePhase(game, currentRound) === "DONE") {
-    return { error: "game is over" };
-  }
-
-  let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
-
-  // Validation
   if (core.getRoundPhase(currentRound) !== "ESTIMATION") {
     return { error: "Current round is not in estimation phase" };
   }
+
   if (currentPlayerIndex !== authenticatedUserIndex) {
     return { error: "Not your turn to estimate" };
   }
+
   let [isValidEstimate, message] = core.isValidEstimate(
     estimate,
     game.rounds.length,
@@ -165,7 +165,7 @@ export function estimate(gameId, estimate) {
   }
 
   // Proceed with estimation
-  currentRound.playerEstimates[authenticatedUserIndex] = estimate;
+  currentRound.playerEstimates[currentPlayerIndex] = estimate;
 
   // Tick tock...
   runBotEstimations(currentRound, game);
@@ -181,19 +181,11 @@ export function estimate(gameId, estimate) {
  * @param {string} card
  */
 export function play(gameId, card) {
-  const [game, error] = getGame(gameId);
+  const [game, currentRound, currentPlayerIndex, error] = getActiveGame(gameId);
 
   if (error) {
     return { error: error.message };
   }
-
-  let currentRound = game.rounds.at(-1);
-
-  if (core.getGamePhase(game, currentRound) === "DONE") {
-    return { error: "game is over" };
-  }
-
-  let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
 
   // Validation
   if (core.getRoundPhase(currentRound) !== "PLAY") {
@@ -211,7 +203,7 @@ export function play(gameId, card) {
   }
 
   // Immutable or mutable... make your bloody mind up
-  currentRound = core.playCard(card, currentRound);
+  let newCurrentRound = core.playCard(card, currentRound);
   game.rounds[game.rounds.length - 1] = currentRound;
 
   if (currentRound.error) {
@@ -221,13 +213,13 @@ export function play(gameId, card) {
   // If round is in play phase === runBotPlays
   if (core.getRoundPhase(currentRound) === "PLAY") {
     // Immutable or mutable... make your bloody mind up
-    currentRound = runBotPlays(currentRound, game);
-    game.rounds[game.rounds.length - 1] = currentRound;
+    newCurrentRound = runBotPlays(newCurrentRound, game);
+    game.rounds[game.rounds.length - 1] = newCurrentRound;
   }
 
   // If round is is done phase === start next round
-  if (core.getRoundPhase(currentRound) === "DONE") {
-    if (core.getGamePhase(game, currentRound) === "DONE") {
+  if (core.getRoundPhase(newCurrentRound) === "DONE") {
+    if (core.getGamePhase(game, newCurrentRound) === "DONE") {
       return { error: "game is over" };
     }
 
