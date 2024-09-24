@@ -31,6 +31,12 @@ export function getGamePhase(game, round) {
   }
 }
 
+export function makeRoundEstimate(currentRound, estimate) {
+  let currentPlayerIndex = getCurrentPlayerIndex(currentRound);
+  currentRound.playerEstimates[currentPlayerIndex] = estimate;
+  return currentRound;
+}
+
 /**
  * Create and return new round state
  * @param {number} roundNumber Number of current round (how many cards to deal per player)

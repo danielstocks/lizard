@@ -1,10 +1,10 @@
 # Backlog
 
 ## Next
-- Feature: Play game in Web UI (single player)
 - Feature: Multiplayer
 
 ## In Progress
+- Feature: Play game in Web UI (single player)
 
 ## Done
 - Feature: Play game via HTTP (single player)

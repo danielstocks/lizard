@@ -28,6 +28,15 @@ function getActiveGame(id) {
 }
 
 /**
+ * @param {object} newRoundState
+ * @param {object} game
+ * @returns {object} game serialized game object
+ */
+function setGameState(newRoundState, game) {
+  game.rounds[game.rounds.length - 1] = newRoundState;
+}
+
+/**
  * Create a new game and persist game state in memory store
  * @param {object} game object
  * @returns {object} game serialized game object
@@ -78,13 +87,17 @@ function runBotEstimations(currentRound, game) {
     let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
     let currentPlayer = game.players[currentPlayerIndex];
     if (currentPlayer.type === "bot") {
-      currentRound.playerEstimates[currentPlayerIndex] = currentPlayer.estimate(
-        core.getPlayerHand(currentRound, currentPlayerIndex),
+      core.makeRoundEstimate(
+        currentRound,
+        currentPlayer.estimate(
+          core.getPlayerHand(currentRound, currentPlayerIndex),
+        ),
       );
     } else {
       break;
     }
   }
+  return currentRound;
 }
 
 /**
@@ -143,19 +156,15 @@ export function createGame(
  */
 export function estimate(gameId, estimate) {
   const [game, currentRound, currentPlayerIndex, error] = getActiveGame(gameId);
-
   if (error) {
     return { error: error.message };
   }
-
   if (core.getRoundPhase(currentRound) !== "ESTIMATION") {
     return { error: "Current round is not in estimation phase" };
   }
-
   if (currentPlayerIndex !== authenticatedUserIndex) {
     return { error: "Not your turn to estimate" };
   }
-
   let [isValidEstimate, message] = core.isValidEstimate(
     estimate,
     game.rounds.length,
@@ -163,16 +172,13 @@ export function estimate(gameId, estimate) {
   if (!isValidEstimate) {
     return { error: message };
   }
-
-  // Proceed with estimation
-  currentRound.playerEstimates[currentPlayerIndex] = estimate;
-
-  // Tick tock...
-  runBotEstimations(currentRound, game);
-  // Immutable or mutable... make your bloody mind up
-  let updated = runBotPlays(currentRound, game);
-  game.rounds[game.rounds.length - 1] = updated;
-
+  setGameState(
+    runBotPlays(
+      runBotEstimations(core.makeRoundEstimate(currentRound, estimate), game),
+      game,
+    ),
+    game,
+  );
   return serializeGame(game);
 }
 
@@ -202,19 +208,18 @@ export function play(gameId, card) {
     return { error: "invalid play" };
   }
 
-  // Immutable or mutable... make your bloody mind up
   let newCurrentRound = core.playCard(card, currentRound);
-  game.rounds[game.rounds.length - 1] = currentRound;
-
-  if (currentRound.error) {
-    return { error: currentRound.error };
+  if (newCurrentRound.error) {
+    return { error: newCurrentRound.error };
   }
+
+  setGameState(newCurrentRound, game);
 
   // If round is in play phase === runBotPlays
   if (core.getRoundPhase(currentRound) === "PLAY") {
-    // Immutable or mutable... make your bloody mind up
     newCurrentRound = runBotPlays(newCurrentRound, game);
     game.rounds[game.rounds.length - 1] = newCurrentRound;
+    setGameState(newCurrentRound, game);
   }
 
   // If round is is done phase === start next round
@@ -222,17 +227,13 @@ export function play(gameId, card) {
     if (core.getGamePhase(game, newCurrentRound) === "DONE") {
       return { error: "game is over" };
     }
-
     const round = core.createRound(
       game.rounds.length + 1,
       game.numberOfPlayers,
     );
-
-    // Tick tock...
     runBotEstimations(round, game);
     game.rounds.push(round);
   }
 
   return serializeGame(game);
-  // Return serialized game
 }
