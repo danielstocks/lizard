@@ -1,0 +1,13 @@
+body {
+  background: #eee;
+  font-family: fantasy;
+}
+
+.card {
+  height: 80px;
+  width: 50px;
+  padding: 8px;
+  font-size: 18px;
+  border: 1px solid #000;
+  border-radius: 4px;
+}

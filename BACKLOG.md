@@ -4,6 +4,7 @@
 - Feature: Multiplayer
 
 ## In Progress
+- Chore: Use npm workspaces to organized code into packages and apps
 - Feature: Play game in Web UI (single player)
 
 ## Done

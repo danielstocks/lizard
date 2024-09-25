@@ -4,6 +4,10 @@
   "main": "src/main.js",
   "scripts": {
     "tiny": "node src/apps/tiny/tiny.js --play",
+    "server": "node --watch src/apps/api/index.js",
+    "client:dev": "vite src/apps/client",
+    "client:build": "vite build",
+    "client:preview": "vite preview",
     "test": "NODE_ENV=test node --test --watch",
     "test-only": "NODE_ENV=test node --test --test-only --watch",
     "test:coverage": "NODE_ENV=test c8 -r html node --test"
@@ -14,8 +18,13 @@
   "volta": {
     "node": "22.4.0"
   },
+  "dependencies": {
+    "preact": "^10.24.0"
+  },
   "devDependencies": {
     "c8": "^10.1.2",
-    "prettier": "3.3.2"
+    "prettier": "3.3.2",
+    "@preact/preset-vite": "^2.9.1",
+    "vite": "^5.4.1"
   }
 }

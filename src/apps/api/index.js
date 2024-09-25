@@ -13,6 +13,7 @@ router.post("/create-game", (_, res) => {
 
 router.post("/estimate", (req, res) => {
   let { body } = req;
+  console.log(body);
   let result = estimate(body.gameId, body.estimate);
   res.json(result);
 });
@@ -24,7 +25,7 @@ router.post("/play", (req, res) => {
 });
 
 // Start the server
-const PORT = 6666;
+const PORT = 6060;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });

@@ -10,6 +10,27 @@ export const router = {
     const methodRoutes = this[req.method];
     const routeHandler = methodRoutes[req.url];
 
+    // Log Requests
+    console.log(req.method, req.url);
+
+    // Set CORS headers
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS, PUT, DELETE",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+
+    // Handle the preflight request
+    if (req.method === "OPTIONS") {
+      res.writeHead(204); // 204: No Content
+      res.end();
+      return;
+    }
+
     res.json = function (obj) {
       return res.end(JSON.stringify(obj));
     };
