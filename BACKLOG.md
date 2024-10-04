@@ -10,7 +10,8 @@
   - Todo: Use SSE to subscribe to game state updates
   - Todo: Use core game logic to highlight playable cards
   - Todo: Suite rendering (black+red) in Game Log
-  - Todo: Render K + Q + J + A cards
+  - Todo: Print trick winners in Game Log
+  - Done: Render K + Q + J + A cards
   - Done: Fix failing tests
   - Done: Game Log
   - Done: Baic Error handling from API

@@ -31,7 +31,7 @@ describe("offset index", () => {
 });
 
 describe("create cards", () => {
-  test("64 cards in a deck", () => {
+  test("60 cards in a deck", () => {
     assert.strictEqual(createDeck().length, 60);
   });
 });

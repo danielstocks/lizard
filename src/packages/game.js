@@ -203,13 +203,26 @@ export function getWinningCardIndex(trick, trump) {
     }
 
     // Finally: High card wins
-    return parseFloat(prev.slice(1)) > parseFloat(current.slice(1))
-      ? prev
-      : current;
+    return getCardValue(prev) > getCardValue(current) ? prev : current;
   });
 
   return trick.indexOf(winningCard);
 }
+
+function getCardValue(card) {
+  let value = card.slice(1);
+  if (["J", "Q", "K"].includes(value)) {
+    return parseFloat(faceValues[card]);
+  }
+  return parseFloat(value);
+}
+
+const faceValues = {
+  J: "11",
+  K: "12",
+  K: "13",
+  A: "14",
+};
 
 /**
  * Return the index of the player whos turn it is to play a card or make an estimate

@@ -72,11 +72,15 @@ export function offsetArray(array, offset) {
  * @returns {Array}
  */
 export function createCardRange(suit) {
-  const lowCards = [];
-  for (var i = 2; i < 15; i++) {
-    lowCards.push(suit + i);
+  const cards = [];
+  for (var i = 2; i < 11; i++) {
+    cards.push(suit + i);
   }
-  return lowCards;
+  cards.push(suit + "J");
+  cards.push(suit + "Q");
+  cards.push(suit + "K");
+  cards.push(suit + "A");
+  return cards;
 }
 
 /**

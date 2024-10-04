@@ -76,14 +76,14 @@ describe("createRound", () => {
       ["H2", "H5", "H8"],
     ]);
     assert.deepStrictEqual(round4.moves[0].hands, [
-      ["H2", "H5", "H8", "H11"],
-      ["H3", "H6", "H9", "H12"],
-      ["H4", "H7", "H10", "H13"],
+      ["H2", "H5", "H8", "HJ"],
+      ["H3", "H6", "H9", "HQ"],
+      ["H4", "H7", "H10", "HK"],
     ]);
     assert.deepStrictEqual(round5.moves[0].hands, [
-      ["H4", "H7", "H10", "H13", "C3"],
-      ["H2", "H5", "H8", "H11", "H14"],
-      ["H3", "H6", "H9", "H12", "C2"],
+      ["H4", "H7", "H10", "HK", "C3"],
+      ["H2", "H5", "H8", "HJ", "HA"],
+      ["H3", "H6", "H9", "HQ", "C2"],
     ]);
   });
 
@@ -211,7 +211,7 @@ describe("get current player index", () => {
   });
 });
 
-describe("get trick winners",() => {
+describe("get trick winners", () => {
   test("should return the winners of each trick", () => {
     let round = createRound(3, 3);
     round.playerEstimates = [3, 2, 1];
