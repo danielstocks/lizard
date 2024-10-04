@@ -1,13 +1,101 @@
 body {
-  background: #eee;
-  font-family: fantasy;
+  background: #fff;
+  font-family: monospace;
+}
+
+button {
+  font-family: monospace;
+  font-size: 10px;
+  padding: 4px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: row;
+  height: 90px;
+  border: 1px dashed #444;
+  padding: 4px;
+  gap: 8px;
+}
+
+.start-game {
+  margin-top: 8px;
+}
+
+.round-stat {
+  padding-bottom: 10px;
+  padding-top: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.logo {
+  font-weight: bolder;
 }
 
 .card {
-  height: 80px;
-  width: 50px;
+  height: 72px;
+  width: 40px;
   padding: 8px;
-  font-size: 18px;
+  font-size: 16px;
   border: 1px solid #000;
   border-radius: 4px;
 }
+
+.tiny-card {
+  width: 24px;
+  text-align: center;
+  padding: 2px;
+  font-size: 12px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  .suit {
+    margin-right: 1px;
+  }
+}
+
+.suit {
+  margin-right: 2px;
+}
+.red {
+  color: red;
+}
+
+.estimation-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.player-hand { padding-top: 10px; }
+
+.trump {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.estimation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1;
+  padding-top: 10px;
+}
+
+.log {
+  border-top: 1px;
+  font-size: 10px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 120px;
+  width: 100vw;
+  overflow: scroll;
+  background: #ddd;
+  padding: 10px;
+}
+
+

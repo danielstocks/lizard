@@ -13,7 +13,6 @@ router.post("/create-game", (_, res) => {
 
 router.post("/estimate", (req, res) => {
   let { body } = req;
-  console.log(body);
   let result = estimate(body.gameId, body.estimate);
   res.json(result);
 });

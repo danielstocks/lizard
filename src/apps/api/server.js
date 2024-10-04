@@ -10,9 +10,6 @@ export const router = {
     const methodRoutes = this[req.method];
     const routeHandler = methodRoutes[req.url];
 
-    // Log Requests
-    console.log(req.method, req.url);
-
     // Set CORS headers
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(

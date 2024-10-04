@@ -4,8 +4,32 @@
 - Feature: Multiplayer
 
 ## In Progress
-- Chore: Use npm workspaces to organized code into packages and apps
-- Feature: Play game in Web UI (single player)
+- Feature: Play single player game in Web UI
+  - Todo: Basic Scoresheet
+  - Todo: Simulate bot "thinking" time (5-10s?)
+  - Todo: Use SSE to subscribe to game state updates
+  - Todo: Use core game logic to highlight playable cards
+  - Todo: Suite rendering (black+red) in Game Log
+  - Todo: Render K + Q + J + A cards
+  - Done: Fix failing tests
+  - Done: Game Log
+  - Done: Baic Error handling from API
+  - Done: Setup Vite + Preact Boilerplate
+
+## Roadmap 
+- Feature: Implement "prison rules"
+- Feature: Randomize dealer offset at start of game
+- Feature: Dealer choses trump card if trump card is LIZARD
+- Feature: Make a bot that can actually play :D (Not just random)
+- Feature: Multiplayer chat
+- Feature: Persist games in SQLite
+- Bug: I don't have to play Snake here
+    On the table: [ 'S14', 'C8' ]
+    Your hand: [ 'SNAKE', 'D6' ]
+    What card do you want to play?
+    => D6
+    invalid play: D6
+
 
 ## Done
 - Feature: Play game via HTTP (single player)
@@ -19,18 +43,3 @@
 - Feature: Play entire game of multiple rounds in CLI (stateful)
 - Feature: Play single round in CLI (stateful)
 - Feature: Core Game Logic
-
-## Roadmap 
-- Feature: Implement proper Prison Rules
-- Feature: Randomize dealer offset at start of game
-- Feature: Dealer choses trump card if trump card is LIZARD
-- Feature: Make a bot that can actually play :D (Not just random)
-- Feature: Scoresheet (both for CLI and web UI)
-- Feature: Persist games in SQLite
-- Chore: // @ts-check all the things!
-- Bug: I don't have to play Snake here
-    On the table: [ 'S14', 'C8' ]
-    Your hand: [ 'SNAKE', 'D6' ]
-    What card do you want to play?
-    => D6
-    invalid play: D6

@@ -61,6 +61,7 @@ describe("service", () => {
     let result = play(gameId, "H3");
     assert.equal(result.currentRound.number, 3);
   });
+
   test("play third round second card", () => {
     let result = play(gameId, "H6");
     assert.equal(result.currentRound.number, 3);

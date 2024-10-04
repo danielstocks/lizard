@@ -1,13 +1,25 @@
 // @ts-check
-import * as core from "../../packages/game.js";
 import { randomUUID } from "node:crypto";
-import { getRandomInt } from "../../packages/util.js";
+import * as core from "../../packages/game.js";
+import { pluralize, getRandomInt } from "../../packages/util.js";
 
 /* Object to save game state */
 const gameMemoryStore = {};
 
 // Pretend we're logged in as user 0 for now
 const authenticatedUserIndex = 0;
+
+/**
+ * @param {object} game
+ * @param {string} message
+ */
+function log(game, message) {
+  let timestamp = new Date().toISOString();
+  game.log.push({
+    timestamp,
+    message,
+  });
+}
 
 /**
  * Helper function for getting active game
@@ -44,6 +56,7 @@ function setGameState(newRoundState, game) {
 function serializeGame(game) {
   let currentRound = game.rounds.at(-1);
   return {
+    log: game.log,
     id: game.id,
     players: game.players.map(
       /** @param {object} player */
@@ -54,6 +67,7 @@ function serializeGame(game) {
     ),
     currentRound: {
       number: game.rounds.length,
+      trump: currentRound.trump,
       currentTrick: core.getCurrentTrick(currentRound),
       dealerOffset: currentRound.dealerOffset,
       phase: core.getRoundPhase(currentRound),
@@ -87,11 +101,19 @@ function runBotEstimations(currentRound, game) {
     let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
     let currentPlayer = game.players[currentPlayerIndex];
     if (currentPlayer.type === "bot") {
-      core.makeRoundEstimate(
-        currentRound,
-        currentPlayer.estimate(
-          core.getPlayerHand(currentRound, currentPlayerIndex),
-        ),
+      let estimate = currentPlayer.estimate(
+        core.getPlayerHand(currentRound, currentPlayerIndex),
+      );
+      core.makeRoundEstimate(currentRound, estimate);
+
+      log(
+        game,
+        "- " +
+          game.players[currentPlayerIndex].name +
+          " thinks they can win " +
+          estimate +
+          " trick" +
+          pluralize(estimate),
       );
     } else {
       break;
@@ -110,15 +132,27 @@ function runBotPlays(currentRound, game) {
     let currentPlayer = game.players[currentPlayerIndex];
     let currentPlayerHand = core.getCurrentPlayerHand(currentRound);
     let currentTrick = core.getCurrentTrick(currentRound);
+
     if (currentPlayer.type === "bot") {
       let validCardsToPlay = currentPlayerHand.filter(
         /** @param {string} card */
         (card) => core.isValidPlay(card, currentPlayerHand, currentTrick),
       );
-      currentRound = core.playCard(
-        validCardsToPlay[Math.floor(Math.random() * validCardsToPlay.length)],
-        currentRound,
+      let cardToPlay =
+        validCardsToPlay[Math.floor(Math.random() * validCardsToPlay.length)];
+      currentRound = core.playCard(cardToPlay, currentRound);
+      log(
+        game,
+        "- " + game.players[currentPlayerIndex].name + " played " + cardToPlay,
       );
+
+      // Trick done?
+      if (currentTrick.length === game.players.length) {
+        // console.log(currentRound.moves.at(0));
+        let trickWinnerPlayerIndex = core.getTrickWinners(currentRound).at(-1);
+        // let playerName = game.players[trickWinnerPlayerIndex].name;
+        // log(game, `- Trick Winner: ${playerName}`);
+      }
     } else {
       break;
     }
@@ -144,6 +178,8 @@ export function createGame(
   game.id = randomUUID();
   game.rounds.push(round);
   game.players = players;
+  game.log = [];
+  log(game, "Starting round #1");
   gameMemoryStore[game.id] = game;
   runBotEstimations(round, game);
   return serializeGame(game);
@@ -172,6 +208,17 @@ export function estimate(gameId, estimate) {
   if (!isValidEstimate) {
     return { error: message };
   }
+
+  log(
+    game,
+    "- " +
+      game.players[currentPlayerIndex].name +
+      " thinks they can win " +
+      estimate +
+      " trick" +
+      pluralize(estimate),
+  );
+
   setGameState(
     runBotPlays(
       runBotEstimations(core.makeRoundEstimate(currentRound, estimate), game),
@@ -214,6 +261,14 @@ export function play(gameId, card) {
   }
 
   setGameState(newCurrentRound, game);
+  log(game, "- " + game.players[currentPlayerIndex].name + " played " + card);
+
+  // Trick done?
+  if (core.getCurrentTrick(currentRound).length === game.players.length) {
+    let trickWinnerPlayerIndex = core.getTrickWinners(currentRound).at(-1);
+    let playerName = game.players[trickWinnerPlayerIndex].name;
+    log(game, `- Trick Winner: ${playerName}`);
+  }
 
   // If round is in play phase === runBotPlays
   if (core.getRoundPhase(currentRound) === "PLAY") {
@@ -227,10 +282,29 @@ export function play(gameId, card) {
     if (core.getGamePhase(game, newCurrentRound) === "DONE") {
       return { error: "game is over" };
     }
+
+    //
+    // -- SUMMARY PHASE --
+    //
+    log(game, "Round Summary");
+    let aggregatePlayerWins = core.getAggregatePlayerWins(
+      core.getTrickWinners(newCurrentRound),
+      game.players.length,
+    );
+    for (const [playerIndex, player] of game.players.entries()) {
+      let estimate = newCurrentRound.playerEstimates[playerIndex];
+      let wins = aggregatePlayerWins[playerIndex];
+      log(
+        game,
+        `- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
+      );
+    }
+
     const round = core.createRound(
       game.rounds.length + 1,
       game.numberOfPlayers,
     );
+    log(game, "Starting round " + (game.rounds.length + 1));
     runBotEstimations(round, game);
     game.rounds.push(round);
   }

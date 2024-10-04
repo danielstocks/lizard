@@ -259,8 +259,8 @@ export function getCurrentPlayerIndex(round) {
  * @returns {Array} player index of winner of each trick
  */
 export function getTrickWinners(round) {
-  let tricks = round.moves.at(-1).tricks;
-  let hands = round.moves.at(-1).hands;
+  let tricks = round.moves.at(-1).tricks.slice(0);
+  let hands = round.moves.at(-1).hands.slice(0);
   return tricks.reduce((acc, trick, i) => {
     let prevWinner = i > 0 ? acc.at(-1) : round.dealerOffset;
     let winner =
@@ -383,6 +383,7 @@ export function isValidPlay(card, hand, trick) {
  * @returns {object} round New state of round after car has been played
  */
 export function playCard(card, round) {
+  round = structuredClone(round);
   let tricks = getCurrentTricks(round).slice(0);
   let hands = getCurrentHands(round).slice(0);
   let currentTrick = tricks.at(-1);
