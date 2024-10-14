@@ -16,21 +16,26 @@ Requires Node.js v22 or greater. I'm using [Volta](https://volta.sh) to automati
 
 Install dependencies with `npm install` and you are ready to go.
 
-### Play
 
-To play a minimal implenentation of the game locally via the CLI you can run:
+### Project Structure
 
-`npm run tiny-play`
+- apps
+  - cli
+  - server
+  - client
+- packages
+  - game
+  - util
 
 
 ### Run Tests
 
 Run tests in watch mode during development:
 
-`npm test`
+`npm test:dev`
 
 
-Single test run with code coverage:
+Do a single test run with code coverage:
 
 `npm run test:coverage`
 

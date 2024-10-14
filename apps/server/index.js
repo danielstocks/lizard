@@ -1,7 +1,6 @@
 import { server, router } from "./server.js";
 import { createGame, estimate, play } from "./service.js";
 
-// Define some routes
 router.get("/", (_, res) => {
   res.json({ status: "ok" });
 });
@@ -23,7 +22,6 @@ router.post("/play", (req, res) => {
   res.json(result);
 });
 
-// Start the server
 const PORT = 6060;
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);

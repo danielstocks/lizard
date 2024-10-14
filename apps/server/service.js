@@ -19,6 +19,14 @@ function log(game, message) {
     timestamp,
     message,
   });
+  /* Future idea for log: Structured data?
+  {
+    timestamp: "2024-09-04 14:53.21",
+    action: "PLAY_CARD",
+    value: "D4",
+    playerIndex: 0
+  }
+  */
 }
 
 /**
@@ -145,14 +153,6 @@ function runBotPlays(currentRound, game) {
         game,
         "- " + game.players[currentPlayerIndex].name + " played " + cardToPlay,
       );
-
-      // Trick done?
-      if (currentTrick.length === game.players.length) {
-        // console.log(currentRound.moves.at(0));
-        let trickWinnerPlayerIndex = core.getTrickWinners(currentRound).at(-1);
-        // let playerName = game.players[trickWinnerPlayerIndex].name;
-        // log(game, `- Trick Winner: ${playerName}`);
-      }
     } else {
       break;
     }
@@ -264,17 +264,27 @@ export function play(gameId, card) {
   log(game, "- " + game.players[currentPlayerIndex].name + " played " + card);
 
   // Trick done?
+  // NOTE: This doesn't work because we already create a new trick in play method?
+  console.log(core.getCurrentTrick(currentRound), game.players.length);
   if (core.getCurrentTrick(currentRound).length === game.players.length) {
-    let trickWinnerPlayerIndex = core.getTrickWinners(currentRound).at(-1);
+    let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
     let playerName = game.players[trickWinnerPlayerIndex].name;
     log(game, `- Trick Winner: ${playerName}`);
   }
 
   // If round is in play phase === runBotPlays
-  if (core.getRoundPhase(currentRound) === "PLAY") {
+  if (core.getRoundPhase(newCurrentRound) === "PLAY") {
     newCurrentRound = runBotPlays(newCurrentRound, game);
     game.rounds[game.rounds.length - 1] = newCurrentRound;
     setGameState(newCurrentRound, game);
+  }
+
+  /// TODO: FIX THIS
+  // Trick done? Check again after bot have played (should refactor/rethink this);
+  if (core.getCurrentTrick(newCurrentRound).length === game.players.length) {
+    let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
+    let playerName = game.players[trickWinnerPlayerIndex].name;
+    log(game, `- Trick Winner: ${playerName}`);
   }
 
   // If round is is done phase === start next round
