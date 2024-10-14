@@ -206,6 +206,7 @@ export function createGame(
   game.players = players;
   game.log = [];
   log(game, "Starting round #1");
+  log(game, "Trump card is " + round.trump);
   gameMemoryStore[game.id] = game;
   runBotEstimations(round, game);
   return serializeGame(game);
@@ -323,6 +324,7 @@ export function play(gameId, card) {
       game.numberOfPlayers,
     );
     log(game, "Starting round " + (game.rounds.length + 1));
+    log(game, "Trump card is " + round.trump);
     runBotEstimations(round, game);
     game.rounds.push(round);
   }
