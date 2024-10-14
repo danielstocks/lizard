@@ -15,6 +15,7 @@ describe("service", () => {
 
   // Round 1
   test("estimate round one", () => {
+    console.log("TESTING ROUND 1");
     let result = estimate(gameId, 0);
     assert.equal(result.currentRound.dealerOffset, 0);
     assert.equal(result.currentRound.number, 1);
@@ -33,6 +34,8 @@ describe("service", () => {
 
   // Round 2
   test("estimate round two", () => {
+    console.log("TESTING ROUND 2");
+
     let result = estimate(gameId, 1);
     assert.equal(result.currentRound.dealerOffset, 1);
     assert.equal(result.currentRound.number, 2);
@@ -44,7 +47,7 @@ describe("service", () => {
     assert.deepStrictEqual(result.currentRound.authenticatedPlayerHand, ["H7"]);
   });
 
-  test("play round two second", () => {
+  test("play round two second card", () => {
     let result = play(gameId, "H7");
     assert.equal(result.currentRound.number, 3);
   });
@@ -73,6 +76,7 @@ describe("service", () => {
 
   // Game over
   test("play when game is over", () => {
+    console.log(process.env.NODE_ENV);
     let result = play(gameId, "LIZARD");
     assert.deepStrictEqual(result, { error: "game is over" });
   });

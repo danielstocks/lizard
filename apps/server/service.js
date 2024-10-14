@@ -101,6 +101,28 @@ function randomEstimate(hand) {
 }
 
 /**
+ * @param {object} newCurrentRound
+ */
+function trickIsCompleted(newCurrentRound) {
+  if (core.getRoundPhase(newCurrentRound) === "DONE") {
+    return true;
+  } else if (core.getCurrentTrick(newCurrentRound).length === 0) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {object} newCurrentRound
+ * @param {object} game
+ */
+function announceTrickWinner(newCurrentRound, game) {
+  let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
+  let playerName = game.players[trickWinnerPlayerIndex].name;
+  log(game, `- Trick Winner: ${playerName}`);
+}
+
+/**
  * @param {object} currentRound
  * @param {object} game
  */
@@ -153,6 +175,10 @@ function runBotPlays(currentRound, game) {
         game,
         "- " + game.players[currentPlayerIndex].name + " played " + cardToPlay,
       );
+
+      if (trickIsCompleted(currentRound)) {
+        announceTrickWinner(currentRound, game);
+      }
     } else {
       break;
     }
@@ -201,6 +227,9 @@ export function estimate(gameId, estimate) {
   if (currentPlayerIndex !== authenticatedUserIndex) {
     return { error: "Not your turn to estimate" };
   }
+
+  // Thought: maybe makeRoundEstimate should validate and return error
+  // instead of extra step here (and make it more similar to PlayCard
   let [isValidEstimate, message] = core.isValidEstimate(
     estimate,
     game.rounds.length,
@@ -248,13 +277,6 @@ export function play(gameId, card) {
     return { error: "Not your turn to play" };
   }
 
-  let currentPlayerHand = core.getCurrentPlayerHand(currentRound);
-  let currenTrick = core.getCurrentTrick(currentRound);
-
-  if (!core.isValidPlay(card, currentPlayerHand, currenTrick)) {
-    return { error: "invalid play" };
-  }
-
   let newCurrentRound = core.playCard(card, currentRound);
   if (newCurrentRound.error) {
     return { error: newCurrentRound.error };
@@ -263,28 +285,14 @@ export function play(gameId, card) {
   setGameState(newCurrentRound, game);
   log(game, "- " + game.players[currentPlayerIndex].name + " played " + card);
 
-  // Trick done?
-  // NOTE: This doesn't work because we already create a new trick in play method?
-  console.log(core.getCurrentTrick(currentRound), game.players.length);
-  if (core.getCurrentTrick(currentRound).length === game.players.length) {
-    let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
-    let playerName = game.players[trickWinnerPlayerIndex].name;
-    log(game, `- Trick Winner: ${playerName}`);
+  if (trickIsCompleted(newCurrentRound)) {
+    announceTrickWinner(newCurrentRound, game);
   }
 
   // If round is in play phase === runBotPlays
   if (core.getRoundPhase(newCurrentRound) === "PLAY") {
     newCurrentRound = runBotPlays(newCurrentRound, game);
-    game.rounds[game.rounds.length - 1] = newCurrentRound;
     setGameState(newCurrentRound, game);
-  }
-
-  /// TODO: FIX THIS
-  // Trick done? Check again after bot have played (should refactor/rethink this);
-  if (core.getCurrentTrick(newCurrentRound).length === game.players.length) {
-    let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
-    let playerName = game.players[trickWinnerPlayerIndex].name;
-    log(game, `- Trick Winner: ${playerName}`);
   }
 
   // If round is is done phase === start next round

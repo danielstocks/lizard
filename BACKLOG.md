@@ -8,12 +8,13 @@
 
 ## In Progress
 - Feature: Play single player game in Web UI
+  - Tood: Make sure CLI game and tests work
   - Todo: Basic scoresheet
   - Todo: Use CSS Hooks
-  - Todo: Suite rendering (black+red) in game log
+  - Todo: Suite rendering (black+red) in game log: structured data
   - Todo: Simulate bot "thinking" time (5-10s?)
   - Todo: Use SSE to subscribe to game state updates
-  - Todo: Print trick winners in game log
+  - Done: Print trick winners in game log
   - Done: Use core game logic to highlight playable cards
   - Done: Render K + Q + J + A cards
   - Done: Fix failing tests

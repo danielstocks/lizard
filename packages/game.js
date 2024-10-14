@@ -107,7 +107,7 @@ export function getRoundPhase(round) {
 
 export function getCurrentTrick(round) {
   let tricks = round.moves.at(-1).tricks;
-  return tricks[tricks.length - 1] || [];
+  return tricks[tricks.length - 1];
 }
 
 export function getCurrentTricks(round) {
@@ -274,6 +274,10 @@ export function getCurrentPlayerIndex(round) {
 export function getTrickWinners(round) {
   let tricks = round.moves.at(-1).tricks.slice(0);
   let hands = round.moves.at(-1).hands.slice(0);
+
+  // Only take completed tricks into account
+  tricks = tricks.filter((arr) => arr.length === hands.length);
+
   return tricks.reduce((acc, trick, i) => {
     let prevWinner = i > 0 ? acc.at(-1) : round.dealerOffset;
     let winner =
@@ -396,11 +400,11 @@ export function isValidPlay(card, hand, trick) {
  * @returns {object} round New state of round after car has been played
  */
 export function playCard(card, round) {
-  round = structuredClone(round);
-  let tricks = getCurrentTricks(round).slice(0);
-  let hands = getCurrentHands(round).slice(0);
+  let currentRound = structuredClone(round);
+  let tricks = getCurrentTricks(currentRound).slice(0);
+  let hands = getCurrentHands(currentRound).slice(0);
   let currentTrick = tricks.at(-1);
-  let currentPlayerIndex = getCurrentPlayerIndex(round);
+  let currentPlayerIndex = getCurrentPlayerIndex(currentRound);
   let currentPlayerHand = hands[currentPlayerIndex];
 
   // is play valid?
@@ -422,8 +426,8 @@ export function playCard(card, round) {
   );
 
   let newRoundState = {
-    ...round,
-    moves: [...round.moves, { hands, tricks }],
+    ...currentRound,
+    moves: [...currentRound.moves, { hands, tricks }],
   };
 
   // If still in play phase, check if time for a new trick?
