@@ -2,18 +2,18 @@
 
 
 ## Next
-- Feature: Multiplayer
-  - Todo: Game Lobby (preact-iso)
+- Feature: Basic Multiplayer
+  - Todo: Game Lobby
 
 
 ## In Progress
 - Feature: Play single player game in Web UI
   - Tood: Make sure CLI game and tests work
   - Todo: Basic scoresheet
-  - Todo: Use CSS Hooks
   - Todo: Suite rendering (black+red) in game log: structured data
-  - Todo: Simulate bot "thinking" time (5-10s?)
-  - Todo: Use SSE to subscribe to game state updates
+  - Done: Fix mutating state bug
+  - Done: Simulate bot "thinking" time (5-10s?)
+  - Done: Use SSE to subscribe to game state updates
   - Done: Print trick winners in game log
   - Done: Use core game logic to highlight playable cards
   - Done: Render K + Q + J + A cards
@@ -29,13 +29,17 @@
 - Feature: Dealer choses trump card if trump card is LIZARD
 - Feature: Make a bot that can actually play :D (Not just random)
 - Feature: Multiplayer chat
-- Feature: Persist games in SQLite
-- Bug: I don't have to play Snake here
+- Chore: More efficient & atomic SSE updates
+- Chore: Refactor CSS and use CSS Hooks.
+- Feature: Persist games in DB (SQLite)
+- Bug: Forced to play snake when i can play any card
     On the table: [ 'S14', 'C8' ]
     Your hand: [ 'SNAKE', 'D6' ]
     What card do you want to play?
     => D6
     invalid play: D6
+- Bug: DA card lost to D8 card
+- Feature: Deploy to public production environment
 
 
 ## Done

@@ -1,7 +1,8 @@
-import { useState, useRef, useLayoutEffect } from "preact/hooks";
-
+import { useState, useEffect, useRef, useLayoutEffect } from "preact/hooks";
 import { isValidPlay } from "../../packages/game"
+import { pluralize } from "../../packages/util"
 
+const API_URL = "//localhost:6060/";
 
 const suits = {
   C: "♣",
@@ -17,15 +18,40 @@ const colors = {
   H: "red",
 }
 
-const API_URL = "http://localhost:6060/";
+const eventSource = new EventSource(`${API_URL}sse`, {
+  withCredentials: true,
+});
+
 
 export function App() {
   const [game, setGame] = useState(undefined);
+
+  function onEventSourceMessage(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === "game") {
+      //console.log("PHASE", data.payload.currentRound.phase);
+      //console.log("CURPLAY", data.payload.currentRound.currentPlayerIndex);
+      //console.log("TRICK", data.payload.currentRound.currentTrick);
+      //console.log("EST", data.payload.currentRound.playerEstimates);
+      //console.log("LOG", data.payload.log.at(-1));
+      //console.log("\n");
+      setGame(data.payload);
+    }
+    if (data.type === "debug") {
+      console.log(data.payload.message);
+    }
+  }
+
+  useEffect(() => {
+    eventSource.addEventListener("message", onEventSourceMessage)
+    return () => eventSource.removeEventListener("message", onEventSourceMessage)
+  }, []);
+
   return (
     <>
       {!game && <Lobby setGame={setGame} />}
       {game && <Game game={game} setGame={setGame} />}
-      {game && <Log log={game.log} />}
+      {game && <Log log={game.log} players={game.players} />}
     </>
   );
 }
@@ -87,7 +113,7 @@ export function Card({ card }) {
 }
 
 
-export function Game({ game, setGame }) {
+export function Game({ game }) {
 
   const { currentRound } = game;
 
@@ -115,17 +141,17 @@ export function Game({ game, setGame }) {
         <div>your hand:</div>
         <div class="cards">
           {currentRound.authenticatedPlayerHand.map(card => {
-
             let validPlay = isValidPlay(
               card,
               currentRound.authenticatedPlayerHand,
               currentRound.currentTrick
-            )
+            ) && currentRound.currentPlayerIndex === 0
             return (
               <div class={currentRound.phase === "PLAY" && validPlay ? "valid-play" : "invalid-play"} onClick={async () => {
                 if (currentRound.phase !== "PLAY" || validPlay === false) {
                   return
                 }
+                // TODO: Optimistic update here? Maybe start by just hiding card
                 const request = await window.fetch(API_URL + "play", {
                   method: "POST",
                   body: JSON.stringify({ gameId: game.id, card }),
@@ -134,7 +160,7 @@ export function Game({ game, setGame }) {
                 if (json.error) {
                   alert(json.error);
                 } else {
-                  setGame(json);
+                  //setGame(json);
                 }
 
               }}>
@@ -151,6 +177,7 @@ export function Game({ game, setGame }) {
           <div class="estimation-buttons">
             {[...Array(currentRound.number + 1).keys()].map(n => (
               <button onClick={async () => {
+                // TODO: Optimistic update here? Maybe start by just hiding estimation buttons
                 const request = await window.fetch(API_URL + "estimate", {
                   method: "POST",
                   body: JSON.stringify({ gameId: game.id, estimate: n }),
@@ -159,7 +186,7 @@ export function Game({ game, setGame }) {
                 if (json.error) {
                   alert(json.error);
                 } else {
-                  setGame(json);
+                  //setGame(json);
                 }
               }}>{n}</button>
             ))}
@@ -170,18 +197,51 @@ export function Game({ game, setGame }) {
   )
 }
 
-function Log({ log }) {
 
+function renderLogMessage(entry, players) {
+  switch (entry.type) {
+    case "LOG": return <div>{entry.payload}</div>
+    case "ESTIMATE": return (
+      <div>
+        <span class="pink">{players[entry.playerIndex].name} </span>
+        <span>thinks they can win </span>
+        <span class="pink">{entry.payload} </span>
+        <span>trick{pluralize(entry.payload)}</span>
+      </div>
+    )
+    case "PLAY":
+      let value = entry.payload.slice(1);
+      let suit = entry.payload[0];
+      return (
+        <div>
+          <span class="pink">{players[entry.playerIndex].name} </span>
+          <span>played </span>
+          <span class={colors[suit]}>{suits[suit]}{value}</span>
+        </div>
+      )
+    case "TRUMP":
+      let trumpValue = entry.payload.slice(1);
+      let trumpSuit = entry.payload[0];
+      return (
+        <div>
+          <span>Trump card is </span>
+          <span class={colors[trumpSuit]}>{suits[trumpSuit]}{trumpValue}</span>
+        </div>
+      )
+    default: return null
+  }
+}
+
+function Log({ log, players }) {
   const div = useRef(null)
-
   useLayoutEffect(() => {
     div.current.scrollTop = div.current.scrollHeight;
   }, [log.length]);
-
   return (
     <div class="log" ref={div}>
+
       {log.map(entry => (
-        <div>{entry.message}</div>
+        <div>{renderLogMessage(entry, players)}</div>
       ))}
     </div>
   )

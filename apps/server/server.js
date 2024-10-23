@@ -1,6 +1,7 @@
 import { createServer } from "http";
 
-// Create a simple router function
+const allowedOrigins = ["http://localhost:5173"];
+
 export const router = {
   GET: {},
   POST: {},
@@ -10,12 +11,14 @@ export const router = {
     const methodRoutes = this[req.method];
     const routeHandler = methodRoutes[req.url];
 
-    // Set CORS headers
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS, PUT, DELETE",
-    );
+    // Allow CORS
+    if (allowedOrigins.includes(req.headers.origin)) {
+      res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
     res.setHeader(
       "Access-Control-Allow-Headers",
       "Content-Type, Authorization",
@@ -28,36 +31,37 @@ export const router = {
       return;
     }
 
+    // This API is JSON only for now
     res.json = function (obj) {
       return res.end(JSON.stringify(obj));
     };
-
-    // Default to JSON
     res.setHeader("Content-Type", "application/json");
 
     if (routeHandler) {
+      // POST requests, handle incoming JSON payload
       if (req.method === "POST") {
         let body = "";
-
-        // Collect the data as it comes in
         req.on("data", (chunk) => {
           body += chunk;
         });
-
         req.on("end", () => {
           try {
             const parsedData = JSON.parse(body || null);
             req.body = parsedData;
             routeHandler(req, res);
           } catch (err) {
+            console.error(err);
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Invalid JSON" }));
           }
         });
-      } else {
+      }
+      // All other requests (GET, OPTIONS)
+      else {
         routeHandler(req, res);
       }
     } else {
+      // Return 404 if no route URL match
       res.statusCode = 404;
       res.setHeader("Content-Type", "text/plain");
       res.end("404 Not Found");

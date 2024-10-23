@@ -12,20 +12,26 @@ A fun card game to play with friends (or foes). Work in progress.
 
 ## Development
 
-Requires Node.js v22 or greater. I'm using [Volta](https://volta.sh) to automatically switch Node.js versions between projects.
+Requires Node.js v22 or greater. I'm personally using [Volta](https://volta.sh) to automatically switch Node.js versions between projects.
 
-Install dependencies with `npm install` and you are ready to go.
+Install project dependencies (very few) with `npm install` and you are ready to go.
 
 
 ### Project Structure
 
 - apps
-  - cli
-  - server
-  - client
+  - cli - Tiny impmentation of game playable through a CLI
+  - server - A stateless implementation playable over HTTP
+  - client - A web browser UI implementation that uses server as back-end
 - packages
-  - game
-  - util
+  - game - Core game logic, usable both on client/server.
+  - util - Utility functions like shuffle()
+
+### Run game
+
+The easiest way to test the game is to run `npm run cli` to run the CLI implenntation of the game. 
+
+To run the game in a web browser you'll need to `npm run sever` and `npm run client` and open open up `http://localhost:5173/` in your favorite web browser
 
 
 ### Run Tests
@@ -52,10 +58,10 @@ This is a personal hobby project and I've been wanting to explore the following 
     - Use built-in Node.js [SQLite library](https://nodejs.org/api/sqlite.html).
     - Use built-in WebSockets and/or Server Push Events
     - Use built-in watch mode eg. ´node --watch` instead of eg. Nodemon
-  - Client Side
-     - No React :)
-     - Revisiting Modern "Vanilla" CSS. What's possible?
-     - View Transitions API
+  - Client Side/Browser
+     - Use Native Browser APIs
+     - No JavaScript build step
+     - No CSS build step 
 - Architecture
   - Clear seperation of concerns: Isolated game core logic that allows for multiple implementations of the game
   - Service logic decouploed from protocol layer (HTTP/SSH/Telnet etc.) & API layer (REST, GraphQL, RPC etc.)
@@ -63,9 +69,9 @@ This is a personal hobby project and I've been wanting to explore the following 
   - Deploy "anywhere": Edge/Serverless/Docker?
 
 
-### Code conventions
+### Code style conventions
 
-Tools used to enfore code formatting:
+Tools used to enfore code formatting (and one of the few project dev dependencies):
 
 - [Editorconfig](https://editorconfig.org)
 - [Prettier](https://prettier.io)

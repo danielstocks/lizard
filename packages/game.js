@@ -32,9 +32,13 @@ export function getGamePhase(game, round) {
 }
 
 export function makeRoundEstimate(currentRound, estimate) {
+  let [valid, message] = isValidEstimate(estimate, currentRound.number);
+  if (!valid) {
+    return [null, message];
+  }
   let currentPlayerIndex = getCurrentPlayerIndex(currentRound);
   currentRound.playerEstimates[currentPlayerIndex] = estimate;
-  return currentRound;
+  return [currentRound, null];
 }
 
 /**
@@ -74,6 +78,7 @@ export function createRound(roundNumber, numberOfPlayers) {
       },
     ],
     trump: dealCardFromDeck(deck)[0],
+    number: roundNumber,
     dealerOffset,
     playerEstimates: new Array(numberOfPlayers).fill(undefined),
     numberOfPlayers,
@@ -219,7 +224,7 @@ function getCardValue(card) {
 
 const faceValues = {
   J: "11",
-  K: "12",
+  Q: "12",
   K: "13",
   A: "14",
 };
@@ -262,7 +267,7 @@ export function getCurrentPlayerIndex(round) {
   }
 
   throw new Error(
-    "getPlayerIndex can only be called in PLAY or ESTIMATION phase",
+    "getCurrentPlayer index can only be called in round PLAY or ESTIMATION phase",
   );
 }
 
@@ -407,6 +412,15 @@ export function playCard(card, round) {
   let currentPlayerIndex = getCurrentPlayerIndex(currentRound);
   let currentPlayerHand = hands[currentPlayerIndex];
 
+  // If still in play phase, check if time for a new trick?
+  if (
+    getRoundPhase(currentRound) === "PLAY" &&
+    hands.length === currentTrick.length
+  ) {
+    currentTrick = [];
+    tricks.push(currentTrick);
+  }
+
   // is play valid?
   if (!isValidPlay(card, currentPlayerHand, currentTrick)) {
     return {
@@ -429,14 +443,6 @@ export function playCard(card, round) {
     ...currentRound,
     moves: [...currentRound.moves, { hands, tricks }],
   };
-
-  // If still in play phase, check if time for a new trick?
-  if (
-    getRoundPhase(newRoundState) === "PLAY" &&
-    hands.length === currentTrick.length
-  ) {
-    newRoundState.moves.at(-1).tricks.push([]);
-  }
 
   return newRoundState;
 }

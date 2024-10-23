@@ -2,31 +2,35 @@
 import { randomUUID } from "node:crypto";
 import * as core from "../../packages/game.js";
 import { pluralize, getRandomInt } from "../../packages/util.js";
+import { broadcast } from "./sse.js";
 
-/* Object to save game state */
+// Store game state in memory for now
 const gameMemoryStore = {};
 
 // Pretend we're logged in as user 0 for now
 const authenticatedUserIndex = 0;
 
+// Artifical "thinking" time in ms
+const SERVER_WAIT_TIME = 500;
+
+/**
+ * @typedef {Object} Action
+ * @property {('ESTIMATE'|'PLAY'|'LOG'|'TRUMP')} type - Indicates the type of action
+ * @property {string|number} payload - The action payload
+ * @property {number|null} playerIndex - Index of player that performed the action (or undefined if system message)
+ *
+ */
+
 /**
  * @param {object} game
- * @param {string} message
+ * @param {Action} action
  */
-function log(game, message) {
+function log(game, action) {
   let timestamp = new Date().toISOString();
   game.log.push({
     timestamp,
-    message,
+    ...action,
   });
-  /* Future idea for log: Structured data?
-  {
-    timestamp: "2024-09-04 14:53.21",
-    action: "PLAY_CARD",
-    value: "D4",
-    playerIndex: 0
-  }
-  */
 }
 
 /**
@@ -57,12 +61,13 @@ function setGameState(newRoundState, game) {
 }
 
 /**
- * Create a new game and persist game state in memory store
+ * Serialize game state object
  * @param {object} game object
  * @returns {object} game serialized game object
  */
 function serializeGame(game) {
-  let currentRound = game.rounds.at(-1);
+  const currentRound = game.rounds.at(-1);
+  const phase = core.getRoundPhase(currentRound);
   return {
     log: game.log,
     id: game.id,
@@ -78,9 +83,11 @@ function serializeGame(game) {
       trump: currentRound.trump,
       currentTrick: core.getCurrentTrick(currentRound),
       dealerOffset: currentRound.dealerOffset,
-      phase: core.getRoundPhase(currentRound),
+      phase,
       playerEstimates: currentRound.playerEstimates,
-      currentPlayerIndex: core.getCurrentPlayerIndex(currentRound),
+      currentPlayerIndex: ["PLAY", "ESTIMATION"].includes(phase)
+        ? core.getCurrentPlayerIndex(currentRound)
+        : null,
       authenticatedPlayerHand: core.getPlayerHand(
         currentRound,
         authenticatedUserIndex,
@@ -106,10 +113,20 @@ function randomEstimate(hand) {
 function trickIsCompleted(newCurrentRound) {
   if (core.getRoundPhase(newCurrentRound) === "DONE") {
     return true;
-  } else if (core.getCurrentTrick(newCurrentRound).length === 0) {
+  } else if (
+    core.getCurrentTrick(newCurrentRound).length ===
+    newCurrentRound.moves.at(-1).hands.length
+  ) {
     return true;
   }
   return false;
+}
+
+/**
+ * @param {number} ms
+ */
+function sleep(ms = SERVER_WAIT_TIME) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -118,37 +135,54 @@ function trickIsCompleted(newCurrentRound) {
  */
 function announceTrickWinner(newCurrentRound, game) {
   let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
-  let playerName = game.players[trickWinnerPlayerIndex].name;
-  log(game, `- Trick Winner: ${playerName}`);
+  let playerName = game.players[trickWinnerPlayerIndex].namej;
+  log(game, {
+    type: "LOG",
+    playerIndex: null,
+    payload: `- Trick Winner: ${playerName}`,
+  });
 }
 
 /**
  * @param {object} currentRound
  * @param {object} game
  */
-function runBotEstimations(currentRound, game) {
+async function runBotEstimations(currentRound, game) {
+  let i = 1;
+  let timeouts = [];
+
   while (core.getRoundPhase(currentRound) === "ESTIMATION") {
     let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
     let currentPlayer = game.players[currentPlayerIndex];
+
     if (currentPlayer.type === "bot") {
       let estimate = currentPlayer.estimate(
         core.getPlayerHand(currentRound, currentPlayerIndex),
       );
+
       core.makeRoundEstimate(currentRound, estimate);
 
-      log(
-        game,
-        "- " +
-          game.players[currentPlayerIndex].name +
-          " thinks they can win " +
-          estimate +
-          " trick" +
-          pluralize(estimate),
+      log(game, {
+        type: "ESTIMATE",
+        playerIndex: currentPlayerIndex,
+        payload: estimate,
+      });
+      let gameSnapshot = structuredClone(serializeGame(game));
+      timeouts.push(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            broadcast({ type: "game", payload: gameSnapshot });
+            resolve(true);
+          }, i * SERVER_WAIT_TIME);
+        }),
       );
+
+      i++;
     } else {
       break;
     }
   }
+  await Promise.all(timeouts);
   return currentRound;
 }
 
@@ -156,7 +190,10 @@ function runBotEstimations(currentRound, game) {
  * @param {object} currentRound
  * @param {object} game
  */
-function runBotPlays(currentRound, game) {
+async function runBotPlays(currentRound, game) {
+  let timeouts = [];
+  let i = 1;
+
   while (core.getRoundPhase(currentRound) === "PLAY") {
     let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
     let currentPlayer = game.players[currentPlayerIndex];
@@ -170,19 +207,57 @@ function runBotPlays(currentRound, game) {
       );
       let cardToPlay =
         validCardsToPlay[Math.floor(Math.random() * validCardsToPlay.length)];
+
       currentRound = core.playCard(cardToPlay, currentRound);
-      log(
-        game,
-        "- " + game.players[currentPlayerIndex].name + " played " + cardToPlay,
+
+      log(game, {
+        type: "PLAY",
+        playerIndex: currentPlayerIndex,
+        payload: cardToPlay,
+      });
+
+      setGameState(currentRound, game);
+
+      // Meh: Snapshot the game after the play has been made, since update is later
+      // broadcasted async
+      let gameSnapshot = structuredClone(serializeGame(game));
+
+      timeouts.push(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            broadcast({
+              type: "game",
+              payload: gameSnapshot,
+            });
+            resolve(true);
+          }, i * SERVER_WAIT_TIME);
+        }),
       );
 
       if (trickIsCompleted(currentRound)) {
         announceTrickWinner(currentRound, game);
+        let gameSnapshot = structuredClone(serializeGame(game));
+        timeouts.push(
+          new Promise((resolve) => {
+            setTimeout(
+              () => {
+                broadcast({ type: "game", payload: gameSnapshot });
+                resolve(true);
+              },
+              (i + 1) * SERVER_WAIT_TIME,
+            );
+          }),
+        );
       }
+
+      i++;
     } else {
       break;
     }
   }
+
+  await Promise.all(timeouts);
+
   return currentRound;
 }
 
@@ -196,17 +271,31 @@ export function createGame(
   players = [
     { name: "Daniel", type: "human" },
     { name: "Button", type: "bot", estimate: randomEstimate },
-    { name: "Bruno", type: "bot", estimate: randomEstimate },
+    { name: "Scooby Doo", type: "bot", estimate: randomEstimate },
   ],
 ) {
+  broadcast({ type: "debug", payload: { message: "this is a debug message" } });
+
   const game = core.createGame(players.length, roundsToPlay);
-  const round = core.createRound(1, game.numberOfPlayers);
   game.id = randomUUID();
-  game.rounds.push(round);
   game.players = players;
   game.log = [];
-  log(game, "Starting round #1");
-  log(game, "Trump card is " + round.trump);
+
+  const round = core.createRound(1, game.numberOfPlayers);
+  game.rounds.push(round);
+
+  log(game, {
+    type: "LOG",
+    playerIndex: null,
+    payload: "Starting round #1",
+  });
+
+  log(game, {
+    type: "TRUMP",
+    playerIndex: null,
+    payload: round.trump,
+  });
+
   gameMemoryStore[game.id] = game;
   runBotEstimations(round, game);
   return serializeGame(game);
@@ -215,119 +304,153 @@ export function createGame(
 /**
  * @param {string} gameId
  * @param {number} estimate
- * @returns {object} game serialized game object
+ * @param {function} callback
+ * @returns {Promise}
  */
-export function estimate(gameId, estimate) {
+export async function estimate(gameId, estimate, callback) {
   const [game, currentRound, currentPlayerIndex, error] = getActiveGame(gameId);
   if (error) {
-    return { error: error.message };
+    return callback({ error: error.message });
   }
   if (core.getRoundPhase(currentRound) !== "ESTIMATION") {
-    return { error: "Current round is not in estimation phase" };
+    return callback({ error: "Current round is not in estimation phase" });
   }
   if (currentPlayerIndex !== authenticatedUserIndex) {
-    return { error: "Not your turn to estimate" };
+    return callback({ error: "Not your turn to estimate" });
   }
 
-  // Thought: maybe makeRoundEstimate should validate and return error
-  // instead of extra step here (and make it more similar to PlayCard
-  let [isValidEstimate, message] = core.isValidEstimate(
+  // Return response, but keep running process in background
+  let [updatedRound, estimationError] = core.makeRoundEstimate(
+    currentRound,
     estimate,
-    game.rounds.length,
   );
-  if (!isValidEstimate) {
-    return { error: message };
+  if (error) {
+    return callback({ error: estimationError });
   }
 
-  log(
-    game,
-    "- " +
-      game.players[currentPlayerIndex].name +
-      " thinks they can win " +
-      estimate +
-      " trick" +
-      pluralize(estimate),
-  );
+  log(game, {
+    type: "ESTIMATE",
+    playerIndex: currentPlayerIndex,
+    payload: estimate,
+  });
 
-  setGameState(
-    runBotPlays(
-      runBotEstimations(core.makeRoundEstimate(currentRound, estimate), game),
-      game,
-    ),
-    game,
-  );
-  return serializeGame(game);
+  callback({ status: "ok" });
+  broadcast({ type: "game", payload: serializeGame(game) });
+
+  // Let the bots estimate or start playing
+  updatedRound = await runBotEstimations(updatedRound, game);
+  updatedRound = await runBotPlays(updatedRound, game);
+  setGameState(updatedRound, game);
 }
 
 /**
  * @param {string} gameId
  * @param {string} card
+ * @param {Function} callback
+ * @returns {Promise}
  */
-export function play(gameId, card) {
+export async function play(gameId, card, callback) {
   const [game, currentRound, currentPlayerIndex, error] = getActiveGame(gameId);
 
   if (error) {
-    return { error: error.message };
+    return callback({ error: error.message });
   }
-
-  // Validation
   if (core.getRoundPhase(currentRound) !== "PLAY") {
-    return { error: "Current round is not in play phase" };
+    return callback({ error: "Current round is not in play phase" });
   }
   if (currentPlayerIndex !== authenticatedUserIndex) {
-    return { error: "Not your turn to play" };
+    return callback({ error: "It's not your turn to play" });
   }
 
-  let newCurrentRound = core.playCard(card, currentRound);
-  if (newCurrentRound.error) {
-    return { error: newCurrentRound.error };
+  let updatedRound = core.playCard(card, currentRound);
+  if (updatedRound.error) {
+    return callback({ error: updatedRound.error });
   }
 
-  setGameState(newCurrentRound, game);
-  log(game, "- " + game.players[currentPlayerIndex].name + " played " + card);
+  setGameState(updatedRound, game);
 
-  if (trickIsCompleted(newCurrentRound)) {
-    announceTrickWinner(newCurrentRound, game);
+  // Let caller know play was OK
+  callback({ status: "ok" });
+
+  log(game, {
+    type: "PLAY",
+    playerIndex: currentPlayerIndex,
+    payload: card,
+  });
+
+  broadcast({ type: "game", payload: serializeGame(game) });
+
+  if (trickIsCompleted(updatedRound)) {
+    await sleep();
+    announceTrickWinner(updatedRound, game);
+    broadcast({ type: "game", payload: serializeGame(game) });
   }
 
   // If round is in play phase === runBotPlays
-  if (core.getRoundPhase(newCurrentRound) === "PLAY") {
-    newCurrentRound = runBotPlays(newCurrentRound, game);
-    setGameState(newCurrentRound, game);
+  if (core.getRoundPhase(updatedRound) === "PLAY") {
+    updatedRound = await runBotPlays(updatedRound, game);
   }
 
-  // If round is is done phase === start next round
-  if (core.getRoundPhase(newCurrentRound) === "DONE") {
-    if (core.getGamePhase(game, newCurrentRound) === "DONE") {
-      return { error: "game is over" };
-    }
-
+  if (core.getRoundPhase(updatedRound) === "DONE") {
     //
     // -- SUMMARY PHASE --
     //
-    log(game, "Round Summary");
-    let aggregatePlayerWins = core.getAggregatePlayerWins(
-      core.getTrickWinners(newCurrentRound),
-      game.players.length,
-    );
-    for (const [playerIndex, player] of game.players.entries()) {
-      let estimate = newCurrentRound.playerEstimates[playerIndex];
-      let wins = aggregatePlayerWins[playerIndex];
-      log(
-        game,
-        `- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
-      );
-    }
+    await sleep();
 
+    log(game, {
+      type: "LOG",
+      playerIndex: null,
+      payload: "Round Summary",
+    });
+
+    summarizeRound(updatedRound, game);
+    broadcast({ type: "game", payload: serializeGame(game) });
+
+    //
+    // -- NEW ROUND PHASE --
+    //
+    await sleep();
     const round = core.createRound(
       game.rounds.length + 1,
       game.numberOfPlayers,
     );
-    log(game, "Starting round " + (game.rounds.length + 1));
-    log(game, "Trump card is " + round.trump);
-    runBotEstimations(round, game);
-    game.rounds.push(round);
-  }
 
-  return serializeGame(game);
+    log(game, {
+      type: "LOG",
+      playerIndex: null,
+      payload: "Starting round " + (game.rounds.length + 1),
+    });
+
+    log(game, {
+      type: "LOG",
+      playerIndex: null,
+      payload: "Trump card is " + round.trump,
+    });
+
+    game.rounds.push(round);
+    broadcast({ type: "game", payload: serializeGame(game) });
+
+    // Start next round estimations
+    await runBotEstimations(round, game);
+  }
+}
+/**
+ * @param {object} round
+ * @param {object} game
+ */
+function summarizeRound(round, game) {
+  let aggregatePlayerWins = core.getAggregatePlayerWins(
+    core.getTrickWinners(round),
+    game.players.length,
+  );
+  for (const [playerIndex, player] of game.players.entries()) {
+    let estimate = round.playerEstimates[playerIndex];
+    let wins = aggregatePlayerWins[playerIndex];
+
+    log(game, {
+      type: "LOG",
+      playerIndex: null,
+      payload: `- ${player.name} estimated ${estimate} trick${pluralize(estimate)} and won ${wins}`,
+    });
+  }
 }
