@@ -197,6 +197,24 @@ export function Game({ game }) {
   )
 }
 
+function CardValue({ card }) {
+  switch (card) {
+    case "LIZARD": {
+      return <span>🦎</span>
+    }
+    case "SNAKE": {
+      return <span>🐍</span>
+    }
+    default: {
+      let value = card.slice(1);
+      let suit = card[0];
+      return (
+        <span class={colors[suit]}>{suits[suit]}{value}</span>
+      )
+    }
+  }
+}
+
 
 function renderLogMessage(entry, players) {
   switch (entry.type) {
@@ -209,25 +227,23 @@ function renderLogMessage(entry, players) {
         <span>trick{pluralize(entry.payload)}</span>
       </div>
     )
-    case "PLAY":
-      let value = entry.payload.slice(1);
-      let suit = entry.payload[0];
+    case "PLAY": {
       return (
         <div>
           <span class="pink">{players[entry.playerIndex].name} </span>
           <span>played </span>
-          <span class={colors[suit]}>{suits[suit]}{value}</span>
+          <CardValue card={entry.payload} />
         </div>
       )
-    case "TRUMP":
-      let trumpValue = entry.payload.slice(1);
-      let trumpSuit = entry.payload[0];
+    }
+    case "TRUMP": {
       return (
         <div>
           <span>Trump card is </span>
-          <span class={colors[trumpSuit]}>{suits[trumpSuit]}{trumpValue}</span>
+          <CardValue card={entry.payload} />
         </div>
       )
+    }
     default: return null
   }
 }
@@ -239,7 +255,6 @@ function Log({ log, players }) {
   }, [log.length]);
   return (
     <div class="log" ref={div}>
-
       {log.map(entry => (
         <div>{renderLogMessage(entry, players)}</div>
       ))}

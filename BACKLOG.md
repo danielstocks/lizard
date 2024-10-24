@@ -10,7 +10,7 @@
 - Feature: Play single player game in Web UI
   - Tood: Make sure CLI game and tests work
   - Todo: Basic scoresheet
-  - Todo: Suite rendering (black+red) in game log: structured data
+  - Done: Suite rendering (black+red) in game log: structured data
   - Done: Fix mutating state bug
   - Done: Simulate bot "thinking" time (5-10s?)
   - Done: Use SSE to subscribe to game state updates

@@ -135,7 +135,7 @@ function sleep(ms = SERVER_WAIT_TIME) {
  */
 function announceTrickWinner(newCurrentRound, game) {
   let trickWinnerPlayerIndex = core.getTrickWinners(newCurrentRound).at(-1);
-  let playerName = game.players[trickWinnerPlayerIndex].namej;
+  let playerName = game.players[trickWinnerPlayerIndex].name;
   log(game, {
     type: "LOG",
     playerIndex: null,
@@ -257,7 +257,6 @@ async function runBotPlays(currentRound, game) {
   }
 
   await Promise.all(timeouts);
-
   return currentRound;
 }
 
@@ -422,7 +421,7 @@ export async function play(gameId, card, callback) {
     });
 
     log(game, {
-      type: "LOG",
+      type: "TRUMP",
       playerIndex: null,
       payload: "Trump card is " + round.trump,
     });
