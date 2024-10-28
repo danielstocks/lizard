@@ -35,6 +35,7 @@ export function App() {
       //console.log("EST", data.payload.currentRound.playerEstimates);
       //console.log("LOG", data.payload.log.at(-1));
       //console.log("\n");
+      // console.log(data.payload.rounds);
       setGame(data.payload);
     }
     if (data.type === "debug") {
@@ -119,81 +120,147 @@ export function Game({ game }) {
 
   return (
     <div class="game-screen">
-      <div class="logo">Lizard</div>
-
-      <div class="round-stat">
-        <div>round: {currentRound.number}</div>
-        <div class="trump">
-          <div>trump card:</div>
-          <TinyCard card={currentRound.trump} />
+      <div class="play-area">
+        <div class="logo">Lizard</div>
+        <div class="round-stat">
+          <div>round: {currentRound.number}</div>
+          <div class="trump">
+            <div>trump card:</div>
+            <TinyCard card={currentRound.trump} />
+          </div>
+          <div>phase: {currentRound.phase}</div>
         </div>
-        <div>phase: {currentRound.phase}</div>
-      </div>
-
-      <div>current trick:</div>
-      <div class="cards">
-        {currentRound.currentTrick.map(card => (
-          <Card card={card} />
-        ))}
-      </div>
-
-      <div class="player-hand">
-        <div>your hand:</div>
+        <div>current trick:</div>
         <div class="cards">
-          {currentRound.authenticatedPlayerHand.map(card => {
-            let validPlay = isValidPlay(
-              card,
-              currentRound.authenticatedPlayerHand,
-              currentRound.currentTrick
-            ) && currentRound.currentPlayerIndex === 0
-            return (
-              <div class={currentRound.phase === "PLAY" && validPlay ? "valid-play" : "invalid-play"} onClick={async () => {
-                if (currentRound.phase !== "PLAY" || validPlay === false) {
-                  return
-                }
-                // TODO: Optimistic update here? Maybe start by just hiding card
-                const request = await window.fetch(API_URL + "play", {
-                  method: "POST",
-                  body: JSON.stringify({ gameId: game.id, card }),
-                });
-                const json = await request.json();
-                if (json.error) {
-                  alert(json.error);
-                } else {
-                  //setGame(json);
-                }
-
-              }}>
-                <Card card={card} />
-              </div>
-            )
-          })}
+          {currentRound.currentTrick.map(card => (
+            <Card card={card} />
+          ))}
         </div>
-      </div>
 
-      {currentRound.currentPlayerIndex === 0 && currentRound.phase === "ESTIMATION" && (
-        <div class="estimation">
-          <div class="estimation-title">How many tricks do you think you can win?</div>
-          <div class="estimation-buttons">
-            {[...Array(currentRound.number + 1).keys()].map(n => (
-              <button onClick={async () => {
-                // TODO: Optimistic update here? Maybe start by just hiding estimation buttons
-                const request = await window.fetch(API_URL + "estimate", {
-                  method: "POST",
-                  body: JSON.stringify({ gameId: game.id, estimate: n }),
-                });
-                const json = await request.json();
-                if (json.error) {
-                  alert(json.error);
-                } else {
-                  //setGame(json);
-                }
-              }}>{n}</button>
-            ))}
+        <div class="player-hand">
+          <div>your hand:</div>
+          <div class="cards">
+            {currentRound.authenticatedPlayerHand.map(card => {
+              let validPlay = isValidPlay(
+                card,
+                currentRound.authenticatedPlayerHand,
+                currentRound.currentTrick
+              ) && currentRound.currentPlayerIndex === 0
+              return (
+                <div class={currentRound.phase === "PLAY" && validPlay ? "valid-play" : "invalid-play"} onClick={async () => {
+                  if (currentRound.phase !== "PLAY" || validPlay === false) {
+                    return
+                  }
+                  // TODO: Optimistic update here? Maybe start by just hiding card
+                  const request = await window.fetch(API_URL + "play", {
+                    method: "POST",
+                    body: JSON.stringify({ gameId: game.id, card }),
+                  });
+                  const json = await request.json();
+                  if (json.error) {
+                    alert(json.error);
+                  } else {
+                    //setGame(json);
+                  }
+
+                }}>
+                  <Card card={card} />
+                </div>
+              )
+            })}
           </div>
         </div>
-      )}
+
+        {currentRound.currentPlayerIndex === 0 && currentRound.phase === "ESTIMATION" && (
+          <div class="estimation">
+            <div class="estimation-title">how many tricks do you think you can win?</div>
+            <div class="estimation-buttons">
+              {[...Array(currentRound.number + 1).keys()].map(n => (
+                <button onClick={async () => {
+                  // TODO: Optimistic update here? Maybe start by just hiding estimation buttons
+                  const request = await window.fetch(API_URL + "estimate", {
+                    method: "POST",
+                    body: JSON.stringify({ gameId: game.id, estimate: n }),
+                  });
+                  const json = await request.json();
+                  if (json.error) {
+                    alert(json.error);
+                  } else {
+                    //setGame(json);
+                  }
+                }}>{n}</button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <Scoresheet game={game} />
     </div>
+  )
+}
+
+function Scoresheet({ game }) {
+  return (
+    <div class="scoresheet">
+      <div class="title">Scoresheet</div>
+
+      <table class="scoresheet-table">
+
+        <thead>
+          <tr>
+            <th>#</th>
+            {game.players.map(player => (
+              <th class="player" colspan="2">{player.name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+
+          {game.rounds.map((round, i) => {
+
+            let agg = round.phase === "DONE" ? game.rounds.slice(0, i + 1)
+              .map(round => { return round.scores })
+              .reduce((prevScore, score) => {
+                return prevScore.map((prev, i) => prev + score[i])
+              }, new Array(game.players.length).fill(0)) : []
+
+            return (
+              <>
+
+                <tr>
+                  <td rowspan="2">{i + 1}</td>
+
+                  {game.players.map((_, i) => {
+
+                    return (
+                      <>
+                        <td rowspan="2" class="player-score">
+                          {agg[i]}
+                          {round.phase === "DONE" && (
+                            < span className={"indication " + (round.playerEstimates[i] === round.playerTricksWon[i] ? "win" : "lose")}>
+                              {round.playerEstimates[i] === round.playerTricksWon[i] ? "✓" : "⤫"}
+                            </span >
+                          )}
+                        </td >
+                        <td>{round.playerTricksWon[i]}</td>
+                      </>
+                    )
+                  })}
+                </tr >
+
+                <tr>
+                  {round.playerEstimates.map(estimate => (
+                    <td> {estimate === null ? "-" : estimate}</td>
+                  ))}
+                </tr >
+
+              </>
+            )
+          })}
+        </tbody>
+
+      </table >
+    </div >
   )
 }
 

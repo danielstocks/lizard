@@ -9,7 +9,7 @@
 ## In Progress
 - Feature: Play single player game in Web UI
   - Tood: Make sure CLI game and tests work
-  - Todo: Basic scoresheet
+  - Done: Basic scoresheet
   - Done: Suite rendering (black+red) in game log: structured data
   - Done: Fix mutating state bug
   - Done: Simulate bot "thinking" time (5-10s?)
@@ -29,15 +29,25 @@
 - Feature: Dealer choses trump card if trump card is LIZARD
 - Feature: Make a bot that can actually play :D (Not just random)
 - Feature: Multiplayer chat
+- Feature: Announce current dealer in log
 - Chore: More efficient & atomic SSE updates
 - Chore: Refactor CSS and use CSS Hooks.
 - Feature: Persist games in DB (SQLite)
 - Bug: Forced to play snake when i can play any card
-    On the table: [ 'S14', 'C8' ]
-    Your hand: [ 'SNAKE', 'D6' ]
-    What card do you want to play?
-    => D6
-    invalid play: D6
+  ```
+  On the table: [ 'S14', 'C8' ]
+  Your hand: [ 'SNAKE', 'D6' ]
+  What card do you want to play?
+  => D6
+  invalid play: D6
+  ```
+- Bug: Wrong winner?
+  ```
+  Scooby Doo played ♣K
+  Daniel played ♣7
+  Button played ♥10
+  - Trick Winner: Daniel
+  ```
 - Bug: DA card lost to D8 card
 - Feature: Deploy to public production environment
 

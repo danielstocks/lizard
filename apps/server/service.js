@@ -78,6 +78,23 @@ function serializeGame(game) {
         type: player.type,
       }),
     ),
+    rounds: game.rounds.map(
+      /**
+       * @param {object} round
+       */
+      (round) => ({
+        playerEstimates: round.playerEstimates,
+        playerTricksWon: core.getAggregatePlayerWins(
+          core.getTrickWinners(round),
+          game.players.length,
+        ),
+        phase: core.getRoundPhase(round),
+        scores:
+          core.getRoundPhase(round) === "DONE"
+            ? core.calculateRoundScore(round)
+            : [],
+      }),
+    ),
     currentRound: {
       number: game.rounds.length,
       trump: currentRound.trump,

@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -22,15 +23,62 @@ body {
   font-family: monospace;
 }
 
-#app { height: 100%; }
+#app {
+  height: 100%;
+}
 
-.game-screen { padding: 10px; }
-.lobby-screen { padding: 10px; }
+.game-screen {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.lobby-screen {
+  padding: 10px;
+}
+
+.scoresheet-table {
+  border-collapse: collapse;
+  font-size: 10px;
+  margin-top: 4px;
+  max-width: 0;
+}
+.scoresheet-table th {
+  border: 1px solid #555;
+  background: #333;
+  padding: 2px 4px;
+}
+
+.scoresheet-table th.player {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 0;
+}
+
+.scoresheet-table td {
+  border: 1px solid #555;
+  padding: 2px 4px;
+  min-width: 24px;
+  text-align: center;
+}
 
 button {
   font-family: monospace;
   font-size: 10px;
   padding: 4px;
+}
+
+.scoresheet-table .player-score .indication {
+  margin-left: 2px;
+}
+
+.scoresheet-table .player-score .win {
+  color: green;
+}
+.scoresheet-table .player-score .lose {
+  color: red;
 }
 
 .cards {
@@ -78,7 +126,7 @@ button {
 
 .valid-play .card:hover {
   background: light-dark(#eee, #222);
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .tiny-card {
@@ -110,7 +158,9 @@ button {
   gap: 4px;
 }
 
-.player-hand { padding-top: 10px; }
+.player-hand {
+  padding-top: 10px;
+}
 
 .trump {
   display: flex;
@@ -135,12 +185,12 @@ button {
   bottom: 0;
   width: 100vw;
   padding: 10px;
-  overflow-y:scroll;
+  overflow-y: scroll;
   height: 30vh;
   background-color: light-dark(#ddd, #000);
-  box-shadow: inset 0 7px 9px -7px rgba(0,0,0,0.5);
+  box-shadow: inset 0 7px 9px -7px rgba(0, 0, 0, 0.5);
 }
 
 .log .pink {
-  color: hotpink
+  color: hotpink;
 }
