@@ -47,6 +47,7 @@ describe("createRound", () => {
         },
       ],
       trump: "H5",
+      number: 1,
       dealerOffset: 0,
       playerEstimates: [undefined, undefined, undefined],
       numberOfPlayers: 3,

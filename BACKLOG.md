@@ -2,13 +2,18 @@
 
 
 ## Next
+- Fix Bugs
+- Feature: Announce current dealer in log
 - Feature: Basic Multiplayer
   - Todo: Game Lobby
+  - Todo: Authentication
+  - Feature: Persist games in DB (SQLite)
 
 
 ## In Progress
 - Feature: Play single player game in Web UI
-  - Tood: Make sure CLI game and tests work
+  - Todo: Make sure CLI game still works
+  - Done: Fix tests
   - Done: Basic scoresheet
   - Done: Suite rendering (black+red) in game log: structured data
   - Done: Fix mutating state bug
@@ -27,12 +32,7 @@
 - Feature: Implement "prison rules"
 - Feature: Randomize dealer offset at start of game
 - Feature: Dealer choses trump card if trump card is LIZARD
-- Feature: Make a bot that can actually play :D (Not just random)
 - Feature: Multiplayer chat
-- Feature: Announce current dealer in log
-- Chore: More efficient & atomic SSE updates
-- Chore: Refactor CSS and use CSS Hooks.
-- Feature: Persist games in DB (SQLite)
 - Bug: Forced to play snake when i can play any card
   ```
   On the table: [ 'S14', 'C8' ]
@@ -48,8 +48,8 @@
   Button played ♥10
   - Trick Winner: Daniel
   ```
-- Bug: DA card lost to D8 card
 - Feature: Deploy to public production environment
+- Feature: Make a bot that can actually play :D (Not just random)
 
 
 ## Done

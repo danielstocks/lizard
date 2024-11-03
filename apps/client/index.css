@@ -1,20 +1,22 @@
-body,
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
 :root {
   --color-fg: #111;
   --color-bg: #f1f1f1;
+  --color-bg-alt: #e1e1e1;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-fg: #f1f1f1;
     --color-bg: #111;
+    --color-bg-alt: #333;
   }
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
@@ -44,8 +46,7 @@ body {
   max-width: 0;
 }
 .scoresheet-table th {
-  border: 1px solid #555;
-  background: #333;
+  background: var(--color-bg-alt);
   padding: 2px 4px;
 }
 
@@ -58,7 +59,9 @@ body {
 }
 
 .scoresheet-table td {
-  border: 1px solid #555;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-bg-alt);
   padding: 2px 4px;
   min-width: 24px;
   text-align: center;
@@ -85,7 +88,9 @@ button {
   display: flex;
   flex-direction: row;
   height: 90px;
-  border: 1px dashed #444;
+  border-width: 1px;
+  border-style: dashed;
+  border-color: var(--color-bg-alt);
   padding: 4px;
   gap: 8px;
 }
@@ -111,8 +116,9 @@ button {
   width: 40px;
   padding: 8px;
   font-size: 16px;
-  border: 1px solid #000;
-  border-color: light-dark(#000, #aaa);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--bg-color-alt);
   border-radius: 4px;
 }
 
@@ -148,7 +154,15 @@ button {
 .suit {
   margin-right: 2px;
 }
+
 .red {
+  .suit,
+  .value {
+    color: red;
+  }
+}
+
+.log .red {
   color: red;
 }
 
@@ -187,7 +201,7 @@ button {
   padding: 10px;
   overflow-y: scroll;
   height: 30vh;
-  background-color: light-dark(#ddd, #000);
+  background-color: var(--bg-color-alt);
   box-shadow: inset 0 7px 9px -7px rgba(0, 0, 0, 0.5);
 }
 

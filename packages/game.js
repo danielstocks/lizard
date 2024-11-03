@@ -43,7 +43,7 @@ export function makeRoundEstimate(currentRound, estimate) {
 
 /**
  * Create and return new round state
- * @param {number} roundNumber Number of current round (how many cards to deal per player)
+ * @param {number} roundNumber Number of current round (how many cards to deal per player and dealer offset)
  * @param {number} numberOfPlayers Number of participating players in round
  * @returns {object} state Initial empty state of a round
  */
