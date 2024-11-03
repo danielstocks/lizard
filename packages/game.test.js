@@ -121,7 +121,7 @@ describe("get winning card index", () => {
   });
 
   test("highest card wins", () => {
-    assert.strictEqual(getWinningCardIndex(["H9", "H14", "H3", "H13"], "C"), 1);
+    assert.strictEqual(getWinningCardIndex(["H9", "HA", "H3", "HK"], "C"), 1);
   });
 
   test("highest card that follows trump wins", () => {
@@ -307,6 +307,10 @@ describe("calculate game score", () => {
 });
 
 describe("is valid play", () => {
+  test("Can play D6 even if SNAKE on hand", () => {
+    assert.strictEqual(isValidPlay("D6", ["SNAKE", "D6"], ["S14", "C8"]), true);
+  });
+
   test("Player must have card on hand to play it", () => {
     assert.strictEqual(isValidPlay("H6", ["H5", "C6", "LIZARD"], []), false);
   });

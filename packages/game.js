@@ -216,8 +216,8 @@ export function getWinningCardIndex(trick, trump) {
 
 function getCardValue(card) {
   let value = card.slice(1);
-  if (["J", "Q", "K"].includes(value)) {
-    return parseFloat(faceValues[card]);
+  if (["J", "Q", "K", "A"].includes(value)) {
+    return parseFloat(faceValues[value]);
   }
   return parseFloat(value);
 }
@@ -346,17 +346,18 @@ export function calculateGameScore(game) {
 }
 
 /**
- * is valid play?
- *
  * This functions validates if a card is eligble to
  * play given what the player has on hand and the
  * what cards are already in play in a trick
+ *
  * @param {string} card
  * @param {array} hand
  * @param {array} trick
  * @returns {boolean} valid
  */
 export function isValidPlay(card, hand, trick) {
+  console.log(card, hand, trick, "\n");
+
   // First of all check player has card on hand
   if (!hand.includes(card)) {
     return false;
@@ -383,13 +384,19 @@ export function isValidPlay(card, hand, trick) {
 
   if (commandingSuit) {
     // Does player have a card in suit?
-    let hasSuitedCard = hand.some((card) => card[0][0] === commandingSuit);
+    let hasSuitedCard = hand.some((card) => {
+      if (["LIZARD", "SNAKE"].includes(card)) {
+        return false;
+      }
+      return card[0] === commandingSuit;
+    });
 
     // If yes, check that card to be played follows suit
-    if (hasSuitedCard && card[0][0] !== commandingSuit) {
+    if (hasSuitedCard && card[0] !== commandingSuit) {
       return false;
     }
   }
+
   return true;
 }
 
