@@ -21,6 +21,7 @@
 - Feautre: Player login and game history
 - Feature: Deploy to public production environment
 - Feature: Make a bot that can actually play :D (Not just random)
+- Feature: Improve CLI Play
 
 
 ## Done
