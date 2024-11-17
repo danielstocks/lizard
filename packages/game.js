@@ -20,10 +20,10 @@ export function createGame(numberOfPlayers, roundsToPlay) {
   };
 }
 
-export function getGamePhase(game, round) {
+export function getGamePhase(game) {
   if (
     game.rounds.length === game.roundsToPlay &&
-    getRoundPhase(round) === "DONE"
+    getRoundPhase(game.rounds.at(-1)) === "DONE"
   ) {
     return "DONE";
   } else {
@@ -356,8 +356,6 @@ export function calculateGameScore(game) {
  * @returns {boolean} valid
  */
 export function isValidPlay(card, hand, trick) {
-  console.log(card, hand, trick, "\n");
-
   // First of all check player has card on hand
   if (!hand.includes(card)) {
     return false;

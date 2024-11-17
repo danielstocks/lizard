@@ -1,20 +1,15 @@
 # Backlog
 
-
 ## Next
-- Feature: End of game summary
+- Feature: Implement "prison rules"
+
+## In Progress
 - Feature: Basic Multiplayer
-  - Feature: Game Lobby
+  - Feature: Create Game + Game Lobby
   - Feature: Use cookies for basic auth (eg. browser reload)
   - Feature: Persist games in DB (SQLite)
 
-
-## In Progress
-- Feature: Announce current dealer in log
-
-
-## Roadmap 
-- Feature: Implement "prison rules"
+## Roadmap
 - Feature: Randomize dealer offset at start of game
 - Feature: Dealer choses trump card if trump card is LIZARD
 - Feature: Multiplayer chat
@@ -25,6 +20,8 @@
 
 
 ## Done
+- Feature: End of game summary
+- Feature: Announce current dealer in log
 - Feature: Play single player game in Web UI
 - Feature: Play game via HTTP (single player)
 - Feature: Game Server App (stateless, in memory-store)

@@ -15,8 +15,8 @@ const SERVER_WAIT_TIME = 500;
 
 /**
  * @typedef {Object} Action
- * @property {('ESTIMATE'|'PLAY'|'LOG'|'TRUMP')} type - Indicates the type of action
- * @property {string|number} payload - The action payload
+ * @property {('ESTIMATE'|'PLAY'|'LOG'|'TRUMP'|'DEALER')} type - Indicates the type of action
+ * @property {string|number|null} payload - The action payload
  * @property {number|null} playerIndex - Index of player that performed the action (or undefined if system message)
  *
  */
@@ -43,10 +43,10 @@ function getActiveGame(id) {
   if (!game) {
     return [undefined, undefined, undefined, { message: "game not found" }];
   }
-  let currentRound = game.rounds.at(-1);
-  if (core.getGamePhase(game, currentRound) === "DONE") {
+  if (core.getGamePhase(game) === "DONE") {
     return [undefined, undefined, undefined, { message: "game is over" }];
   }
+  let currentRound = game.rounds.at(-1);
   let currentPlayerIndex = core.getCurrentPlayerIndex(currentRound);
   return [game, currentRound, currentPlayerIndex, undefined];
 }
@@ -71,6 +71,9 @@ function serializeGame(game) {
   return {
     log: game.log,
     id: game.id,
+    // TODO, move to core game logic?
+    // Update: i haev to or this never happens...
+    phase: core.getGamePhase(game),
     players: game.players.map(
       /** @param {object} player */
       (player) => ({
@@ -278,12 +281,41 @@ async function runBotPlays(currentRound, game) {
 }
 
 /**
+ * @param {number} number
+ * @param {object} game
+ */
+function createRound(number, game) {
+  const round = core.createRound(number, game.numberOfPlayers);
+  game.rounds.push(round);
+
+  log(game, {
+    type: "LOG",
+    playerIndex: null,
+    payload: `Starting round ${number}`,
+  });
+
+  log(game, {
+    type: "TRUMP",
+    playerIndex: null,
+    payload: round.trump,
+  });
+
+  log(game, {
+    type: "DEALER",
+    playerIndex: round.dealerOffset,
+    payload: null,
+  });
+
+  return round;
+}
+
+/**
  * Create a new game and persist game state in memory store
  * @returns {object} gameId Returns unique id of game
  * @param {number} roundsToPlay number of rounds to play
  */
 export function createGame(
-  roundsToPlay,
+  roundsToPlay = 1,
   players = [
     { name: "Daniel", type: "human" },
     { name: "Button", type: "bot", estimate: randomEstimate },
@@ -296,23 +328,8 @@ export function createGame(
   game.id = randomUUID();
   game.players = players;
   game.log = [];
-
-  const round = core.createRound(1, game.numberOfPlayers);
-  game.rounds.push(round);
-
-  log(game, {
-    type: "LOG",
-    playerIndex: null,
-    payload: "Starting round #1",
-  });
-
-  log(game, {
-    type: "TRUMP",
-    playerIndex: null,
-    payload: round.trump,
-  });
-
   gameMemoryStore[game.id] = game;
+  const round = createRound(1, game);
   runBotEstimations(round, game);
   return serializeGame(game);
 }
@@ -426,28 +443,30 @@ export async function play(gameId, card, callback) {
     // -- NEW ROUND PHASE --
     //
     await sleep();
-    const round = core.createRound(
-      game.rounds.length + 1,
-      game.numberOfPlayers,
-    );
+    if (game.rounds.length + 1 < game.roundsToPlay) {
+      const round = createRound(game.rounds.length + 1, game);
+      broadcast({ type: "game", payload: serializeGame(game) });
+      // Start next round estimations
+      await runBotEstimations(round, game);
+    } else {
+      log(game, {
+        type: "LOG",
+        playerIndex: null,
+        payload: "Game over!",
+      });
 
-    log(game, {
-      type: "LOG",
-      playerIndex: null,
-      payload: "Starting round " + (game.rounds.length + 1),
-    });
+      let gameScore = core.calculateGameScore(game);
+      gameScore.forEach((score, i) => {
+        const isWinner = score === Math.max(...gameScore);
+        log(game, {
+          type: "SUMMARY",
+          playerIndex: i,
+          payload: { isWinner, score },
+        });
+      });
 
-    log(game, {
-      type: "TRUMP",
-      playerIndex: null,
-      payload: "Trump card is " + round.trump,
-    });
-
-    game.rounds.push(round);
-    broadcast({ type: "game", payload: serializeGame(game) });
-
-    // Start next round estimations
-    await runBotEstimations(round, game);
+      broadcast({ type: "game", payload: serializeGame(game) });
+    }
   }
 }
 /**
